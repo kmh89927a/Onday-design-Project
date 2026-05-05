@@ -402,9 +402,9 @@ function ValueProposition() {
 /* ── Persona Testimonials ── */
 function PersonaSection() {
   const personas = [
-    { name: "김지영", age: 36, type: "워킹맘", quote: "남편 판교, 저 여의도. 매주 주말 6시간씩 발품 팔았는데, 여기선 6초에 답이 나왔어요. 공유 링크로 남편 설득 성공!", feature: "F1 교차 진단 + F2 공유", stars: 5 },
-    { name: "정우진", age: 38, type: "긴급이사", quote: "전세 만료 D-2개월, 마감 역산 타임라인이 정말 생명이었습니다. 매물 링크도 바로 연결돼서 시간 절약 엄청났어요.", feature: "F3 데드라인 모드", stars: 5 },
-    { name: "박상민", age: 41, type: "맹모 아빠", quote: "대치 학군 vs 광역버스 통근, 둘 다 포기 못하는데 교집합 동네를 찾아줘서 부부싸움이 줄었습니다.", feature: "F1 + 학군 레이어", stars: 5 },
+    { name: "김지영", age: 36, type: "워킹맘", quote: "입장비보다 싸요. 남편 판교, 저 여의도. 매주 6시간 발품 팔았는데, 여기선 6초에 답 나왔어요. 공유 링크로 남편 설득 성공!", feature: "F1 교차 진단 + F2 공유", stars: 5 },
+    { name: "정우진", age: 38, type: "긴급이사", quote: "이 상황이면 10만원도 냈겠어요. 전세 만료 D-2개월, 마감 역산 타임라인이 정말 생명이었습니다. 매물 링크도 바로 연결돼서 시간 절약 엄청났어요.", feature: "F3 데드라인 모드", stars: 5 },
+    { name: "박상민", age: 41, type: "맹모 아빠", quote: "임장 교통비보다 싸요. 학군·통근 둘 다 포기 못하는데, 교집합 동네 찾아줘서 부부싸움이 줄었어요.", feature: "F1 + 학군 레이어", stars: 5 },
   ];
   return (
     <motion.section {...fadeUp} className="bg-surface px-s-5 py-s-10">
