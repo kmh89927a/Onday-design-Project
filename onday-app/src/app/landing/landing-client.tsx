@@ -276,7 +276,7 @@ function InputOutputSection() {
             <div className="grid grid-cols-4 gap-s-2">
               {[
                 { icon: Home, label: "최적 동네\n6~8곳" },
-                { icon: Shield, label: "안전등급\nA~D" },
+                { icon: Share2, label: "부부 공유\n링크" },
                 { icon: TrendingUp, label: "시세·매물\n연결" },
                 { icon: GraduationCap, label: "학군·학원\n통합" },
               ].map(({ icon: Icon, label }) => (
