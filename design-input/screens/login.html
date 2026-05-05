@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
+<title>로그인 · 동네궁합</title>
+<meta name="description" content="두 직장의 출퇴근 동선이 만나는 후보 동네를 찾아주는 프롭테크 서비스"/>
+<meta name="theme-color" content="#2563EB"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="stage">
+  
+<nav class="nav-rail" aria-label="화면 이동">
+  <a href="login.html">01 로그인</a>
+  <a href="diagnosis.html">02 진단</a>
+  <a href="result.html">03 결과</a>
+  <a href="detail.html">04 상세</a>
+  <a href="share.html">05 공유</a>
+  <a href="deadline.html">06 데드라인</a>
+  <a href="single.html">07 싱글</a>
+</nav>
+  <div class="phone">
+    <div class="phone__island"></div>
+    <div class="phone__screen ">
+      <div class="phone__statusbar">
+        <span>9:41</span>
+        <span style="display:flex;gap:6px;align-items:center;">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.5"/><rect x="4.5" y="5" width="3" height="6" rx="0.5"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.5"/><rect x="13.5" y="0" width="3" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2" y="2" width="15" height="7" rx="1" fill="currentColor"/><path d="M20 4v3" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+  <main class="screen">
+    <div class="login">
+      <div class="login__brand">
+        <span class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 14l7-7 7 7M8 14v6h8v-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="11" r="1.6" fill="#fff"/></svg></span>
+        <span>동네궁합</span>
+      </div>
+      <div class="login__hero">두 사람의 출퇴근,<br/>가장 합리적인 동네는?</div>
+      <div class="login__sub">직장 두 곳을 입력하면 통근 동선이<br/>만나는 후보 동네를 지도 위에 보여드려요.</div>
+
+      <div class="login__notice" role="note">
+        <span class="login__notice-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/></svg></span>
+        <span class="login__notice-text">
+          카카오 모빌리티 · 국가공간정보포털 데이터 기반<br/>
+          <small>회원가입 없이 체험할 수 있어요</small>
+        </span>
+      </div>
+
+      <div class="login__spacer"></div>
+
+      <div class="login__buttons">
+        <a class="btn btn--full btn--kakao" href="diagnosis.html" aria-label="카카오로 시작">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#191919" aria-hidden="true"><path d="M12 4C6.48 4 2 7.5 2 11.8c0 2.7 1.78 5.07 4.47 6.43-.2.7-.7 2.5-.8 2.9-.13.49.18.48.38.35.16-.1 2.46-1.67 3.45-2.34.82.12 1.66.18 2.5.18 5.52 0 10-3.5 10-7.82C22 7.5 17.52 4 12 4z"/></svg>
+          카카오로 1초 만에 시작
+        </a>
+        <a class="btn btn--full btn--naver" href="diagnosis.html" aria-label="네이버로 시작">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M14.4 12.5L9.4 5H5v14h4.6v-7.5L14.6 19H19V5h-4.6v7.5z"/></svg>
+          네이버로 시작
+        </a>
+        <div class="divider"><span>또는</span></div>
+        <a class="btn btn--full btn--outline" href="diagnosis.html">로그인 없이 체험하기</a>
+        <p class="login__terms">가입 시 <u>이용약관</u> · <u>개인정보처리방침</u>에 동의합니다</p>
+      </div>
+    </div>
+  </main>
+
+    </div>
+    <div class="phone__home"></div>
+  </div>
+</div>
+<script src="script.js" defer></script>
+</body>
+</html>

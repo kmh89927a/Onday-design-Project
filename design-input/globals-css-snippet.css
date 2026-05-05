@@ -1,0 +1,180 @@
+/* ────────────────────────────────────────────────────────────
+   Onday — globals.css snippet
+   ----------------------------------------------------------------
+   design-tokens.md의 토큰을 CSS 변수로 정의한 파일.
+   이 파일을 그대로 src/app/globals.css 상단에 복사하거나 import 하세요.
+
+   shadcn/ui 호환 — 모든 색상은 HSL 채널 형식 ("H S% L%")으로 정의되어
+   `hsl(var(--primary))` 처럼 사용할 수 있습니다.
+
+   사용:
+     1) Pretendard 폰트 CDN을 layout 또는 _document에서 로드
+     2) `tailwind-config-snippet.ts`를 tailwind.config.ts로 복사
+     3) 이 파일을 globals.css에 붙여넣고 @tailwind 디렉티브 추가
+   ──────────────────────────────────────────────────────────── */
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ───── Surfaces ───── */
+    --bg: 220 27% 97%;              /* #F4F6FA */
+    --surface: 0 0% 100%;           /* #FFFFFF */
+    --surface-soft: 220 27% 96%;    /* #F1F4F9 */
+
+    /* ───── Ink (text) ───── */
+    --ink: 222 36% 9%;              /* #0B1220 */
+    --ink-2: 220 19% 30%;           /* #3D475A */
+    --ink-3: 220 12% 48%;           /* #6B7689 */
+
+    /* ───── Lines / Borders ───── */
+    --card-border: 220 13% 91%;     /* #E5E7EB */
+    --line: 220 22% 92%;            /* #E6E9F0 */
+    --line-2: 220 28% 95%;          /* #EEF1F6 */
+
+    /* ───── Brand ───── */
+    --primary: 221 83% 53%;         /* #2563EB */
+    --primary-soft: 220 100% 96%;   /* #EAF1FF */
+    --primary-deep: 226 71% 33%;    /* #1E3A8A */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 262 83% 58%;       /* #7C3AED */
+    --secondary-foreground: 0 0% 100%;
+
+    /* ───── Status ───── */
+    --success: 160 84% 39%;         /* #10B981 */
+    --success-soft: 152 60% 94%;    /* #E7F8F1 */
+    --info: 217 91% 60%;            /* #3B82F6 */
+    --info-soft: 215 80% 95%;       /* #E5EEFC */
+    --warning: 38 92% 50%;          /* #F59E0B */
+    --warning-soft: 48 96% 92%;     /* #FEF3C7 */
+    --danger: 0 84% 60%;            /* #EF4444 */
+    --danger-soft: 0 86% 96%;       /* #FEE2E2 */
+
+    /* ───── Safety grades ─────
+       letter + label + color 3중 표기 필수 (색맹 대응) */
+    --safety-a: 160 84% 39%;        /* A — 매우 안전 (success) */
+    --safety-b: 217 91% 60%;        /* B — 안전 (info) */
+    --safety-c: 38 92% 50%;         /* C — 보통 (warning) */
+    --safety-d: 0 84% 60%;          /* D — 주의 (danger) */
+
+    /* ───── Radii (px → rem) ───── */
+    --radius-xs: 0.25rem;           /* 4px */
+    --radius-sm: 0.375rem;          /* 6px */
+    --radius-md: 0.5rem;            /* 8px */
+    --radius: 0.75rem;              /* 12px — card 통일 */
+    --radius-xl: 1rem;              /* 16px */
+    --radius-2xl: 1.25rem;          /* 20px */
+    --radius-3xl: 1.5rem;           /* 24px */
+    --radius-phone: 2.75rem;        /* 44px — 폰 베젤 */
+
+    /* ───── Spacing tokens (참고용 — Tailwind config에서 가져다 씀) ───── */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 20px;
+    --s-6: 24px;
+    --s-7: 32px;
+    --s-8: 40px;
+    --s-9: 48px;
+    --s-10: 64px;
+
+    /* ───── Shadows ───── */
+    --shadow-card: 0 1px 2px rgba(11, 18, 32, 0.04), 0 1px 3px rgba(11, 18, 32, 0.06);
+    --shadow-card-hover: 0 2px 6px rgba(11, 18, 32, 0.06), 0 8px 24px rgba(11, 18, 32, 0.08);
+    --shadow-sheet: 0 -8px 24px rgba(11, 18, 32, 0.10);
+    --shadow-floating: 0 8px 24px rgba(11, 18, 32, 0.12);
+    --shadow-focus-ring: 0 0 0 2px hsl(var(--primary) / 0.4);
+    --shadow-marker: 0 2px 8px rgba(37, 99, 235, 0.32);
+
+    /* ───── Motion ───── */
+    --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 120ms;
+    --duration-base: 220ms;
+    --duration-slow: 380ms;
+
+    /* ───── shadcn/ui 호환 별칭 ───── */
+    --background: var(--bg);
+    --foreground: var(--ink);
+    --border: var(--card-border);
+    --input: var(--card-border);
+    --ring: var(--primary);
+    --muted: var(--surface-soft);
+    --muted-foreground: var(--ink-3);
+    --accent: var(--primary-soft);
+    --accent-foreground: var(--primary);
+    --destructive: var(--danger);
+    --destructive-foreground: 0 0% 100%;
+    --card: var(--surface);
+    --card-foreground: var(--ink);
+    --popover: var(--surface);
+    --popover-foreground: var(--ink);
+  }
+
+  /* ───── Dark mode (선택 — 디자인 시안에 다크모드 없으나 토큰만 예약) ───── */
+  .dark {
+    --bg: 222 36% 7%;
+    --surface: 222 30% 11%;
+    --surface-soft: 222 25% 14%;
+    --ink: 220 27% 97%;
+    --ink-2: 220 15% 75%;
+    --ink-3: 220 12% 60%;
+    --card-border: 222 20% 22%;
+    --line: 222 18% 20%;
+    --line-2: 222 15% 18%;
+    --primary: 221 90% 65%;
+    --primary-soft: 222 30% 18%;
+    --primary-deep: 226 71% 50%;
+  }
+
+  /* ───── Base resets ───── */
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-ink font-sans;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+
+  /* ───── Focus ring (모든 인터랙티브 요소 — a11y 필수) ───── */
+  :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* ───── Reduced motion ───── */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ───── Tabular numbers (for prices, counters) ───── */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ───── Print (PDF 저장 — /single, /share) ───── */
+  @media print {
+    body { background: #fff; }
+    .no-print { display: none !important; }
+    .print-page-break { page-break-before: always; }
+    .card { break-inside: avoid; }
+  }
+}

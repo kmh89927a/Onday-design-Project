@@ -1,0 +1,18 @@
+{
+  "source": "경찰청 범죄통계 (Mock)",
+  "year": 2025,
+  "data": {
+    "종로구": { "grade": "B", "score": 72, "incidents_per_1000": 8.2 },
+    "마포구": { "grade": "A", "score": 85, "incidents_per_1000": 5.1 },
+    "강남구": { "grade": "A", "score": 82, "incidents_per_1000": 5.8 },
+    "용산구": { "grade": "B", "score": 74, "incidents_per_1000": 7.5 },
+    "송파구": { "grade": "A", "score": 88, "incidents_per_1000": 4.5 },
+    "영등포구": { "grade": "A", "score": 80, "incidents_per_1000": 6.2 },
+    "서대문구": { "grade": "B", "score": 76, "incidents_per_1000": 7.0 },
+    "동작구": { "grade": "B", "score": 73, "incidents_per_1000": 7.8 },
+    "노원구": { "grade": "B", "score": 77, "incidents_per_1000": 6.8 },
+    "관악구": { "grade": "C", "score": 65, "incidents_per_1000": 9.5 },
+    "성동구": { "grade": "A", "score": 83, "incidents_per_1000": 5.5 },
+    "양천구": { "grade": "A", "score": 86, "incidents_per_1000": 4.8 }
+  }
+}

@@ -1,0 +1,41 @@
+# macOS
+.DS_Store
+
+# Claude Code session
+.claude/
+
+# Node
+node_modules/
+**/node_modules/
+
+# Next.js
+.next/
+**/.next/
+
+# Vercel
+.vercel/
+**/.vercel/
+
+# Environment
+.env
+.env*.local
+
+# Build outputs
+out/
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Temp
+*.tmp
+*.swp
+
+# Backup files (already gitignored from past)
+onday-app-git-backup-*.tar.gz

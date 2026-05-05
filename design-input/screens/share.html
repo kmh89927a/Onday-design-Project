@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
+<title>공유 리포트 · 동네궁합</title>
+<meta name="description" content="두 직장의 출퇴근 동선이 만나는 후보 동네를 찾아주는 프롭테크 서비스"/>
+<meta name="theme-color" content="#2563EB"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="stage">
+  
+<nav class="nav-rail" aria-label="화면 이동">
+  <a href="login.html">01 로그인</a>
+  <a href="diagnosis.html">02 진단</a>
+  <a href="result.html">03 결과</a>
+  <a href="detail.html">04 상세</a>
+  <a href="share.html">05 공유</a>
+  <a href="deadline.html">06 데드라인</a>
+  <a href="single.html">07 싱글</a>
+</nav>
+  <div class="phone">
+    <div class="phone__island"></div>
+    <div class="phone__screen screen--bg">
+      <div class="phone__statusbar">
+        <span>9:41</span>
+        <span style="display:flex;gap:6px;align-items:center;">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.5"/><rect x="4.5" y="5" width="3" height="6" rx="0.5"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.5"/><rect x="13.5" y="0" width="3" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2" y="2" width="15" height="7" rx="1" fill="currentColor"/><path d="M20 4v3" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+  <main class="screen screen--bg">
+    <header class="share-hero">
+      <div class="share-hero__row">
+        <div class="share-hero__brand"><span class="logo logo--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 14l7-7 7 7M8 14v6h8v-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="11" r="1.6" fill="#fff"/></svg></span><span>동네궁합 · 공유 리포트</span></div>
+        <div class="share-hero__chip">익명 · 7일 한정</div>
+      </div>
+      <h1 class="share-hero__title">민지님이 진단한<br/>후보 동네 5곳이 도착했어요</h1>
+      <div class="share-hero__badges">
+        <div class="data-badge"><span class="data-badge__dot" style="background:#10B981"></span><span class="data-badge__label">official</span><span class="data-badge__detail">카카오 모빌리티 · 2026.04.01</span></div>
+        <div class="data-badge"><span class="data-badge__dot" style="background:#60A5FA"></span><span class="data-badge__label">aggregated</span><span class="data-badge__detail">국가공간정보포털 · 2026.03.15</span></div>
+      </div>
+    </header>
+
+    <div class="screen__scroll">
+      <div class="share-list">
+        <div class="report-card">
+          <div class="report-card__head">
+            <span class="pill pill--ok">무료 미리보기</span>
+            <div class="report-card__name">마포구 공덕동</div>
+          </div>
+          <div class="report-card__row">
+            <div class="report-card__score"><div class="report-card__score-num">92</div><div class="report-card__score-lbl">점</div></div>
+            <div class="report-card__stats">
+              <div class="stat"><div class="stat__label">A 통근</div><div class="stat__value">18분</div></div>
+              <div class="stat"><div class="stat__label">B 통근</div><div class="stat__value">32분</div></div>
+              <div class="stat"><div class="stat__label">평균 시세</div><div class="stat__value">9.2억</div></div>
+              <div class="stat"><div class="stat__label">환승</div><div class="stat__value">총 2회</div></div>
+            </div>
+          </div>
+        </div>
+
+        
+          <div class="locked-wrap" aria-label="잠금된 후보">
+            <div class="report-card">
+              <div class="report-card__head"><div class="report-card__name">성동구 성수동</div></div>
+              <div class="report-card__row">
+                <div class="report-card__score"><div class="report-card__score-num">89</div><div class="report-card__score-lbl">점</div></div>
+                <div class="report-card__stats">
+                  <div class="stat"><div class="stat__label">A 통근</div><div class="stat__value">22분</div></div>
+                  <div class="stat"><div class="stat__label">B 통근</div><div class="stat__value">28분</div></div>
+                  <div class="stat"><div class="stat__label">평균 시세</div><div class="stat__value">11.4억</div></div>
+                  <div class="stat"><div class="stat__label">환승</div><div class="stat__value">총 2회</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="locked-overlay" aria-hidden="true">
+              <div class="locked-overlay__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+              <div class="locked-overlay__text">회원가입하면 전체 정보를 볼 수 있어요</div>
+            </div>
+          </div>
+          <div class="locked-wrap" aria-label="잠금된 후보">
+            <div class="report-card">
+              <div class="report-card__head"><div class="report-card__name">동작구 흑석동</div></div>
+              <div class="report-card__row">
+                <div class="report-card__score"><div class="report-card__score-num">84</div><div class="report-card__score-lbl">점</div></div>
+                <div class="report-card__stats">
+                  <div class="stat"><div class="stat__label">A 통근</div><div class="stat__value">24분</div></div>
+                  <div class="stat"><div class="stat__label">B 통근</div><div class="stat__value">36분</div></div>
+                  <div class="stat"><div class="stat__label">평균 시세</div><div class="stat__value">8.1억</div></div>
+                  <div class="stat"><div class="stat__label">환승</div><div class="stat__value">총 2회</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="locked-overlay" aria-hidden="true">
+              <div class="locked-overlay__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+              <div class="locked-overlay__text">회원가입하면 전체 정보를 볼 수 있어요</div>
+            </div>
+          </div>
+          <div class="locked-wrap" aria-label="잠금된 후보">
+            <div class="report-card">
+              <div class="report-card__head"><div class="report-card__name">경기 광교 신도시</div></div>
+              <div class="report-card__row">
+                <div class="report-card__score"><div class="report-card__score-num">80</div><div class="report-card__score-lbl">점</div></div>
+                <div class="report-card__stats">
+                  <div class="stat"><div class="stat__label">A 통근</div><div class="stat__value">36분</div></div>
+                  <div class="stat"><div class="stat__label">B 통근</div><div class="stat__value">22분</div></div>
+                  <div class="stat"><div class="stat__label">평균 시세</div><div class="stat__value">10.5억</div></div>
+                  <div class="stat"><div class="stat__label">환승</div><div class="stat__value">총 2회</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="locked-overlay" aria-hidden="true">
+              <div class="locked-overlay__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+              <div class="locked-overlay__text">회원가입하면 전체 정보를 볼 수 있어요</div>
+            </div>
+          </div>
+          <div class="locked-wrap" aria-label="잠금된 후보">
+            <div class="report-card">
+              <div class="report-card__head"><div class="report-card__name">인천 송도</div></div>
+              <div class="report-card__row">
+                <div class="report-card__score"><div class="report-card__score-num">76</div><div class="report-card__score-lbl">점</div></div>
+                <div class="report-card__stats">
+                  <div class="stat"><div class="stat__label">A 통근</div><div class="stat__value">48분</div></div>
+                  <div class="stat"><div class="stat__label">B 통근</div><div class="stat__value">18분</div></div>
+                  <div class="stat"><div class="stat__label">평균 시세</div><div class="stat__value">7.6억</div></div>
+                  <div class="stat"><div class="stat__label">환승</div><div class="stat__value">총 2회</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="locked-overlay" aria-hidden="true">
+              <div class="locked-overlay__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+              <div class="locked-overlay__text">회원가입하면 전체 정보를 볼 수 있어요</div>
+            </div>
+          </div>
+      </div>
+      <div style="height:24px"></div>
+    </div>
+
+    <footer class="share-foot">
+      <div class="share-foot__hint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span>나머지 후보 4곳은 회원만 볼 수 있어요</span></div>
+      <a class="btn btn--full btn--primary" href="login.html">회원가입하고 전체 후보 보기 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </footer>
+  </main>
+
+    </div>
+    <div class="phone__home"></div>
+  </div>
+</div>
+<script src="script.js" defer></script>
+</body>
+</html>

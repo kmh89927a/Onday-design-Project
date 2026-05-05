@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
+<title>싱글 모드 결과 · 동네궁합</title>
+<meta name="description" content="두 직장의 출퇴근 동선이 만나는 후보 동네를 찾아주는 프롭테크 서비스"/>
+<meta name="theme-color" content="#2563EB"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="stage">
+  
+<nav class="nav-rail" aria-label="화면 이동">
+  <a href="login.html">01 로그인</a>
+  <a href="diagnosis.html">02 진단</a>
+  <a href="result.html">03 결과</a>
+  <a href="detail.html">04 상세</a>
+  <a href="share.html">05 공유</a>
+  <a href="deadline.html">06 데드라인</a>
+  <a href="single.html">07 싱글</a>
+</nav>
+  <div class="phone">
+    <div class="phone__island"></div>
+    <div class="phone__screen screen--bg">
+      <div class="phone__statusbar">
+        <span>9:41</span>
+        <span style="display:flex;gap:6px;align-items:center;">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.5"/><rect x="4.5" y="5" width="3" height="6" rx="0.5"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.5"/><rect x="13.5" y="0" width="3" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2" y="2" width="15" height="7" rx="1" fill="currentColor"/><path d="M20 4v3" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+  <main class="screen screen--bg">
+    <div class="single-head">
+      <div>
+        <div class="single-head__cap">싱글 모드 · 4개 후보</div>
+        <h1 class="single-head__title">야간 안전이 기준이에요</h1>
+      </div>
+      <button class="filter-icon-btn" aria-label="필터"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 8v6l-4-2v-4L4 5z"/></svg></button>
+    </div>
+
+    <section class="legend" aria-label="등급 가이드">
+      <div class="legend__head">
+        <div class="legend__title">야간 안전 등급 기준</div>
+        <span class="legend__meta">22:00–04:00 · 반경 1km</span>
+      </div>
+      <div class="legend__row">
+        <div class="legend__chip legend__chip--A">A등급</div>
+        <div class="legend__chip legend__chip--B">B등급</div>
+        <div class="legend__chip legend__chip--C">C등급</div>
+        <div class="legend__chip legend__chip--D">D등급</div>
+      </div>
+    </section>
+
+    <section class="safety-list" aria-label="후보 동네">
+      
+  <article class="safety-card">
+    <div class="safety-card__head">
+      <div>
+        <div class="safety-card__name">마포구 망원동</div>
+        <div class="safety-card__sub">반경 1km · 인접 4개 동 기준</div>
+      </div>
+      <div class="grade-badge grade-badge--A">
+        <span class="grade-badge__letter">A</span>
+        <span>야간 매우 안전</span>
+      </div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-row"><span>야간 범죄율 (10만명당)</span><strong>0.84건</strong></div>
+      <div class="bar">
+        <div class="bar__fill bar__fill--A" style="width:21%"></div>
+        <span class="bar__tick" style="left:25%"></span>
+        <span class="bar__tick" style="left:50%"></span>
+        <span class="bar__tick" style="left:75%"></span>
+      </div>
+    </div>
+    <div class="safety-card__stats">
+      <div class="stat"><div class="stat__label">통근</div><div class="stat__value">26분</div></div>
+      <div class="stat"><div class="stat__label">시세</div><div class="stat__value">8.4억</div></div>
+      <div class="stat"><div class="stat__label">범죄</div><div class="stat__value">0.84건</div></div>
+    </div>
+  </article>
+  <article class="safety-card">
+    <div class="safety-card__head">
+      <div>
+        <div class="safety-card__name">성동구 행당동</div>
+        <div class="safety-card__sub">반경 1km · 인접 3개 동 기준</div>
+      </div>
+      <div class="grade-badge grade-badge--B">
+        <span class="grade-badge__letter">B</span>
+        <span>야간 안전</span>
+      </div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-row"><span>야간 범죄율 (10만명당)</span><strong>1.32건</strong></div>
+      <div class="bar">
+        <div class="bar__fill bar__fill--B" style="width:33%"></div>
+        <span class="bar__tick" style="left:25%"></span>
+        <span class="bar__tick" style="left:50%"></span>
+        <span class="bar__tick" style="left:75%"></span>
+      </div>
+    </div>
+    <div class="safety-card__stats">
+      <div class="stat"><div class="stat__label">통근</div><div class="stat__value">22분</div></div>
+      <div class="stat"><div class="stat__label">시세</div><div class="stat__value">9.1억</div></div>
+      <div class="stat"><div class="stat__label">범죄</div><div class="stat__value">1.32건</div></div>
+    </div>
+  </article>
+  <article class="safety-card">
+    <div class="safety-card__head">
+      <div>
+        <div class="safety-card__name">관악구 봉천동</div>
+        <div class="safety-card__sub">반경 1km · 인접 6개 동 기준</div>
+      </div>
+      <div class="grade-badge grade-badge--C">
+        <span class="grade-badge__letter">C</span>
+        <span>야간 주의</span>
+      </div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-row"><span>야간 범죄율 (10만명당)</span><strong>2.18건</strong></div>
+      <div class="bar">
+        <div class="bar__fill bar__fill--C" style="width:54.50000000000001%"></div>
+        <span class="bar__tick" style="left:25%"></span>
+        <span class="bar__tick" style="left:50%"></span>
+        <span class="bar__tick" style="left:75%"></span>
+      </div>
+    </div>
+    <div class="safety-card__stats">
+      <div class="stat"><div class="stat__label">통근</div><div class="stat__value">32분</div></div>
+      <div class="stat"><div class="stat__label">시세</div><div class="stat__value">6.8억</div></div>
+      <div class="stat"><div class="stat__label">범죄</div><div class="stat__value">2.18건</div></div>
+    </div>
+  </article>
+  <article class="safety-card">
+    <div class="safety-card__head">
+      <div>
+        <div class="safety-card__name">인천 부평구</div>
+        <div class="safety-card__sub">반경 1km · 인접 5개 동 기준</div>
+      </div>
+      <div class="grade-badge grade-badge--D">
+        <span class="grade-badge__letter">D</span>
+        <span>야간 위험</span>
+      </div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-row"><span>야간 범죄율 (10만명당)</span><strong>3.04건</strong></div>
+      <div class="bar">
+        <div class="bar__fill bar__fill--D" style="width:76%"></div>
+        <span class="bar__tick" style="left:25%"></span>
+        <span class="bar__tick" style="left:50%"></span>
+        <span class="bar__tick" style="left:75%"></span>
+      </div>
+    </div>
+    <div class="safety-card__stats">
+      <div class="stat"><div class="stat__label">통근</div><div class="stat__value">48분</div></div>
+      <div class="stat"><div class="stat__label">시세</div><div class="stat__value">5.2억</div></div>
+      <div class="stat"><div class="stat__label">범죄</div><div class="stat__value">3.04건</div></div>
+    </div>
+  </article>
+    </section>
+
+    <div class="single-foot">
+      <button class="btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5M9 13h6M9 16h6M9 10h3"/></svg><span style="margin-left:4px">리포트 저장 (PDF)</span></button>
+    </div>
+  </main>
+
+    </div>
+    <div class="phone__home"></div>
+  </div>
+</div>
+<script src="script.js" defer></script>
+</body>
+</html>

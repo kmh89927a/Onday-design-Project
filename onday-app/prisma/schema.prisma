@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  authProvider String   @map("auth_provider") // kakao | naver
+  mode         String   @default("couple") // couple | single
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  diagnoses   Diagnosis[]
+  savedSearch SavedSearch?
+
+  @@map("users")
+}
+
+model Diagnosis {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  addressA     String   @map("address_a")
+  addressB     String?  @map("address_b") // nullable for single mode
+  filters      String   @default("{}") // JSON string (SQLite has no JSONB)
+  candidates   String   @default("[]") // JSON string array of CandidateArea
+  mode         String   @default("couple") // couple | single
+  deadlineMode Boolean  @default(false) @map("deadline_mode")
+  deadline     DateTime? // nullable, for deadline mode
+  status       String   @default("completed") // processing | completed | expired
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shareLink ShareLink?
+
+  @@index([userId])
+  @@map("diagnoses")
+}
+
+model ShareLink {
+  id              String   @id @default(uuid())
+  diagnosisId     String   @unique @map("diagnosis_id")
+  uniqueUrl       String   @unique @map("unique_url") // UUID v4
+  passwordHash    String?  @map("password_hash") // bcrypt hash
+  viewCount       Int      @default(0) @map("view_count")
+  freePreviewUsed Boolean  @default(false) @map("free_preview_used")
+  expiresAt       DateTime @map("expires_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  diagnosis Diagnosis @relation(fields: [diagnosisId], references: [id], onDelete: Cascade)
+
+  @@map("share_links")
+}
+
+model SavedSearch {
+  id           String   @id @default(uuid())
+  userId       String   @unique @map("user_id")
+  searchParams String   @map("search_params") // JSON string
+  savedAt      DateTime @default(now()) @map("saved_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saved_searches")
+}

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
+<title>진단 결과 · 동네궁합</title>
+<meta name="description" content="두 직장의 출퇴근 동선이 만나는 후보 동네를 찾아주는 프롭테크 서비스"/>
+<meta name="theme-color" content="#2563EB"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="stage">
+  
+<nav class="nav-rail" aria-label="화면 이동">
+  <a href="login.html">01 로그인</a>
+  <a href="diagnosis.html">02 진단</a>
+  <a href="result.html">03 결과</a>
+  <a href="detail.html">04 상세</a>
+  <a href="share.html">05 공유</a>
+  <a href="deadline.html">06 데드라인</a>
+  <a href="single.html">07 싱글</a>
+</nav>
+  <div class="phone">
+    <div class="phone__island"></div>
+    <div class="phone__screen screen--soft">
+      <div class="phone__statusbar">
+        <span>9:41</span>
+        <span style="display:flex;gap:6px;align-items:center;">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.5"/><rect x="4.5" y="5" width="3" height="6" rx="0.5"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.5"/><rect x="13.5" y="0" width="3" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2" y="2" width="15" height="7" rx="1" fill="currentColor"/><path d="M20 4v3" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+  <main class="screen screen--soft">
+    <div class="result-head" data-tabs>
+      <div class="result-head__row">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <a href="diagnosis.html" class="icon-btn" aria-label="이전"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></a>
+          <div>
+            <div class="result-head__title">후보 7개 동네</div>
+            <div class="result-head__meta">강남·판교 기준 · 평일 평균</div>
+          </div>
+        </div>
+        <button class="filter-icon-btn" aria-label="공유"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13"/></svg></button>
+      </div>
+      <div class="tabs" role="tablist" aria-label="출근 시간대">
+        <button class="tabs__tab" role="tab">07:00</button>
+        <button class="tabs__tab is-active" role="tab" aria-selected="true">08:00</button>
+        <button class="tabs__tab" role="tab">09:00</button>
+        <button class="tabs__tab" role="tab">10:00</button>
+      </div>
+      <div class="filter-row">
+        <div class="filter-chip"><span class="filter-chip__label">통근시간</span><span class="filter-chip__value">≤ 45분</span></div>
+        <div class="filter-chip"><span class="filter-chip__label">예산</span><span class="filter-chip__value">7–12억</span></div>
+        <button class="filter-icon-btn" aria-label="필터"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 8v6l-4-2v-4L4 5z"/></svg></button>
+      </div>
+    </div>
+
+    <div class="map" aria-label="후보 동네 지도">
+      
+<svg viewBox="0 0 375 320" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="rgba(180,200,220,0.3)" stroke-width="0.5"/>
+    </pattern>
+    <linearGradient id="land" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#EAEFF6"/><stop offset="1" stop-color="#DDE5F0"/>
+    </linearGradient>
+  </defs>
+  <rect width="375" height="320" fill="url(#land)"/>
+  <rect width="375" height="320" fill="url(#grid)"/>
+  <path d="M0 200 Q100 170 180 195 T375 175 L375 240 Q260 230 180 250 T0 245 Z" fill="#BCD2EE" opacity="0.85"/>
+  <text x="180" y="225" fill="#5A7AA6" font-size="10" font-weight="700" text-anchor="middle" font-family="Pretendard">한강</text>
+  <path d="M0 80 L375 100 M40 0 L60 320 M180 0 L200 320 M260 0 L280 320 M0 280 L375 270" stroke="#fff" stroke-width="3" opacity="0.7"/>
+  <g opacity="0.32"><circle cx="140" cy="130" r="60" fill="#2563EB"/><circle cx="180" cy="130" r="40" fill="#2563EB"/></g>
+  
+    <g transform="translate(120,121.6)">
+      <circle r="14" fill="#2563EB" stroke="#fff" stroke-width="2"/>
+      <text text-anchor="middle" dy="3" font-size="9" font-weight="800" fill="#fff" font-family="Pretendard">마포</text>
+    </g>
+    <g transform="translate(210.00000000000003,96)">
+      <circle r="14" fill="#fff" stroke="#2563EB" stroke-width="2"/>
+      <text text-anchor="middle" dy="3" font-size="9" font-weight="800" fill="#2563EB" font-family="Pretendard">성수</text>
+    </g>
+    <g transform="translate(82.5,192)">
+      <circle r="14" fill="#fff" stroke="#2563EB" stroke-width="2"/>
+      <text text-anchor="middle" dy="3" font-size="9" font-weight="800" fill="#2563EB" font-family="Pretendard">흑석</text>
+    </g>
+    <g transform="translate(165,224)">
+      <circle r="14" fill="#fff" stroke="#2563EB" stroke-width="2"/>
+      <text text-anchor="middle" dy="3" font-size="9" font-weight="800" fill="#2563EB" font-family="Pretendard">북아현</text>
+    </g>
+    <g transform="translate(262.5,179.20000000000002)">
+      <circle r="14" fill="#fff" stroke="#2563EB" stroke-width="2"/>
+      <text text-anchor="middle" dy="3" font-size="9" font-weight="800" fill="#2563EB" font-family="Pretendard">왕십리</text>
+    </g>
+    <g transform="translate(300,115.19999999999999)">
+      <circle r="14" fill="#fff" stroke="#2563EB" stroke-width="2"/>
+      <text text-anchor="middle" dy="3" font-size="9" font-weight="800" fill="#2563EB" font-family="Pretendard">광진</text>
+    </g>
+    <g transform="translate(52.50000000000001,89.60000000000001)">
+      <circle r="14" fill="#fff" stroke="#2563EB" stroke-width="2"/>
+      <text text-anchor="middle" dy="3" font-size="9" font-weight="800" fill="#2563EB" font-family="Pretendard">마곡</text>
+    </g>
+</svg>
+      <div class="map-pill"><span class="map-pill__dot"></span>내 위치</div>
+      <div class="map-zoom">
+        <button aria-label="확대">+</button>
+        <button aria-label="축소">−</button>
+      </div>
+    </div>
+
+    <section class="cards-sheet">
+      <div class="handle"><div class="handle__bar"></div></div>
+      <div class="cards-sheet__head">
+        <div class="cards-sheet__title">매칭 점수 순</div>
+        <div class="cards-sheet__updated">최신화 04.27</div>
+      </div>
+      <div class="cards-sheet__list">
+        
+  <a class="cand-card is-best" href="detail.html">
+    <div class="cand-card__head">
+      <div class="cand-card__head-l">
+        <div class="cand-card__name">마포구 공덕동</div>
+        <span class="pill pill--solid">BEST</span>
+      </div>
+      <div class="cand-card__score">92<small>점</small></div>
+    </div>
+    <div class="cand-card__row">
+      <div class="commute-chip"><span class="commute-chip__tag" style="background:#2563EB">A</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="13" rx="2"/><path d="M4 10h16M8 18v2M16 18v2"/><circle cx="8" cy="14" r="1" fill="currentColor"/><circle cx="16" cy="14" r="1" fill="currentColor"/></svg><span class="commute-chip__min">18<small>분</small></span></div>
+      <div class="commute-chip"><span class="commute-chip__tag" style="background:#7C3AED">B</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="14" rx="3"/><circle cx="9.5" cy="11" r="1" fill="currentColor"/><circle cx="14.5" cy="11" r="1" fill="currentColor"/><path d="M8 21l2-4M16 21l-2-4"/></svg><span class="commute-chip__min">32<small>분</small></span></div>
+      <div class="cand-card__price">평균 9.2억</div>
+    </div>
+  </a>
+  <a class="cand-card" href="detail.html">
+    <div class="cand-card__head">
+      <div class="cand-card__head-l">
+        <div class="cand-card__name">성동구 성수동</div>
+        
+      </div>
+      <div class="cand-card__score">89<small>점</small></div>
+    </div>
+    <div class="cand-card__row">
+      <div class="commute-chip"><span class="commute-chip__tag" style="background:#2563EB">A</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="13" rx="2"/><path d="M4 10h16M8 18v2M16 18v2"/><circle cx="8" cy="14" r="1" fill="currentColor"/><circle cx="16" cy="14" r="1" fill="currentColor"/></svg><span class="commute-chip__min">22<small>분</small></span></div>
+      <div class="commute-chip"><span class="commute-chip__tag" style="background:#7C3AED">B</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="14" rx="3"/><circle cx="9.5" cy="11" r="1" fill="currentColor"/><circle cx="14.5" cy="11" r="1" fill="currentColor"/><path d="M8 21l2-4M16 21l-2-4"/></svg><span class="commute-chip__min">28<small>분</small></span></div>
+      <div class="cand-card__price">평균 11.4억</div>
+    </div>
+  </a>
+  <a class="cand-card" href="detail.html">
+    <div class="cand-card__head">
+      <div class="cand-card__head-l">
+        <div class="cand-card__name">동작구 흑석동</div>
+        
+      </div>
+      <div class="cand-card__score">84<small>점</small></div>
+    </div>
+    <div class="cand-card__row">
+      <div class="commute-chip"><span class="commute-chip__tag" style="background:#2563EB">A</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="13" rx="2"/><path d="M4 10h16M8 18v2M16 18v2"/><circle cx="8" cy="14" r="1" fill="currentColor"/><circle cx="16" cy="14" r="1" fill="currentColor"/></svg><span class="commute-chip__min">24<small>분</small></span></div>
+      <div class="commute-chip"><span class="commute-chip__tag" style="background:#7C3AED">B</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="14" rx="3"/><circle cx="9.5" cy="11" r="1" fill="currentColor"/><circle cx="14.5" cy="11" r="1" fill="currentColor"/><path d="M8 21l2-4M16 21l-2-4"/></svg><span class="commute-chip__min">36<small>분</small></span></div>
+      <div class="cand-card__price">평균 8.1억</div>
+    </div>
+  </a>
+  <a class="cand-card" href="detail.html">
+    <div class="cand-card__head">
+      <div class="cand-card__head-l">
+        <div class="cand-card__name">서대문구 북아현</div>
+        
+      </div>
+      <div class="cand-card__score">81<small>점</small></div>
+    </div>
+    <div class="cand-card__row">
+      <div class="commute-chip"><span class="commute-chip__tag" style="background:#2563EB">A</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="13" rx="2"/><path d="M4 10h16M8 18v2M16 18v2"/><circle cx="8" cy="14" r="1" fill="currentColor"/><circle cx="16" cy="14" r="1" fill="currentColor"/></svg><span class="commute-chip__min">21<small>분</small></span></div>
+      <div class="commute-chip"><span class="commute-chip__tag" style="background:#7C3AED">B</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="14" rx="3"/><circle cx="9.5" cy="11" r="1" fill="currentColor"/><circle cx="14.5" cy="11" r="1" fill="currentColor"/><path d="M8 21l2-4M16 21l-2-4"/></svg><span class="commute-chip__min">38<small>분</small></span></div>
+      <div class="cand-card__price">평균 7.8억</div>
+    </div>
+  </a>
+      </div>
+      <div style="height:24px"></div>
+    </section>
+  </main>
+
+    </div>
+    <div class="phone__home"></div>
+  </div>
+</div>
+<script src="script.js" defer></script>
+</body>
+</html>
