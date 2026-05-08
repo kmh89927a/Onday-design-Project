@@ -359,7 +359,7 @@ function BeforeAfterSection() {
 function ValueProposition() {
   const features = [
     { icon: MapPin, title: "F1. 두 동선 교차 진단", desc: "남편 직장 + 아내 직장 교집합에서 최적 동네를 자동 산출. 서비스의 핵심 정체성.", tag: "AOS 4.00 — 1위", accent: "primary" as const },
-    { icon: Share2, title: "F2. 배우자 공유 링크", desc: "비회원도 열람 가능한 결과 공유. 부부 합의 돌파의 핵심 전환 레버.", tag: "바이럴 루프", accent: "secondary" as const },
+    { icon: Share2, title: "F2. 배우자 공유 링크", desc: "앱 설치 없이 모바일 웹에서 리포트 + 무료 미리보기 1곳. 부부 합의 돌파의 핵심 레버.", tag: "바이럴 루프", accent: "secondary" as const },
     { icon: CalendarClock, title: "F3. 데드라인 모드", desc: "전세 만료 D-Day 역산 타임라인 + 네이버 부동산 매물 아웃링크.", tag: "AOS 3.80", accent: "warning" as const },
     { icon: Shield, title: "F4. 싱글 모드", desc: "학군 숨김, 야간 치안·편의시설 강조. 1인 가구 맞춤 분석.", tag: "1인가구", accent: "success" as const },
     { icon: Save, title: "F5. 간이 저장", desc: "입력값 자동 저장 + 불러오기. 2년 주기 발령 교사도 재사용 가능.", tag: "재방문", accent: "primary" as const },
