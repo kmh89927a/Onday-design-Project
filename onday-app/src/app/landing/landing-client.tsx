@@ -472,7 +472,7 @@ function MarketSection() {
         <div className="flex items-start gap-s-2 rounded-xl bg-info-soft p-s-4">
           <Shield className="mt-0.5 size-4 shrink-0 text-info" />
           <p className="text-body-sm md:text-base text-ink-2">
-            <strong className="text-ink">카카오 모빌리티 · 국가공간정보포털</strong> 공공 데이터 기반
+            <strong className="text-ink">카카오 모빌리티 (경로) · 국가공간정보포털 (입지) · 학구도 (학군)</strong> 공공 데이터 기반
             <br /><span className="text-caption text-ink-3">입력 데이터는 분석 후 자동 삭제됩니다</span>
           </p>
         </div>
