@@ -511,8 +511,8 @@ function FinalCTA() {
 function PricingSection() {
   const betaBenefits = [
     "F1+F2 — 두 동선 교차 진단 + 배우자 공유 링크",
-    "F3+F4 — 데드라인 모드 · 싱글 모드 전체 이용",
-    "F5 — 입력값 저장 / 무제한 재진단",
+    "F3 — 데드라인 모드 (D-2개월 카운트다운 매물 추적)",
+    "F4+F5 — 싱글 모드 + 입력값 저장 / 무제한 재진단",
   ];
   const oneTimeBenefits = [
     "F1 — 6초 AI 동선 교차 진단 1회",
