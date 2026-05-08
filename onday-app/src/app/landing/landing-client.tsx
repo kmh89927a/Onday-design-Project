@@ -659,7 +659,7 @@ function Footer() {
       <div className="mx-auto max-w-xl space-y-s-3 text-center">
         <Logo size="sm" className="mx-auto" />
         <p className="text-caption text-ink-3">© 2026 동네궁합진단기. 모든 권리 보유.</p>
-        <p className="text-caption-xs text-ink-3/60">카카오 모빌리티 · 국가공간정보포털 데이터 기반 서비스</p>
+        <p className="text-caption-xs text-ink-3/60">카카오 모빌리티 · 국가공간정보포털 · 학구도 데이터 기반 서비스</p>
       </div>
     </footer>
   );
