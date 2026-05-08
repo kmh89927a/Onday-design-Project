@@ -359,7 +359,7 @@ function BeforeAfterSection() {
 function ValueProposition() {
   const features = [
     { icon: MapPin, title: "F1. 두 동선 교차 진단", desc: "남편 직장 + 아내 직장 교집합에서 최적 동네를 자동 산출. 서비스의 핵심 정체성.", tag: "AOS 4.00 — 1위", accent: "primary" as const },
-    { icon: Share2, title: "F2. 배우자 공유 링크", desc: "비회원도 열람 가능한 결과 공유. 부부 합의 돌파의 핵심 전환 레버.", tag: "바이럴 루프", accent: "secondary" as const },
+    { icon: Share2, title: "F2. 배우자 공유 링크", desc: "앱 설치 없이 모바일 웹에서 리포트 + 무료 미리보기 1곳. 부부 합의 돌파의 핵심 레버.", tag: "바이럴 루프", accent: "secondary" as const },
     { icon: CalendarClock, title: "F3. 데드라인 모드", desc: "전세 만료 D-Day 역산 타임라인 + 네이버 부동산 매물 아웃링크.", tag: "AOS 3.80", accent: "warning" as const },
     { icon: Shield, title: "F4. 싱글 모드", desc: "학군 숨김, 야간 치안·편의시설 강조. 1인 가구 맞춤 분석.", tag: "1인가구", accent: "success" as const },
     { icon: Save, title: "F5. 간이 저장", desc: "입력값 자동 저장 + 불러오기. 2년 주기 발령 교사도 재사용 가능.", tag: "재방문", accent: "primary" as const },
@@ -472,7 +472,7 @@ function MarketSection() {
         <div className="flex items-start gap-s-2 rounded-xl bg-info-soft p-s-4">
           <Shield className="mt-0.5 size-4 shrink-0 text-info" />
           <p className="text-body-sm md:text-base text-ink-2">
-            <strong className="text-ink">카카오 모빌리티 · 국가공간정보포털</strong> 공공 데이터 기반
+            <strong className="text-ink">카카오 모빌리티 (경로) · 국가공간정보포털 (입지) · 학구도 (학군)</strong> 공공 데이터 기반
             <br /><span className="text-caption text-ink-3">입력 데이터는 분석 후 자동 삭제됩니다</span>
           </p>
         </div>
@@ -511,8 +511,8 @@ function FinalCTA() {
 function PricingSection() {
   const betaBenefits = [
     "F1+F2 — 두 동선 교차 진단 + 배우자 공유 링크",
-    "F3+F4 — 데드라인 모드 · 싱글 모드 전체 이용",
-    "F5 — 입력값 저장 / 무제한 재진단",
+    "F3 — 데드라인 모드 (D-2개월 카운트다운 매물 추적)",
+    "F4+F5 — 싱글 모드 + 입력값 저장 / 무제한 재진단",
   ];
   const oneTimeBenefits = [
     "F1 — 6초 AI 동선 교차 진단 1회",
@@ -634,11 +634,18 @@ function PricingSection() {
           <p className="text-center text-body-sm font-bold text-primary">
             93~96% 절감
           </p>
-          <p className="text-center text-caption-xs text-ink-3 leading-relaxed">
-            ※ 출처: 단기체류 플랫폼 1주 기준 가격대 (PRD §1-3 시장 조사)
-            <br />
-            50~80만원/주 → 3~5만원/회 비교
-          </p>
+          <div className="space-y-s-2 text-center text-caption-xs text-ink-2 leading-relaxed">
+            <p>
+              ※ 비용 출처: 단기체류 플랫폼 1주 기준 (PRD §1-3)
+              <br />
+              50~80만원/주 → 3~5만원/회
+            </p>
+            <p>
+              ※ 부가 ROI (PRD §9-4 벤치마크):
+              <br />
+              임장 12→3회 (75%↓) · 합의 4.2개월→2주 (8~12배 단축)
+            </p>
+          </div>
         </motion.div>
       </div>
     </motion.section>
@@ -652,7 +659,7 @@ function Footer() {
       <div className="mx-auto max-w-xl space-y-s-3 text-center">
         <Logo size="sm" className="mx-auto" />
         <p className="text-caption text-ink-3">© 2026 동네궁합진단기. 모든 권리 보유.</p>
-        <p className="text-caption-xs text-ink-3/60">카카오 모빌리티 · 국가공간정보포털 데이터 기반 서비스</p>
+        <p className="text-caption-xs text-ink-3/60">카카오 모빌리티 · 국가공간정보포털 · 학구도 공공 데이터 기반 서비스</p>
       </div>
     </footer>
   );
