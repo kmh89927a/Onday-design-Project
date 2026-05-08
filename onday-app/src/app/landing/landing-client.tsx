@@ -634,11 +634,18 @@ function PricingSection() {
           <p className="text-center text-body-sm font-bold text-primary">
             93~96% 절감
           </p>
-          <p className="text-center text-caption-xs text-ink-3 leading-relaxed">
-            ※ 출처: 단기체류 플랫폼 1주 기준 가격대 (PRD §1-3 시장 조사)
-            <br />
-            50~80만원/주 → 3~5만원/회 비교
-          </p>
+          <div className="space-y-s-2 text-center text-caption-xs text-ink-3 leading-relaxed">
+            <p>
+              ※ 비용 출처: 단기체류 플랫폼 1주 기준 (PRD §1-3)
+              <br />
+              50~80만원/주 → 3~5만원/회
+            </p>
+            <p>
+              ※ 부가 ROI (PRD §9-4 벤치마크):
+              <br />
+              임장 12→3회 (75%↓) · 합의 4.2개월→2주 (8~12배 단축)
+            </p>
+          </div>
         </motion.div>
       </div>
     </motion.section>
