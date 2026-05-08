@@ -634,7 +634,7 @@ function PricingSection() {
           <p className="text-center text-body-sm font-bold text-primary">
             93~96% 절감
           </p>
-          <div className="space-y-s-2 text-center text-caption-xs text-ink-3 leading-relaxed">
+          <div className="space-y-s-2 text-center text-caption-xs text-ink-2 leading-relaxed">
             <p>
               ※ 비용 출처: 단기체류 플랫폼 1주 기준 (PRD §1-3)
               <br />
