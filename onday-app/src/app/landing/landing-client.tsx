@@ -657,8 +657,8 @@ function Footer() {
   return (
     <footer className="border-t border-line bg-surface px-s-5 py-s-6">
       <div className="mx-auto max-w-xl space-y-s-3 text-center">
-        <Logo size="sm" text="온데이 OnDay" className="mx-auto" />
-        <p className="text-caption text-ink-3">© 2026 온데이 OnDay. 모든 권리 보유.</p>
+        <Logo size="sm" text="OnDay 온데이" className="mx-auto" />
+        <p className="text-caption text-ink-3">© 2026 OnDay 온데이. 모든 권리 보유.</p>
         <p className="text-caption-xs italic text-ink-3">그곳에서의 하루(One Day)를 켜다(On)</p>
         <p className="text-caption-xs text-ink-3">카카오 모빌리티 · 국가공간정보포털 · 학구도 공공 데이터 기반 서비스</p>
       </div>
