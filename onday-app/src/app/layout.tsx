@@ -6,7 +6,7 @@ import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "온데이 — 동네궁합 진단기",
+  title: "OnDay 온데이",
   description: "두 사람의 출퇴근, 가장 합리적인 동네는?",
 };
 

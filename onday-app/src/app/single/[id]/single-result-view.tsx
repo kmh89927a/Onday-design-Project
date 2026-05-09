@@ -147,10 +147,10 @@ export function SingleResultView({ id }: SingleResultViewProps) {
           <EmptyState />
         ) : (
           <>
-            {/* 인쇄 시에만 보이는 리포트 헤더 (Onday 로고 + 발행일) */}
+            {/* 인쇄 시에만 보이는 리포트 헤더 (OnDay 로고 + 발행일) */}
             <div className="hidden print:block border-b border-line pb-s-3">
               <p className="text-caption font-extrabold tracking-wider text-ink">
-                동네궁합 · 싱글 모드 리포트
+                온데이 · 싱글 모드 리포트
               </p>
               <p className="mt-1 text-caption-xs text-ink-3">
                 발행 {new Date().toLocaleDateString("ko-KR")} · {addressA} 기준

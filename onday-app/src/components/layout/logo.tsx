@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 // design-tokens §6.8 Logo Mark
 //   28×28 / radius 8 / gradient 135deg #2563EB → #4F8CFF / shadow-logo
-//   텍스트 "동네궁합" extra-bold + tracking -0.02em
+//   텍스트 "OnDay 온데이" extra-bold + tracking -0.02em
 //   variant size sm/md/lg — md(28px)가 디자인 토큰 정 사양
 
 const containerVariants = cva("inline-flex items-center", {
@@ -50,7 +50,7 @@ const textVariants = cva("font-extrabold tracking-[-0.02em] text-ink", {
 interface LogoProps extends VariantProps<typeof containerVariants> {
   /** 텍스트 노출 (default true) — false 시 mark만 */
   showText?: boolean;
-  /** 텍스트 — default "동네궁합" */
+  /** 텍스트 — default "OnDay 온데이" (영문 우선 병기) */
   text?: string;
   className?: string;
 }
@@ -58,7 +58,7 @@ interface LogoProps extends VariantProps<typeof containerVariants> {
 export function Logo({
   size = "md",
   showText = true,
-  text = "동네궁합",
+  text = "OnDay 온데이",
   className,
 }: LogoProps) {
   return (
