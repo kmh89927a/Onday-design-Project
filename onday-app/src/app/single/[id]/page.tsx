@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { SingleResultView } from "./single-result-view";
 
 export const metadata: Metadata = {
-  title: "싱글 모드 결과 — 온데이 OnDay",
+  title: "싱글 모드 결과 — OnDay 온데이",
   description: "야간 안전을 기준으로 1인 가구에게 맞는 동네를 추천해드려요.",
 };
 

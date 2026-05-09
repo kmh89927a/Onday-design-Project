@@ -51,14 +51,14 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { uuid } = await params;
   return {
-    title: "온데이 OnDay — 진단 결과를 확인해보세요",
+    title: "OnDay 온데이 — 진단 결과를 확인해보세요",
     description:
       "두 직장 동선이 만나는 최적의 동네 — 무료 미리보기 1곳 제공",
     openGraph: {
-      title: "온데이 OnDay — 후보 동네 리포트",
+      title: "OnDay 온데이 — 후보 동네 리포트",
       description: "두 직장 동선이 만나는 최적의 동네 — 무료 미리보기 1곳 제공",
       type: "website",
-      siteName: "온데이 OnDay",
+      siteName: "OnDay 온데이",
       url: `/share/${uuid}`,
     },
     twitter: { card: "summary_large_image" },
