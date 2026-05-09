@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight, MapPin, Clock, Shield, Users, Zap, ChevronDown, Star,
@@ -668,7 +667,7 @@ function Footer() {
 
 /* ── Header Nav ── */
 const NAV_LINKS = [
-  { href: "#how", label: "어떻게 작동" },
+  { href: "#how", label: "진단 과정" },
   { href: "#features", label: "기능" },
   { href: "#stories", label: "후기" },
   { href: "#pricing", label: "가격" },
@@ -703,15 +702,8 @@ function HeaderNav() {
       )}
     >
       <div className="flex items-center justify-between px-s-5 py-s-3">
-        <Link href="/" className="flex items-center gap-s-2">
-          <Image
-            src="/images/logo_onday.png"
-            alt="동네궁합"
-            width={32}
-            height={32}
-            priority
-          />
-          <span className="font-bold text-ink">동네궁합</span>
+        <Link href="/">
+          <Logo size="sm" />
         </Link>
         <ul className="hidden items-center gap-s-5 md:flex">
           {NAV_LINKS.map((l) => (
