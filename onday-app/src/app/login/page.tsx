@@ -5,7 +5,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { Logo } from "@/components/layout/logo";
 
 export const metadata: Metadata = {
-  title: "로그인 — 온데이",
+  title: "로그인 — 온데이 OnDay",
   description:
     "두 사람의 출퇴근, 가장 합리적인 동네는? 카카오 · 네이버 계정으로 간편 로그인하고 진단을 시작하세요.",
 };
