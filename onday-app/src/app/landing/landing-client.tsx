@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight, MapPin, Clock, Shield, Users, Zap, ChevronDown, Star,
   Home, TrendingUp, CheckCircle2, BookOpen, CalendarClock, Heart,
-  Share2, Save, AlertTriangle, Target, GraduationCap, Bell,
+  Share2, Save, AlertTriangle, Target, GraduationCap, Bell, Menu, X,
 } from "lucide-react";
 
 import { Logo } from "@/components/layout/logo";
@@ -371,7 +372,7 @@ function ValueProposition() {
     warning: { bg: "bg-warning-soft", text: "text-warning" },
   };
   return (
-    <motion.section {...fadeUp} className="px-s-5 py-s-10">
+    <motion.section {...fadeUp} id="features" className="px-s-5 py-s-10">
       <div className="mx-auto max-w-xl md:max-w-3xl space-y-s-6">
         <div className="space-y-s-2 text-center">
           <p className="text-caption-xs font-bold tracking-widest text-primary">SOLUTION — 5대 핵심 기능</p>
@@ -407,7 +408,7 @@ function PersonaSection() {
     { name: "박상민", age: 41, type: "맹모 아빠", quote: "임장 교통비보다 싸요. 학군·통근 둘 다 포기 못하는데, 교집합 동네 찾아줘서 부부싸움이 줄었어요.", feature: "F1 + 학군 레이어", stars: 5 },
   ];
   return (
-    <motion.section {...fadeUp} className="bg-surface px-s-5 py-s-10">
+    <motion.section {...fadeUp} id="stories" className="bg-surface px-s-5 py-s-10">
       <div className="mx-auto max-w-xl md:max-w-3xl space-y-s-6">
         <div className="space-y-s-2 text-center">
           <p className="text-caption-xs font-bold tracking-widest text-primary">REAL STORIES</p>
@@ -665,15 +666,108 @@ function Footer() {
   );
 }
 
+/* ── Header Nav ── */
+const NAV_LINKS = [
+  { href: "#how", label: "어떻게 작동" },
+  { href: "#features", label: "기능" },
+  { href: "#stories", label: "후기" },
+  { href: "#pricing", label: "가격" },
+];
+
+function HeaderNav() {
+  const reduceMotion = useReducedMotion();
+  const [scrolled, setScrolled] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const id = href.replace("#", "");
+    document.getElementById(id)?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+    setMenuOpen(false);
+  };
+
+  return (
+    <nav
+      className={cn(
+        "fixed inset-x-0 top-0 z-nav border-b backdrop-blur-lg transition-all duration-200",
+        scrolled
+          ? "border-line bg-bg/95 shadow-sm"
+          : "border-line/50 bg-bg/80",
+      )}
+    >
+      <div className="flex items-center justify-between px-s-5 py-s-3">
+        <Link href="/" className="flex items-center gap-s-2">
+          <Image
+            src="/images/logo_onday.png"
+            alt="동네궁합"
+            width={32}
+            height={32}
+            priority
+          />
+          <span className="font-bold text-ink">동네궁합</span>
+        </Link>
+        <ul className="hidden items-center gap-s-5 md:flex">
+          {NAV_LINKS.map((l) => (
+            <li key={l.href}>
+              <a
+                href={l.href}
+                onClick={(e) => handleLinkClick(e, l.href)}
+                className="text-body-sm font-medium text-ink-2 transition-colors hover:text-primary"
+              >
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div className="flex items-center gap-s-2">
+          <Link href="/login">
+            <Button size="sm">시작하기</Button>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="inline-flex size-9 items-center justify-center rounded-md text-ink hover:bg-surface md:hidden"
+            aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
+      </div>
+      {menuOpen && (
+        <div className="border-t border-line bg-bg md:hidden">
+          <ul className="space-y-s-1 px-s-5 py-s-3">
+            {NAV_LINKS.map((l) => (
+              <li key={l.href}>
+                <a
+                  href={l.href}
+                  onClick={(e) => handleLinkClick(e, l.href)}
+                  className="block rounded-md px-s-3 py-s-2 text-body font-medium text-ink-2 hover:bg-surface hover:text-primary"
+                >
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </nav>
+  );
+}
+
 /* ── Main ── */
 export function LandingClient() {
   return (
     <MotionConfig reducedMotion="user">
     <div className="relative min-h-screen bg-bg">
-      <nav className="fixed inset-x-0 top-0 z-nav flex items-center justify-between border-b border-line/50 bg-bg/80 px-s-5 py-s-3 backdrop-blur-lg">
-        <Logo size="sm" />
-        <Link href="/login"><Button size="sm">시작하기</Button></Link>
-      </nav>
+      <HeaderNav />
       <HeroSection />
       <PainSection />
       <InputOutputSection />
