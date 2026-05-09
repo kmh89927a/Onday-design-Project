@@ -375,7 +375,7 @@ function ValueProposition() {
       <div className="mx-auto max-w-xl md:max-w-3xl space-y-s-6">
         <div className="space-y-s-2 text-center">
           <p className="text-caption-xs font-bold tracking-widest text-primary">SOLUTION — 5대 핵심 기능</p>
-          <h2 className="text-h2 md:text-3xl lg:text-4xl font-extrabold tracking-tight text-ink">왜 동네궁합인가요?</h2>
+          <h2 className="text-h2 md:text-3xl lg:text-4xl font-extrabold tracking-tight text-ink">왜 온데이인가요?</h2>
           <p className="text-body-sm md:text-base text-ink-3">기능이 아닌, 당신이 얻을 <strong className="text-ink">가치</strong>를 말해요</p>
         </div>
         <div className="space-y-s-3">
@@ -625,7 +625,7 @@ function PricingSection() {
               </p>
             </div>
             <div className="rounded-xl bg-bg p-s-4 text-center">
-              <p className="text-caption-xs text-primary">동네궁합 1회</p>
+              <p className="text-caption-xs text-primary">온데이 1회</p>
               <p className="mt-s-1 text-h3 font-extrabold text-primary tabular">
                 3~5<span className="ml-0.5 text-body-sm font-bold text-ink-3">만원</span>
               </p>

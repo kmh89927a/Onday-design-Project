@@ -43,7 +43,7 @@ export function ShareReportView({ data }: ShareReportViewProps) {
     <main className="flex min-h-screen flex-col bg-bg pb-[120px]">
       <div className="px-s-5 pt-s-4">
         <ShareHero
-          brand="동네궁합 · 공유 리포트"
+          brand="온데이 · 공유 리포트"
           brandLogo={
             <span className="grid size-7 place-items-center rounded-md bg-white/15 backdrop-blur-sm">
               <svg

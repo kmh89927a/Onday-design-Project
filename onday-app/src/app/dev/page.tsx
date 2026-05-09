@@ -696,7 +696,7 @@ export default function DevSamplePage() {
           ]}
         >
           <ShareHero
-            brand="동네궁합 · 공유 리포트"
+            brand="온데이 · 공유 리포트"
             expiryChip="익명 · 7일 한정"
             title={
               <>
