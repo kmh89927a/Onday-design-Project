@@ -5,9 +5,7 @@
 
 > *그곳에서의 하루(One Day)를 켜다(On).*
 
-## 🚀 라이브 URL
-
-**https://onday-prototype-claude-design.vercel.app**
+## 🗺️ 라우트
 
 | 경로 | 설명 |
 |------|------|
