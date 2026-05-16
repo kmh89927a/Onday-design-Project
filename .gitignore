@@ -2,7 +2,7 @@
 .DS_Store
 
 # Claude Code session
-.claude/
+.claude/settings.local.json
 
 # Node
 node_modules/

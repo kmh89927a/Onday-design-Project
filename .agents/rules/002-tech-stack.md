@@ -1,0 +1,79 @@
+---
+description: Next.js 단일 풀스택 + TypeScript + Tailwind + Supabase Auth + Vercel AI SDK 기술 가이드. App/Components/TS/TSX 파일 편집 시 발동.
+globs: ["app/**/*", "src/**/*", "components/**/*", "*.ts", "*.tsx"]
+alwaysApply: false
+---
+# OnDay — Tech Stack Guide
+
+본 룰은 Next.js 애플리케이션 코드 편집 시 자동 주입된다. `001-project-overview.md` 와 `AGENTS.md §2` 와 정합한다.
+
+## 확정 스택
+
+| 영역 | 기술 | 비고 |
+| --- | --- | --- |
+| 풀스택 프레임워크 | Next.js 15+ (App Router, RSC) | CON-09 — 단일 프레임워크, FE/BE 분리 금지 |
+| 언어 | TypeScript | 엄격한 타입 사용 |
+| 서버 로직 | Next.js Server Actions / Route Handlers | CON-10 — 별도 백엔드 서버 없음 |
+| UI / 스타일링 | Tailwind CSS + shadcn/ui | CON-12 — 일관된 디자인 시스템 |
+| LLM 통합 | Vercel AI SDK | CON-13 — Next.js 내부 직접 구현 |
+| LLM Provider | Google Gemini API | CON-14 — 환경변수로 교체 가능 |
+| 인증 | Supabase Auth (`@supabase/ssr`) | CON-18 — NextAuth.js 사용 금지 |
+| 배포 | Vercel (Git Push 자동 배포) | CON-15 |
+
+## Server Actions vs Route Handlers — 선택 기준
+
+| 사용 시점 | 구현 방식 |
+| --- | --- |
+| 폼 제출, DB mutation, 클라이언트 직접 호출 함수 | **Server Action** (`'use server'`) |
+| 외부 시스템에서 호출되는 endpoint (webhook, OAuth callback, cron job) | **Route Handler** (`app/api/.../route.ts`) |
+| SSR 데이터 fetching (페이지 초기 로드) | **Server Component** 내부 직접 fetch |
+| 공유 토큰 기반 SSR 페이지 렌더링 (예: 공유 링크) | **Route Handler (SSR)** 또는 SSR Server Component |
+
+## Vercel 10초 Timeout 회피 (필수)
+
+Vercel 무료 티어의 Serverless Timeout 은 **10초** 다 (REQ-FUNC-003, SRS §6.3.1).
+
+- **외부 API 반복 호출 + 교차 연산 (예: 두 동선 교집합 계산) → Client Component 에서 `Promise.all` 병렬 호출**
+- Server Action 은 가벼운 작업만 담당: Geocoding, 커버리지 검증, 결과 저장 (`Prisma`)
+- 무거운 LLM 스트리밍은 Route Handler + Vercel AI SDK 의 `streamText` 활용 (스트리밍은 timeout 면제)
+
+## 코드 작성 원칙
+
+- **함수형·선언형 컴포넌트** 사용 (class 컴포넌트 금지)
+- **`const` 화살표 함수** 선호: `const handleClick = () => {...}`. 가능하면 타입 명시.
+- **이벤트 핸들러 prefix:** `handleClick`, `handleKeyDown`, `handleSubmit`
+- **early return** 으로 가독성 확보
+- **Tailwind 클래스 only** — `style` 태그·CSS 파일 금지 (shadcn/ui 가 제공하는 디자인 토큰 활용)
+- **조건부 클래스**: `clsx` 또는 `cn` 헬퍼 사용 (shadcn/ui 기본 제공)
+- **접근성:** `aria-label`, `tabIndex`, `onKeyDown` 등 명시
+- **단순·명시적 코드** — 1인 MVP 컨텍스트. 불필요한 추상화 금지.
+
+## 미사용 / 사용 금지 스택 (재발 방지)
+
+다음은 본 프로젝트에서 사용하지 않으며, AI 에이전트가 자동 생성하지 않는다:
+
+- Spring Boot / Java / Gradle / Maven
+- Apache Kafka
+- Redis (Lettuce, Redisson)
+- Thymeleaf, JSP
+- MySQL (DB 는 Supabase PostgreSQL / SQLite)
+- NextAuth.js (Supabase Auth 로 대체)
+- Hugging Face API, OpenAI API (LLM 은 Gemini)
+- Python / FastAPI / LangChain
+- Flutter (모바일은 모바일 웹 PWA)
+
+## 성능 NFR (요약)
+
+| 항목 | 기준 |
+| --- | --- |
+| 두 동선 교차 계산 응답 | p95 ≤ 8,000ms (클라이언트 API 콜) |
+| 일반 페이지 로딩 | p95 ≤ 1,500ms (3G) |
+| 공유 링크 페이지 로딩 | p95 ≤ 2,000ms (비회원·3G) |
+| 필터 적용·재계산 | p95 ≤ 1,000ms |
+| 서버 5xx 오류율 | ≤ 0.5% |
+
+## See also
+
+- `001-project-overview.md` — 프로젝트 비전·페르소나
+- `003-prisma-supabase.md` — 데이터 모델·DB 가이드
+- `AGENTS.md §2~3` — 스택·1인 MVP 제약 상세
