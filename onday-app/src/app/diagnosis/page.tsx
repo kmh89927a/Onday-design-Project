@@ -6,10 +6,9 @@ import { ArrowRight, RefreshCw } from "lucide-react";
 
 import { AddressInput } from "@/components/form/address-input";
 import { ModeSelector } from "@/components/form/mode-selector";
-import {
-  TimeRangeToggle,
-  type TimeRange,
-} from "@/components/form/time-range-toggle";
+// ★ DTO-COMMUTE-TIME (#98) — TimeRangeToggle 제거 + CommuteSchedulePicker 교체 (★ Mismatch ㊱).
+import { CommuteSchedulePicker } from "@/components/form/commute-schedule-picker";
+import type { CommuteSchedule } from "@/lib/types";
 import { AppHeader } from "@/components/layout/app-header";
 import { StickyCTABar } from "@/components/layout/sticky-cta-bar";
 import { Button } from "@/components/ui/button";
@@ -61,10 +60,10 @@ export default function DiagnosisPage() {
   const { suggestions: suggestionsL1 } = useAddressSuggest(queryL1);
   const { suggestions: suggestionsL2 } = useAddressSuggest(queryL2);
 
-  const timeRange: TimeRange =
-    (filters.timeRange as TimeRange | undefined) ?? "morning";
-  const setTimeRange = (next: TimeRange) =>
-    setFilters({ ...filters, timeRange: next });
+  // ★ DTO-COMMUTE-TIME (#98) — commuteSchedule DTO 정정 (★ Mismatch ㊱ store 자연 흡수).
+  const commuteSchedule: CommuteSchedule | undefined = filters.commuteSchedule;
+  const setCommuteSchedule = (next: CommuteSchedule | undefined) =>
+    setFilters({ ...filters, commuteSchedule: next });
 
   const isCouple = mode === "couple";
   const isSingle = mode === "single";
@@ -270,7 +269,10 @@ export default function DiagnosisPage() {
 
         <section className="mt-s-6 space-y-s-2">
           <p className="text-caption font-bold text-ink">언제 출퇴근하세요?</p>
-          <TimeRangeToggle value={timeRange} onChange={setTimeRange} />
+          <CommuteSchedulePicker
+            value={commuteSchedule}
+            onChange={setCommuteSchedule}
+          />
         </section>
 
         <section className="mt-s-6 space-y-s-2">

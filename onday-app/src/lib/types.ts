@@ -34,10 +34,20 @@ export interface CandidateArea {
   avgArea?: number; // 평균 평수 — step-10.5에서 보강
 }
 
+// ★ DTO-COMMUTE-TIME (#98) — commuteSchedule (요일 + 시간 자유) DTO 정수 정정 (★ Mismatch ㊱).
+export type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+
+export interface CommuteSchedule {
+  days: DayOfWeek[];     // ★ 1~7 요일 다중 선택 (chip)
+  departureTime: string; // ★ "HH:MM" 24시간 형식
+}
+
 export interface DiagnosisFilters {
   maxCommuteTime?: number; // minutes
   budget?: { min: number; max: number }; // 만원
+  /** @deprecated commuteSchedule 사용 권고. REFACTOR-COMMUTE-LEGACY 정리 예정 (★ Mismatch ㊲ Mock + ㊳ SavedSearch + ㊴ Validator 호출처 backward compat). */
   timeRange?: "morning" | "evening" | "flexible";
+  commuteSchedule?: CommuteSchedule; // ★ NEW (★ Mismatch ㊱ commuteSchedule DTO 정수 정정)
   priorities?: string[];
 }
 
