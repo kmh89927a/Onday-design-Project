@@ -4,10 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, RefreshCw } from "lucide-react";
 
-import {
-  AddressInput,
-  type AddressSuggestion,
-} from "@/components/form/address-input";
+import { AddressInput } from "@/components/form/address-input";
 import { ModeSelector } from "@/components/form/mode-selector";
 import {
   TimeRangeToggle,
@@ -17,29 +14,13 @@ import { AppHeader } from "@/components/layout/app-header";
 import { StickyCTABar } from "@/components/layout/sticky-cta-bar";
 import { Button } from "@/components/ui/button";
 import { useCreateDiagnosis } from "@/features/diagnosis/use-diagnosis";
-import { useDebounce } from "@/lib/use-debounce";
-import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
+// ★ UI-002: 사전 작업 444 lines ↔ CMD-DIAG-001 useGeocode 통합 (★ adapter Hook 패턴 § NEW).
+// ★ Mismatch ⑪/⑫/⑭ 정정: useDebounce + MOCK_NEIGHBORHOODS filter → useAddressSuggest adapter (★ adapter 내부 처리).
+import { useAddressSuggest } from "@/features/diagnosis/use-address-suggest";
+// ★ Mismatch ⑬ 정정: isWithinSeoulMetropolitan → isWithinMetroBounds (★ CMD-DIAG-001 산출물 정합, α₁ page.tsx 책임).
+import { isWithinMetroBounds } from "@/lib/diagnosis";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
-
-const SUGGESTION_LIMIT = 5;
-
-function searchNeighborhoods(query: string): AddressSuggestion[] {
-  const q = query.trim();
-  if (!q) return [];
-  return MOCK_NEIGHBORHOODS.filter(
-    (n) =>
-      n.dong.includes(q) || n.gu.includes(q) || `${n.gu} ${n.dong}`.includes(q),
-  )
-    .slice(0, SUGGESTION_LIMIT)
-    .map((n) => ({
-      id: n.id,
-      title: `${n.gu} ${n.dong}`,
-      sub: `매가 ${(n.avgPrice / 10000).toFixed(1)}억 · 안전등급 ${n.safetyGrade}`,
-      kind: "지역" as const,
-      coordinate: n.coordinate,
-    }));
-}
 
 export default function DiagnosisPage() {
   const router = useRouter();
@@ -65,32 +46,17 @@ export default function DiagnosisPage() {
   const pushToast = useUIStore((s) => s.pushToast);
   const createDiagnosis = useCreateDiagnosis();
 
-  // typing 상태 — store와 분리해서 debounce 적용 (select 시 store 업데이트)
+  // typing 상태 — store와 분리해서 디바운스 적용 (select 시 store 업데이트).
+  // ★ Mismatch ⑪/⑫ 정정: useDebounce + MOCK_NEIGHBORHOODS filter → useAddressSuggest adapter Hook 호출 (★ adapter 내부 디바운스 + Mock/실 분기).
   const [queryA, setQueryA] = React.useState(addressA);
   const [queryB, setQueryB] = React.useState(addressB);
   const [queryL1, setQueryL1] = React.useState(leisureA);
   const [queryL2, setQueryL2] = React.useState(leisureB);
-  const debouncedA = useDebounce(queryA, 240);
-  const debouncedB = useDebounce(queryB, 240);
-  const debouncedL1 = useDebounce(queryL1, 240);
-  const debouncedL2 = useDebounce(queryL2, 240);
 
-  const suggestionsA = React.useMemo(
-    () => searchNeighborhoods(debouncedA),
-    [debouncedA],
-  );
-  const suggestionsB = React.useMemo(
-    () => searchNeighborhoods(debouncedB),
-    [debouncedB],
-  );
-  const suggestionsL1 = React.useMemo(
-    () => searchNeighborhoods(debouncedL1),
-    [debouncedL1],
-  );
-  const suggestionsL2 = React.useMemo(
-    () => searchNeighborhoods(debouncedL2),
-    [debouncedL2],
-  );
+  const { suggestions: suggestionsA } = useAddressSuggest(queryA);
+  const { suggestions: suggestionsB } = useAddressSuggest(queryB);
+  const { suggestions: suggestionsL1 } = useAddressSuggest(queryL1);
+  const { suggestions: suggestionsL2 } = useAddressSuggest(queryL2);
 
   const timeRange: TimeRange =
     (filters.timeRange as TimeRange | undefined) ?? "morning";
@@ -196,6 +162,11 @@ export default function DiagnosisPage() {
             suggestions={suggestionsA}
             verified={verifiedA}
             onSelect={(item) => {
+              // ★ α₁ 수도권 검증 (★ CMD-DIAG-001 isWithinMetroBounds 호출 = Mismatch ⑬ 정합).
+              if (item.coordinate && !isWithinMetroBounds(item.coordinate)) {
+                pushToast({ variant: "danger", message: "현재 수도권만 지원됩니다" });
+                return;
+              }
               setAddressA(item.title, item.coordinate);
               setQueryA(item.title);
             }}
@@ -210,6 +181,11 @@ export default function DiagnosisPage() {
               suggestions={suggestionsB}
               verified={verifiedB}
               onSelect={(item) => {
+                // ★ α₁ 수도권 검증 (★ A와 동일 패턴).
+                if (item.coordinate && !isWithinMetroBounds(item.coordinate)) {
+                  pushToast({ variant: "danger", message: "현재 수도권만 지원됩니다" });
+                  return;
+                }
                 setAddressB(item.title, item.coordinate);
                 setQueryB(item.title);
               }}
