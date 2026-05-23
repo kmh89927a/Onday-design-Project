@@ -25,22 +25,28 @@ const DEBOUNCE_MS = 300;
 const KAKAO_API_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY ?? "";
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
-/** ★ Mock 분기 = 사전 작업 searchNeighborhoods 답습 정수 */
+/** ★ Neighborhood → AddressSuggestion 변환 (★ REFACTOR-UI-002-FEEDBACK 헬퍼 추출, 중복 제거) */
+function neighborhoodToSuggestion(n: (typeof MOCK_NEIGHBORHOODS)[number]): AddressSuggestion {
+  return {
+    id: n.id,
+    title: `${n.gu} ${n.dong}`,
+    sub: `매가 ${(n.avgPrice / 10000).toFixed(1)}억 · 안전등급 ${n.safetyGrade}`,
+    kind: "지역" as const,
+    coordinate: n.coordinate,
+  };
+}
+
+/** ★ Mock 분기 = 사전 작업 searchNeighborhoods 답습 정수 + REFACTOR-UI-002-FEEDBACK 빈 query 인기 지역 분기 추가 (★ 피드백 1 정수) */
 function mockSearch(query: string): AddressSuggestion[] {
   const q = query.trim();
-  if (!q) return [];
+  // ★ REFACTOR-UI-002-FEEDBACK: 빈 query 시 인기 지역 Top 5 반환 (★ AddressInput showList 자연 작동 = focus 시 인기 지역 자동 표시)
+  if (!q) return MOCK_NEIGHBORHOODS.slice(0, SUGGESTION_LIMIT).map(neighborhoodToSuggestion);
   return MOCK_NEIGHBORHOODS.filter(
     (n) =>
       n.dong.includes(q) || n.gu.includes(q) || `${n.gu} ${n.dong}`.includes(q),
   )
     .slice(0, SUGGESTION_LIMIT)
-    .map((n) => ({
-      id: n.id,
-      title: `${n.gu} ${n.dong}`,
-      sub: `매가 ${(n.avgPrice / 10000).toFixed(1)}억 · 안전등급 ${n.safetyGrade}`,
-      kind: "지역" as const,
-      coordinate: n.coordinate,
-    }));
+    .map(neighborhoodToSuggestion);
 }
 
 /** ★ β₁ 실 모드 변환 = GeocodedAddress → AddressSuggestion (adapter 책임) */
