@@ -22,6 +22,9 @@ import { isWithinMetroBounds } from "@/lib/diagnosis";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
 
+// ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — 이전 조건 불러오기 (localStorage 직접 + 명시적 패턴, Zustand store 보존 답습).
+const LAST_CONFIG_KEY = "onday-last-config";
+
 export default function DiagnosisPage() {
   const router = useRouter();
   const addressA = useDiagnosisStore((s) => s.addressA);
@@ -94,6 +97,21 @@ export default function DiagnosisPage() {
         filters,
       });
       setResult(data.diagnosisId, data.candidates);
+      // ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — 진단 시작 성공 시 localStorage 저장 (★ "이전 조건 불러오기" 버튼 호출처).
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(
+            LAST_CONFIG_KEY,
+            JSON.stringify({
+              addressA, addressB, coordinateA, coordinateB,
+              leisureA, leisureB, leisureCoordA, leisureCoordB,
+              mode, filters,
+            }),
+          );
+        } catch {
+          // ★ localStorage quota 초과 등 silent fail (★ 진단 흐름 차단 X)
+        }
+      }
       const target = isSingle
         ? `/single/${data.diagnosisId}`
         : `/diagnosis/result/${data.diagnosisId}`;
@@ -106,6 +124,34 @@ export default function DiagnosisPage() {
     }
   };
 
+  // ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — AppHeader trailing "이전 조건 불러오기" 버튼 onClick (★ pushToast stub 교체).
+  const handleLoadLast = () => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(LAST_CONFIG_KEY);
+      if (!saved) {
+        pushToast({ variant: "default", message: "저장된 이전 조건이 없습니다" });
+        return;
+      }
+      const config = JSON.parse(saved);
+      // ★ store 상태 복원 (★ Zustand setter 직접 호출)
+      setAddressA(config.addressA ?? "", config.coordinateA ?? undefined);
+      setAddressB(config.addressB ?? "", config.coordinateB ?? undefined);
+      setLeisureA(config.leisureA ?? "", config.leisureCoordA ?? undefined);
+      setLeisureB(config.leisureB ?? "", config.leisureCoordB ?? undefined);
+      setMode(config.mode ?? "couple");
+      setFilters(config.filters ?? {});
+      // ★ local query state 동기화 (★ AddressInput value prop)
+      setQueryA(config.addressA ?? "");
+      setQueryB(config.addressB ?? "");
+      setQueryL1(config.leisureA ?? "");
+      setQueryL2(config.leisureB ?? "");
+      pushToast({ variant: "default", message: "이전 조건을 불러왔습니다 ✨" });
+    } catch {
+      pushToast({ variant: "default", message: "이전 조건 불러오기 실패" });
+    }
+  };
+
   return (
     <main className="flex min-h-screen flex-col bg-surface">
       <AppHeader
@@ -114,12 +160,7 @@ export default function DiagnosisPage() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() =>
-              pushToast({
-                variant: "default",
-                message: "이전 조건 불러오기는 다음 업데이트에 추가됩니다 ✨",
-              })
-            }
+            onClick={handleLoadLast}
           >
             <RefreshCw className="size-3.5" />
             이전 조건 불러오기
@@ -195,10 +236,10 @@ export default function DiagnosisPage() {
             <>
               <AddressInput
                 tag="L1"
-                label="여가 거점 1 (선택)"
+                label="여가 거점 1 (선택, 자주 가는 동네)"
                 value={queryL1}
                 onChange={setQueryL1}
-                placeholder="자주 가는 동네/카페/체육관 등"
+                placeholder="강남, 홍대, 합정 등 동네명"
                 suggestions={suggestionsL1}
                 verified={Boolean(
                   leisureCoordA && leisureA === queryL1 && queryL1.length > 0,
@@ -210,10 +251,10 @@ export default function DiagnosisPage() {
               />
               <AddressInput
                 tag="L2"
-                label="여가 거점 2 (선택)"
+                label="여가 거점 2 (선택, 다른 동네)"
                 value={queryL2}
                 onChange={setQueryL2}
-                placeholder="두 번째 자주 가는 곳"
+                placeholder="두 번째 자주 가는 동네"
                 suggestions={suggestionsL2}
                 verified={Boolean(
                   leisureCoordB && leisureB === queryL2 && queryL2.length > 0,
