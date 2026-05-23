@@ -11,7 +11,7 @@
 import * as Sentry from "@sentry/nextjs";
 import type { IKakaoTransportClient, KakaoCoord } from "@/lib/external/kakao-transport";
 import { mapKakaoResponseToCommuteInfo } from "@/lib/external/kakao-transport";
-import type { Coordinate, DiagnosisFilters } from "@/lib/types";
+import type { Coordinate, DiagnosisFilters, CommuteSchedule, DayOfWeek } from "@/lib/types";
 import type { CandidateAreaDTO, CommuteInfoDTO } from "@/lib/types/diagnosis";
 import { generateCandidatePool, type CandidatePoolEntry } from "./candidate-pool";
 
@@ -28,6 +28,32 @@ function toKakaoCoord(c: Coordinate): KakaoCoord {
   return { x: c.lng, y: c.lat };
 }
 
+// ★ DTO-COMMUTE-TIME (#98) — commuteSchedule (요일 + HH:MM) → ISO 8601 (★ Mismatch ㊱ commuteSchedule DTO 정수 정정).
+// ★ Validator strip 무관 = client 단 filters args 직접 흡수 (★ §4 (b) 결정 답습, REFACTOR-COMMUTE-LEGACY follow-up).
+const DAY_TO_INDEX: Record<DayOfWeek, number> = {
+  sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6,
+};
+
+function commuteScheduleToDepartureISO(
+  schedule?: CommuteSchedule,
+): string | undefined {
+  if (!schedule || schedule.days.length === 0 || !schedule.departureTime) {
+    return undefined; // ★ KakaoTransport 기본 = 현재 시각 자연 처리 (★ §5 우려 2 = Mismatch ㊶ 자연 결정)
+  }
+  const now = new Date();
+  const today = now.getDay();
+  // ★ 가장 가까운 다음 해당 요일 (target===today 시 7일 후 = "다음 출퇴근" 일관성 정수)
+  const targetIndices = schedule.days.map((d) => DAY_TO_INDEX[d]);
+  const daysAhead = targetIndices
+    .map((target) => (target - today + 7) % 7 || 7)
+    .reduce((min, d) => Math.min(min, d), 7);
+  const [hours, minutes] = schedule.departureTime.split(":").map(Number);
+  const targetDate = new Date(now);
+  targetDate.setDate(now.getDate() + daysAhead);
+  targetDate.setHours(hours, minutes, 0, 0);
+  return targetDate.toISOString();
+}
+
 export async function calculateIntersection(
   coordA: Coordinate,
   coordB: Coordinate,
@@ -37,14 +63,16 @@ export async function calculateIntersection(
   const pool = generateCandidatePool(coordA, coordB);
   const kakaoA = toKakaoCoord(coordA);
   const kakaoB = toKakaoCoord(coordB);
+  // ★ DTO-COMMUTE-TIME (#98) — commuteSchedule → ISO 8601 1회 계산 (★ Promise.all 직전, pool 전체 일관성).
+  const departureTime = commuteScheduleToDepartureISO(filters.commuteSchedule);
 
   // ★ 외부 Promise.allSettled = 후보별 부분 실패 허용 (mock-calculator.ts 정수 답습)
   // ★ 내부 Promise.all = 한 후보의 양방향(A→entry, B→entry) 둘 다 성공해야 후보 추가
   const promises = pool.map(async (entry) => {
     const kakaoEntry = toKakaoCoord(entry.coord);
     const [routeA, routeB] = await Promise.all([
-      transportClient.getRoute({ origin: kakaoA, destination: kakaoEntry }),
-      transportClient.getRoute({ origin: kakaoB, destination: kakaoEntry }),
+      transportClient.getRoute({ origin: kakaoA, destination: kakaoEntry, departureTime }),
+      transportClient.getRoute({ origin: kakaoB, destination: kakaoEntry, departureTime }),
     ]);
     const commuteA = mapKakaoResponseToCommuteInfo(routeA);
     const commuteB = mapKakaoResponseToCommuteInfo(routeB);
