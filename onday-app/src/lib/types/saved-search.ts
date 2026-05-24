@@ -10,6 +10,7 @@
 // ──────────────────────────────────────────────
 
 import type { ServiceModeType } from './user';
+import type { CommuteSchedule } from '@/lib/types';
 
 // ──────────────────────────────────────────────
 // 1. SearchParams — JSONB 직렬화 대상 (Figma 비전 leisure 4 필드 superset 포함)
@@ -17,7 +18,7 @@ import type { ServiceModeType } from './user';
 
 /**
  * SavedSearch.searchParams JSONB 의 TS 구조.
- * filters: DiagnosisFilters 와 동일 구조 (maxCommuteTime/budget 객체/timeRange enum/priorities) — types.ts 가드 보존 위해 형태만 평행 정의.
+ * filters: DiagnosisFilters 와 동일 구조 (maxCommuteTime/budget 객체/commuteSchedule/priorities) — types.ts 가드 보존 위해 형태만 평행 정의.
  * mode: Q2 (A) ServiceModeType — DiagnosisMode 재사용 금지 (9칸 가드 ★ 11번째 사수).
  */
 export interface SearchParams {
@@ -28,7 +29,7 @@ export interface SearchParams {
   filters?: {
     maxCommuteTime?: number;
     budget?: { min: number; max: number };
-    timeRange?: 'morning' | 'evening' | 'flexible';
+    commuteSchedule?: CommuteSchedule;
     priorities?: string[];
   };
   mode: ServiceModeType;

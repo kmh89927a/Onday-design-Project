@@ -22,7 +22,14 @@ export const diagnosisInputSchema = z.object({
         max: z.number().min(0),
       })
       .optional(),
-    timeRange: z.enum(["morning", "evening", "flexible"]).optional(),
+    commuteSchedule: z
+      .object({
+        days: z
+          .array(z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]))
+          .min(1),
+        departureTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+      })
+      .optional(),
     priorities: z.array(z.string()).optional(),
   }),
   mode: z.enum(["couple", "single"]),

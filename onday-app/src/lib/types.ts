@@ -45,9 +45,7 @@ export interface CommuteSchedule {
 export interface DiagnosisFilters {
   maxCommuteTime?: number; // minutes
   budget?: { min: number; max: number }; // 만원
-  /** @deprecated commuteSchedule 사용 권고. REFACTOR-COMMUTE-LEGACY 정리 예정 (★ Mismatch ㊲ Mock + ㊳ SavedSearch + ㊴ Validator 호출처 backward compat). */
-  timeRange?: "morning" | "evening" | "flexible";
-  commuteSchedule?: CommuteSchedule; // ★ NEW (★ Mismatch ㊱ commuteSchedule DTO 정수 정정)
+  commuteSchedule?: CommuteSchedule; // 요일 + 시간 자유 — Issue #98 commuteSchedule DTO 정수 정정 (★ REFACTOR-COMMUTE-LEGACY #102 timeRange 제거 완성).
   priorities?: string[];
 }
 

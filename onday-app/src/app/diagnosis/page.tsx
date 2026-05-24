@@ -8,7 +8,7 @@ import { AddressInput } from "@/components/form/address-input";
 import { ModeSelector } from "@/components/form/mode-selector";
 // ★ DTO-COMMUTE-TIME (#98) — TimeRangeToggle 제거 + CommuteSchedulePicker 교체 (★ Mismatch ㊱).
 import { CommuteSchedulePicker } from "@/components/form/commute-schedule-picker";
-import type { CommuteSchedule } from "@/lib/types";
+import type { CommuteSchedule, DiagnosisFilters } from "@/lib/types";
 import { AppHeader } from "@/components/layout/app-header";
 import { StickyCTABar } from "@/components/layout/sticky-cta-bar";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,35 @@ import { useUIStore } from "@/stores/ui";
 
 // ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — 이전 조건 불러오기 (localStorage 직접 + 명시적 패턴, Zustand store 보존 답습).
 const LAST_CONFIG_KEY = "onday-last-config";
+
+// ★ REFACTOR-COMMUTE-LEGACY (#102) — Issue #102 머지 이전 사용자가 timeRange 박힌 채 localStorage 저장 시 자가 치유.
+//   "morning" → 평일 08:00, "evening" → 평일 18:00, "flexible"/기타 → commuteSchedule 미박힘 (사용자 재입력).
+//   commuteSchedule 사전 박힘 시 = 본 ISSUE 이후 데이터 = 변환 X.
+function migrateLegacyTimeRange(
+  filters: Record<string, unknown>,
+): DiagnosisFilters {
+  const { timeRange, ...rest } = filters;
+  if (rest.commuteSchedule) return rest as DiagnosisFilters;
+  if (timeRange === "morning") {
+    return {
+      ...rest,
+      commuteSchedule: {
+        days: ["mon", "tue", "wed", "thu", "fri"],
+        departureTime: "08:00",
+      },
+    } as DiagnosisFilters;
+  }
+  if (timeRange === "evening") {
+    return {
+      ...rest,
+      commuteSchedule: {
+        days: ["mon", "tue", "wed", "thu", "fri"],
+        departureTime: "18:00",
+      },
+    } as DiagnosisFilters;
+  }
+  return rest as DiagnosisFilters;
+}
 
 export default function DiagnosisPage() {
   const router = useRouter();
@@ -139,7 +168,8 @@ export default function DiagnosisPage() {
       setLeisureA(config.leisureA ?? "", config.leisureCoordA ?? undefined);
       setLeisureB(config.leisureB ?? "", config.leisureCoordB ?? undefined);
       setMode(config.mode ?? "couple");
-      setFilters(config.filters ?? {});
+      // ★ Issue #102 ㊿ — legacy timeRange → commuteSchedule 자가 치유.
+      setFilters(migrateLegacyTimeRange(config.filters ?? {}));
       // ★ local query state 동기화 (★ AddressInput value prop)
       setQueryA(config.addressA ?? "");
       setQueryB(config.addressB ?? "");

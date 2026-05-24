@@ -22,7 +22,7 @@ export const MOCK_DIAGNOSIS_ENTITY = {
   filters: {
     maxCommuteTime: 60,
     budget: { min: 8000, max: 15000 },
-    timeRange: 'morning',
+    commuteSchedule: { days: ['mon', 'tue', 'wed', 'thu', 'fri'], departureTime: '08:00' },
     priorities: ['safety', 'commute'],
   },
   mode: 'couple',
