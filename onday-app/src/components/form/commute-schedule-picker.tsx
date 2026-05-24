@@ -9,6 +9,10 @@ import type { CommuteSchedule, DayOfWeek } from "@/lib/types";
 // 사용자 멘탈 모델 정수 정점: "평일/주말" 카테고리 해방
 // (교대 근무 + 새벽 + 야간 + 주말 근무 100% 해소)
 // time-range-toggle.tsx 톤 답습 (★ 사전 작업 변경 0 보존, Mismatch ㉟+㊱).
+// ★ 내부 state 분리 (Issue #100, Mismatch ㊵): emit 가드(둘 다 채워질 때만 onChange)는
+// Phase A 사전 박힘 정수 유지하되, 부분 입력도 UI 즉시 피드백을 위해 내부 보존.
+// useEffect + lastValueRef guard 패턴 — value 외부 변경("이전 조건 불러오기")만 동기화,
+// emit 시 ref 동기 갱신으로 동기화→onChange→리렌더 무한 루프 방지(㊹).
 
 const DAY_LABELS: Record<DayOfWeek, string> = {
   mon: "월",
@@ -34,28 +38,43 @@ export function CommuteSchedulePicker({
   ariaLabel = "출퇴근 일정 선택",
   className,
 }: CommuteSchedulePickerProps) {
-  const days = new Set<DayOfWeek>(value?.days ?? []);
-  const departureTime = value?.departureTime ?? "";
+  const [localDays, setLocalDays] = React.useState<Set<DayOfWeek>>(
+    () => new Set(value?.days ?? []),
+  );
+  const [localTime, setLocalTime] = React.useState(
+    () => value?.departureTime ?? "",
+  );
+  const lastValueRef = React.useRef(value);
+
+  React.useEffect(() => {
+    if (value !== lastValueRef.current) {
+      lastValueRef.current = value;
+      setLocalDays(new Set(value?.days ?? []));
+      setLocalTime(value?.departureTime ?? "");
+    }
+  }, [value]);
 
   const emit = (nextDays: DayOfWeek[], nextTime: string) => {
-    if (nextDays.length === 0 || !nextTime) {
-      onChange(undefined);
-      return;
-    }
-    // DAY_ORDER 순서 정렬 (안정성)
     const sortedDays = DAY_ORDER.filter((d) => nextDays.includes(d));
-    onChange({ days: sortedDays, departureTime: nextTime });
+    const next =
+      sortedDays.length === 0 || !nextTime
+        ? undefined
+        : { days: sortedDays, departureTime: nextTime };
+    lastValueRef.current = next;
+    onChange(next);
   };
 
   const toggleDay = (day: DayOfWeek) => {
-    const next = new Set(days);
+    const next = new Set(localDays);
     if (next.has(day)) next.delete(day);
     else next.add(day);
-    emit(Array.from(next), departureTime);
+    setLocalDays(next);
+    emit(Array.from(next), localTime);
   };
 
   const setTime = (time: string) => {
-    emit(Array.from(days), time);
+    setLocalTime(time);
+    emit(Array.from(localDays), time);
   };
 
   return (
@@ -66,7 +85,7 @@ export function CommuteSchedulePicker({
     >
       <div className="flex gap-s-2" role="group" aria-label="요일 선택">
         {DAY_ORDER.map((day) => {
-          const active = days.has(day);
+          const active = localDays.has(day);
           return (
             <button
               key={day}
@@ -98,7 +117,7 @@ export function CommuteSchedulePicker({
         <input
           id="commute-departure-time"
           type="time"
-          value={departureTime}
+          value={localTime}
           onChange={(e) => setTime(e.target.value)}
           className={cn(
             "rounded-md border border-card-border bg-surface px-s-3 py-s-2 text-body text-ink outline-none",
