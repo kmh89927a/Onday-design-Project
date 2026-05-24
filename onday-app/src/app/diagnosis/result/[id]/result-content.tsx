@@ -83,6 +83,7 @@ export function ResultContent({
         id: c.id,
         label: markerLabel(c.dong),
         position: latLngToPixel(c.coordinate),
+        coordinate: c.coordinate, // Issue #104 ㊇ — SDK mode lat/lng 정합.
         selected: selectedId === c.id,
         rank: i + 1,
       })),
