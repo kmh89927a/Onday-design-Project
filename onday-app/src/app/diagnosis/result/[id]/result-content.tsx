@@ -32,13 +32,6 @@ import { useUIStore } from "@/stores/ui";
 import { SortControl } from "./sort-control";
 import { TimeSlotSelector, type TimeSlot } from "./time-slot-selector";
 
-const TIME_OPTIONS: { value: string; label: string }[] = [
-  { value: "07:00", label: "07:00" },
-  { value: "08:00", label: "08:00" },
-  { value: "09:00", label: "09:00" },
-  { value: "10:00", label: "10:00" },
-];
-
 interface ResultContentProps {
   candidates: CandidateArea[];
   filters: DiagnosisFilters;
@@ -67,7 +60,9 @@ export function ResultContent({
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [openId, setOpenId] = React.useState<string | null>(null);
-  const [timeSlot, setTimeSlot] = React.useState<TimeSlot>("08:00");
+  // Issue #106 ㊒ — 진단 입력 출근시간 → 결과 페이지 표시 (데이터 흐름 정합).
+  const initialTime = (filters.commuteSchedule?.departureTime ?? "08:00") as TimeSlot;
+  const [timeSlot, setTimeSlot] = React.useState<TimeSlot>(initialTime);
 
   const selectedCandidate = React.useMemo(
     () => (openId ? sorted.find((c) => c.id === openId) ?? null : null),
@@ -124,21 +119,26 @@ export function ResultContent({
   return (
     <div className="space-y-s-4">
       <FilterPanel
-        time="08:00"
-        onTimeChange={() => notifyComingSoon("출근 시간대")}
-        timeOptions={TIME_OPTIONS}
+        // Issue #106 ㊘ — TimeTabs 미박힘 (★ "사용자 입력 → 결과" 자연 흐름 도달).
+        //   ㊔ 사용자 입력 X 필터는 chip 숨김 (★ "제한 없음"/"전체" 표시 X).
+        //   ㊒ 출근시간 chip = 사용자 입력값 박힘 (★ 진단 → 결과 데이터 흐름 정합).
         filters={[
           {
+            label: "출근시간",
+            value: filters.commuteSchedule?.departureTime ?? "08:00",
+            onClick: () => notifyComingSoon("출근시간 필터"),
+          },
+          filters.maxCommuteTime != null && {
             label: "통근시간",
             value: formatCommuteFilter(filters.maxCommuteTime),
             onClick: () => notifyComingSoon("통근시간 필터"),
           },
-          {
+          filters.budget != null && {
             label: "예산",
             value: formatBudgetFilter(filters.budget),
             onClick: () => notifyComingSoon("예산 필터"),
           },
-        ]}
+        ].filter(Boolean) as { label: string; value: string; onClick: () => void }[]}
       />
 
       <MapCanvas markers={markers} onMarkerClick={open} height={320} />

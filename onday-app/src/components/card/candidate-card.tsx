@@ -60,7 +60,7 @@ export function CandidateCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-s-2">
             <h3 className="text-title font-bold text-ink">{name}</h3>
-            {isBest && <Badge variant="solid">BEST</Badge>}
+            {isBest && <Badge variant="best">BEST</Badge>}
           </div>
           <p className="mt-0.5 text-caption text-ink-3">
             매칭 점수{" "}
