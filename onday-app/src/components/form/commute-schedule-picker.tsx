@@ -8,7 +8,7 @@ import type { CommuteSchedule, DayOfWeek } from "@/lib/types";
 // CommuteSchedulePicker — 요일 chip 다중 선택 + HH:MM time input
 // 사용자 멘탈 모델 정수 정점: "평일/주말" 카테고리 해방
 // (교대 근무 + 새벽 + 야간 + 주말 근무 100% 해소)
-// time-range-toggle.tsx 톤 답습 (★ 사전 작업 변경 0 보존, Mismatch ㉟+㊱).
+// shadcn 디자인 토큰 톤 (border-card-border + bg-surface + text-ink) — Issue #102 단일 진리 도달.
 // ★ 내부 state 분리 (Issue #100, Mismatch ㊵): emit 가드(둘 다 채워질 때만 onChange)는
 // Phase A 사전 박힘 정수 유지하되, 부분 입력도 UI 즉시 피드백을 위해 내부 보존.
 // useEffect + lastValueRef guard 패턴 — value 외부 변경("이전 조건 불러오기")만 동기화,
