@@ -22,9 +22,11 @@ interface FilterPanelFilter {
 }
 
 interface FilterPanelProps<T extends string> {
-  time: T;
-  onTimeChange: (next: T) => void;
-  timeOptions: { value: T; label: string }[];
+  // Issue #106 ㊘ — 결과 페이지 상단 4 chip 시뮬레이션은 미래 별도 ISSUE 영역.
+  //   현 본 ISSUE = "사용자 입력 → 결과" 자연 흐름 도달 정수 (★ TimeTabs 미박힘 시 조건부 박힘 X).
+  time?: T;
+  onTimeChange?: (next: T) => void;
+  timeOptions?: { value: T; label: string }[];
   filters: FilterPanelFilter[];
   onOpenAdvanced?: () => void;
   className?: string;
@@ -40,12 +42,14 @@ export function FilterPanel<T extends string>({
 }: FilterPanelProps<T>) {
   return (
     <section aria-label="후보 필터" className={cn("space-y-s-3", className)}>
-      <TimeTabs
-        value={time}
-        onChange={onTimeChange}
-        options={timeOptions}
-        ariaLabel="출근 시간대"
-      />
+      {timeOptions && time !== undefined && onTimeChange && (
+        <TimeTabs
+          value={time}
+          onChange={onTimeChange}
+          options={timeOptions}
+          ariaLabel="출근 시간대"
+        />
+      )}
       <div className="flex items-center gap-s-2">
         <div className="flex flex-1 gap-s-2">
           {filters.map((f) => (

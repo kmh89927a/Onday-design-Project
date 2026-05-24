@@ -6,7 +6,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 const TIME_SLOTS = ["07:00", "08:00", "09:00", "10:00"] as const;
-export type TimeSlot = (typeof TIME_SLOTS)[number];
+// Issue #106 ㊗ — 사용자 입력 HH:MM 자유 허용 (★ TimeSlotSelector는 4 옵션 시뮬레이션, 사용자 입력은 외부 string).
+export type TimeSlot = string;
 
 interface TimeSlotSelectorProps {
   value: TimeSlot;
