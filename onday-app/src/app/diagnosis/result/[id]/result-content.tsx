@@ -189,11 +189,13 @@ export function ResultContent({
         ].filter(Boolean) as { label: string; value: string; onClick: () => void }[]}
       />
 
-      {/* Issue #111 β — what-if 시뮬레이션 입력 (★ <input type="time"> + 시나리오 B handler fallback). */}
+      {/* Issue #111 β + #118 — what-if 시뮬레이션 입력 (★ <input type="time"> + "변경" 버튼 명시적 확인 + 시나리오 B handler fallback). */}
+      {/* key={currentDepartureTime} — baseTime 변경 시 컴포넌트 재마운트 (★ React 19 set-state-in-effect 규칙 답습). */}
       {showTimeOptions && (
         <TimeChipOptions
+          key={currentDepartureTime}
           baseTime={currentDepartureTime}
-          onChange={handleTimeWhatIf}
+          onConfirm={handleTimeWhatIf}
         />
       )}
 
