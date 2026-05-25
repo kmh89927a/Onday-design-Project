@@ -22,6 +22,7 @@ import {
   sortCandidates,
   toChipMode,
 } from "@/features/diagnosis/result-utils";
+import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import type { CandidateArea, DiagnosisFilters } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ import { useFavoritesStore } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
 
 import { SortControl } from "./sort-control";
+import { TimeChipOptions } from "./time-chip-options";
 import { TimeSlotSelector, type TimeSlot } from "./time-slot-selector";
 
 interface ResultContentProps {
@@ -50,8 +52,55 @@ export function ResultContent({
   const addressA = useDiagnosisStore((s) => s.addressA);
   const addressB = useDiagnosisStore((s) => s.addressB);
 
+  // Issue #111 β — what-if 시뮬레이션 store 영역 (★ 옵션 클릭 → setFilters + client-side 재계산).
+  const setFilters = useDiagnosisStore((s) => s.setFilters);
+  const setResult = useDiagnosisStore((s) => s.setResult);
+  const diagnosisId = useDiagnosisStore((s) => s.diagnosisId);
+  const coordinateA = useDiagnosisStore((s) => s.coordinateA);
+  const coordinateB = useDiagnosisStore((s) => s.coordinateB);
+  const mode = useDiagnosisStore((s) => s.mode);
+  const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
+  const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
+
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
+
+  // Issue #111 β — 출근시간 chip 클릭 시 what-if 입력 inline 박힘 토글.
+  const [showTimeOptions, setShowTimeOptions] = React.useState(false);
+  const currentDepartureTime = filters.commuteSchedule?.departureTime ?? "08:00";
+  // 시나리오 B (페이지 reload / 직접 URL) fallback — store coordinateA null 시 비활성 (★ #108 답습).
+  const whatIfDisabled = !coordinateA;
+
+  const handleTimeWhatIf = async (time: string) => {
+    if (!coordinateA) {
+      pushToast({
+        variant: "default",
+        message: "페이지 새로고침 후 다시 시도해주세요",
+      });
+      return;
+    }
+    const newFilters = {
+      ...filters,
+      commuteSchedule: {
+        days: filters.commuteSchedule?.days ?? [],
+        departureTime: time,
+      },
+    };
+    setFilters(newFilters);
+    try {
+      const next = await runMockDiagnosis(
+        coordinateA,
+        coordinateB,
+        newFilters,
+        mode,
+        leisureCoordA,
+        leisureCoordB,
+      );
+      if (diagnosisId) setResult(diagnosisId, next);
+    } catch {
+      pushToast({ variant: "danger", message: "재계산에 실패했습니다" });
+    }
+  };
 
   const sorted = React.useMemo(
     () => sortCandidates(candidates, sort),
@@ -126,7 +175,8 @@ export function ResultContent({
           {
             label: "출근시간",
             value: filters.commuteSchedule?.departureTime ?? "08:00",
-            onClick: () => notifyComingSoon("출근시간 필터"),
+            // Issue #111 — what-if 옵션 inline 박힘 토글 (★ #106 ㊒ notifyComingSoon 정정).
+            onClick: () => setShowTimeOptions((prev) => !prev),
           },
           filters.maxCommuteTime != null && {
             label: "통근시간",
@@ -140,6 +190,15 @@ export function ResultContent({
           },
         ].filter(Boolean) as { label: string; value: string; onClick: () => void }[]}
       />
+
+      {/* Issue #111 β — what-if 시뮬레이션 입력 (★ <input type="time"> + 시나리오 B fallback). */}
+      {showTimeOptions && (
+        <TimeChipOptions
+          baseTime={currentDepartureTime}
+          onChange={handleTimeWhatIf}
+          disabled={whatIfDisabled}
+        />
+      )}
 
       <MapCanvas markers={markers} onMarkerClick={open} height={320} />
 
