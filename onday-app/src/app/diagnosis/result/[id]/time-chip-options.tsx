@@ -21,7 +21,7 @@ export function TimeChipOptions({
   return (
     <div className="pt-s-2" role="group" aria-label="다른 시간대 입력">
       <label className="flex items-center gap-s-2 text-caption font-bold text-ink-2">
-        다른 시간대 시뮬레이션
+        시간대 변경
         <input
           type="time"
           value={baseTime}

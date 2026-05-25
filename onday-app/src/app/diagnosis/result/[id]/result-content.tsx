@@ -68,8 +68,6 @@ export function ResultContent({
   // Issue #111 β — 출근시간 chip 클릭 시 what-if 입력 inline 박힘 토글.
   const [showTimeOptions, setShowTimeOptions] = React.useState(false);
   const currentDepartureTime = filters.commuteSchedule?.departureTime ?? "08:00";
-  // 시나리오 B (페이지 reload / 직접 URL) fallback — store coordinateA null 시 비활성 (★ #108 답습).
-  const whatIfDisabled = !coordinateA;
 
   const handleTimeWhatIf = async (time: string) => {
     if (!coordinateA) {
@@ -191,12 +189,11 @@ export function ResultContent({
         ].filter(Boolean) as { label: string; value: string; onClick: () => void }[]}
       />
 
-      {/* Issue #111 β — what-if 시뮬레이션 입력 (★ <input type="time"> + 시나리오 B fallback). */}
+      {/* Issue #111 β — what-if 시뮬레이션 입력 (★ <input type="time"> + 시나리오 B handler fallback). */}
       {showTimeOptions && (
         <TimeChipOptions
           baseTime={currentDepartureTime}
           onChange={handleTimeWhatIf}
-          disabled={whatIfDisabled}
         />
       )}
 
