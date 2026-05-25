@@ -30,6 +30,8 @@ export function ResultView({ id }: ResultViewProps) {
   const storeCandidates = useDiagnosisStore((s) => s.candidates);
   const filters = useDiagnosisStore((s) => s.filters);
   const setResult = useDiagnosisStore((s) => s.setResult);
+  // Issue #108 ㊙ — 시나리오 B (페이지 reload / 직접 URL 접속) filters store 박힘 (★ "사용자 입력 → 결과" 자연 흐름 양방향 정합).
+  const setFilters = useDiagnosisStore((s) => s.setFilters);
   const pushToast = useUIStore((s) => s.pushToast);
 
   const inSync = storeId === id && storeCandidates.length > 0;
@@ -38,8 +40,9 @@ export function ResultView({ id }: ResultViewProps) {
   React.useEffect(() => {
     if (!inSync && query.data) {
       setResult(query.data.id, query.data.candidates);
+      setFilters(query.data.filters);
     }
-  }, [inSync, query.data, setResult]);
+  }, [inSync, query.data, setResult, setFilters]);
 
   const candidates = inSync ? storeCandidates : query.data?.candidates ?? [];
   const isLoading = !inSync && query.isLoading;
