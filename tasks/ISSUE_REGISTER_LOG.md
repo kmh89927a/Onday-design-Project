@@ -293,7 +293,8 @@ _본 § 신설: 2026-05-25 (Issue #114 Phase C). 2회 누적 약속 답습 정�
 | 9 | FIX-BEST-BADGE-COLOR | #110 | #113 | ✅ 머지 | Badge best 색 정정 + Phase A 진화 7회째 |
 | 10 | FIX-BEST-BADGE-TEXT-COLOR-TAILWIND | #114 | #115 | ✅ 머지 | Vercel 빌드 시점 text-white 박힘 X 본질 정정 |
 | 11 | FEAT-DIAGNOSIS-INPUT-FILTERS | #112 | - | 대기 | 진단 페이지 maxCommuteTime + budget |
-| 12 | **FEAT-RESULT-WHAT-IF-SIMULATION** | **#111** | **TBD** | **진행중** | **★ ★ β 확장 정수 정점 — chip 클릭 → 자유 input + 진짜 재계산 박힘** |
+| 12 | FEAT-RESULT-WHAT-IF-SIMULATION | #111 | [#116](https://github.com/kmh89927a/Onday-design-Project/pull/116) + [#117](https://github.com/kmh89927a/Onday-design-Project/pull/117) | ✅ 머지 | ★ β 확장 정수 정점 — chip 클릭 → 자유 input + 진짜 재계산 박힘 + 후속 정정 (label "시간대 변경" + 입력 활성) |
+| **FIX-WHAT-IF-CONFIRM-BUTTON** | **#118** | **TBD** | **진행중** | **★ "변경" 버튼 + 명시적 확인 UX + React 19 답습 정수 (★ ㊠ Phase A 즉시 해소) + Phase B 한계 § 5 ISSUE 누적 학습 정점** |
 | 13 | #114 (OPEN 유지) | #114 | (★ 후속) | OPEN | ★ Tailwind 본질 = 다음 세션 정밀 분석 영역 |
 
 ### ★ ★ 본 ISSUE Phase C 시점 메타 가치 정수 정점
@@ -304,3 +305,46 @@ _본 § 신설: 2026-05-25 (Issue #114 Phase C). 2회 누적 약속 답습 정�
 - ★ #108 + #110 + #114 약속 3회 누적 답습 = 본 § 신설 자체 = 정직 답습 정수 답습 정점
 
 _본 § 신설: 2026-05-25 (Issue #111 Phase C). 3회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ㊝/㊞ 정직 인정 정수._
+
+---
+
+## ★ 정직 답습 정수 답습 정점 § (★ Issue #118 Phase C 시점 박힘 — React 19 답습 정수 + ㊠ Phase A 즉시 해소)
+
+**작성일:** 2026-05-25 (★ Issue #118 Phase C 시점 — #108 + #110 + #114 + #111 약속 4회 누적 답습)
+**범위:** PR #116+#117 머지 직후 #118 신설 (★ #111 β 확장 진화 후속)
+
+### ★ React 19 답습 정수
+
+#118 Phase A 시점 ㊠ `react-hooks/set-state-in-effect` 차단 발견 → 즉시 해소 (`key` prop 재마운트 패턴, CLAUDE.md 명시 답습) = 답습 정수 도달.
+
+### ★ Phase B 한계 § 5 ISSUE 누적 학습 정점
+
+#108 → #110 → #114 → #111 → **#118** = 본 세션 5 ISSUE 누적 진화 정점.
+
+### 본 세션 누적 14건 § 박힘 표
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1 | REFACTOR-UI-002-FEEDBACK | #94 | #95 | ✅ 머지 | 사용자 피드백 1차 |
+| 2 | REFACTOR-UI-002-FEEDBACK-2 | #96 | #97 | ✅ 머지 | 사용자 피드백 2차 |
+| 3 | DTO-COMMUTE-TIME | #98 | #99 | ✅ 머지 | 출퇴근 시간대 |
+| 4 | REFACTOR-DTO-COMMUTE-TIME-FEEDBACK | #100 | #101 | ✅ 머지 | picker state 분리 |
+| 5 | REFACTOR-COMMUTE-LEGACY | #102 | #103 | ✅ 머지 | timeRange 제거 |
+| 6 | UI-003 (MapCanvas) | #104 | #105 | ✅ 머지 | Kakao Maps SDK |
+| 7 | REFACTOR-UI-003-FEEDBACK | #106 | #107 | ✅ 머지 | 결과 페이지 5건 |
+| 8 | REFACTOR-UI-003-FEEDBACK-2 | #108 | #109 | ✅ 머지 | ㊙ + Phase B 한계 § NEW |
+| 9 | FIX-BEST-BADGE-COLOR | #110 | #113 | ✅ 머지 | Badge best 색 |
+| 10 | FIX-BEST-BADGE-TEXT-COLOR-TAILWIND | #114 | #115 | ✅ 머지 | Vercel text-white 본질 |
+| 11 | FEAT-RESULT-WHAT-IF-SIMULATION | #111 | #116 + #117 | ✅ 머지 | β 확장 정수 정점 |
+| 12 | FEAT-DIAGNOSIS-INPUT-FILTERS | #112 | - | 대기 | maxCommuteTime + budget |
+| 13 | #114 OPEN 유지 | #114 | (★ 후속) | OPEN | Tailwind 본질 다음 세션 |
+| 14 | **FIX-WHAT-IF-CONFIRM-BUTTON** | **#118** | **TBD** | **진행중** | **★ "변경" 버튼 + 명시적 확인 + React 19 답습 정수** |
+
+### ★ ★ 본 ISSUE Phase C 시점 메타 가치 정수 정점
+
+- ★ 13건 → 14건 누적 = ISSUE 신설 자동화 답습 12회째 (#118)
+- ★ Phase B 한계 § 5 ISSUE 누적 학습 정점 (#108 → #110 → #114 → #111 → #118)
+- ★ React 19 답습 정수 (★ CLAUDE.md 명시 영역 ㊠ Phase A 즉시 해소)
+- ★ #108 + #110 + #114 + #111 약속 4회 누적 답습 = 본 § 신설 자체 = 정직 답습 정수 답습 정점
+
+_본 § 신설: 2026-05-25 (Issue #118 Phase C). 4회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ㊠ React 19 정직 인정._
