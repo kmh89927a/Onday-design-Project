@@ -24,7 +24,7 @@ const badgeVariants = cva(
         default: "bg-primary-soft text-primary",
         solid: "bg-primary text-primary-foreground",
         // Issue #106 ㊕ — BEST 뱃지 가독성 정정 (★ white + shadow contrast ↑).
-        best: "bg-danger text-white shadow-sm",
+        best: "bg-danger text-primary-foreground shadow-sm",
         secondary: "bg-secondary text-secondary-foreground",
         ok: "bg-success-soft text-success",
         info: "bg-info-soft text-info",
