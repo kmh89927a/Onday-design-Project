@@ -84,6 +84,29 @@ export default function DiagnosisPage() {
   const [queryL1, setQueryL1] = React.useState(leisureA);
   const [queryL2, setQueryL2] = React.useState(leisureB);
 
+  // Issue #112 — maxCommuteTime + budget 입력 영역 (★ 단방향 input → store 동기화, "이전 조건 불러오기" 시점 별도 sync).
+  //   budget은 억 단위 input + 내부 만원 변환 (★ formatBudgetFilter "X-Y억" 표시 정합).
+  //   min/max 둘 다 박힘 + > 0 시점 store budget 박힘. 그 외 = undefined.
+  const [budgetMinInput, setBudgetMinInput] = React.useState(
+    filters.budget ? String(filters.budget.min / 10000) : "",
+  );
+  const [budgetMaxInput, setBudgetMaxInput] = React.useState(
+    filters.budget ? String(filters.budget.max / 10000) : "",
+  );
+
+  const syncBudget = (minStr: string, maxStr: string) => {
+    const minNum = Number(minStr);
+    const maxNum = Number(maxStr);
+    if (minStr !== "" && maxStr !== "" && minNum > 0 && maxNum > 0) {
+      setFilters({
+        ...filters,
+        budget: { min: minNum * 10000, max: maxNum * 10000 },
+      });
+    } else {
+      setFilters({ ...filters, budget: undefined });
+    }
+  };
+
   const { suggestions: suggestionsA } = useAddressSuggest(queryA);
   const { suggestions: suggestionsB } = useAddressSuggest(queryB);
   const { suggestions: suggestionsL1 } = useAddressSuggest(queryL1);
@@ -175,6 +198,12 @@ export default function DiagnosisPage() {
       setQueryB(config.addressB ?? "");
       setQueryL1(config.leisureA ?? "");
       setQueryL2(config.leisureB ?? "");
+      // Issue #112 — budget local state sync (★ filters.budget 자가 치유와 별개 영역).
+      const nextBudget = (config.filters?.budget ?? undefined) as
+        | { min: number; max: number }
+        | undefined;
+      setBudgetMinInput(nextBudget ? String(nextBudget.min / 10000) : "");
+      setBudgetMaxInput(nextBudget ? String(nextBudget.max / 10000) : "");
       pushToast({ variant: "default", message: "이전 조건을 불러왔습니다 ✨" });
     } catch {
       pushToast({ variant: "default", message: "이전 조건 불러오기 실패" });
@@ -303,6 +332,61 @@ export default function DiagnosisPage() {
             value={commuteSchedule}
             onChange={setCommuteSchedule}
           />
+        </section>
+
+        {/* Issue #112 — 조건 입력 (★ maxCommuteTime + budget 자유 입력 + 단방향 store 동기화). */}
+        <section className="mt-s-6 space-y-s-2">
+          <p className="text-caption font-bold text-ink">조건 (선택)</p>
+          <div className="space-y-s-3">
+            <label className="flex flex-wrap items-center gap-s-2 text-body-sm text-ink-2">
+              최대 출퇴근 시간
+              <input
+                type="number"
+                min={10}
+                max={120}
+                value={filters.maxCommuteTime ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFilters({
+                    ...filters,
+                    maxCommuteTime: v === "" ? undefined : Number(v),
+                  });
+                }}
+                placeholder="60"
+                className="w-20 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+              분
+            </label>
+            <label className="flex flex-wrap items-center gap-s-2 text-body-sm text-ink-2">
+              예산
+              <input
+                type="number"
+                min={1}
+                value={budgetMinInput}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setBudgetMinInput(v);
+                  syncBudget(v, budgetMaxInput);
+                }}
+                placeholder="3"
+                className="w-16 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+              억 ~
+              <input
+                type="number"
+                min={1}
+                value={budgetMaxInput}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setBudgetMaxInput(v);
+                  syncBudget(budgetMinInput, v);
+                }}
+                placeholder="5"
+                className="w-16 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+              억
+            </label>
+          </div>
         </section>
 
         <section className="mt-s-6 space-y-s-2">
