@@ -17,7 +17,6 @@ interface ScoreInput {
   commuteB: number | null;
   leisureA: number | null;
   leisureB: number | null;
-  filters: DiagnosisFilters;
 }
 
 // 여가거점 가산 (Figma 비전 — single 모드, 0~5점/거점)
@@ -33,7 +32,6 @@ function scoreCandidate({
   commuteB,
   leisureA,
   leisureB,
-  filters,
 }: ScoreInput): number {
   let score = 100;
 
@@ -41,12 +39,8 @@ function scoreCandidate({
   const avgCommute = commuteB != null ? (commuteA + commuteB) / 2 : commuteA;
   score -= Math.min(40, avgCommute * 0.8);
 
-  // 예산 초과 패널티
-  if (filters.budget?.max && neighborhood.avgPrice > filters.budget.max) {
-    const overBudgetRatio =
-      (neighborhood.avgPrice - filters.budget.max) / filters.budget.max;
-    score -= Math.min(20, overBudgetRatio * 40);
-  }
+  // Issue #123 — 예산 범위 외 제외는 computeOneCandidate 영역 박힘 (★ maxCommuteTime 답습 정합).
+  //   score 영역 페널티 폐기 = ★ 범위 외 카드 score X = 결과 카드 X 자연.
 
   // 안전등급 가산
   const safetyBonus: Record<string, number> = { A: 10, B: 5, C: 0, D: -10 };
@@ -132,13 +126,25 @@ async function computeOneCandidate(
     }
   }
 
+  // Issue #123 — 예산 범위 외 제외 (★ maxCommuteTime 답습 정합).
+  //   사용자 시각 검증 짚음: "예산 4~5억 박힘 + 결과 카드 4~5억 사이 X = 다양 박힘" → 범위 외 카드 제외 박힘.
+  if (filters.budget) {
+    const price = neighborhood.avgPrice;
+    if (price < filters.budget.min || price > filters.budget.max) {
+      return {
+        status: "rejected",
+        neighborhoodId: neighborhood.id,
+        reason: `Price ${price} outside budget [${filters.budget.min}, ${filters.budget.max}]`,
+      };
+    }
+  }
+
   const score = scoreCandidate({
     neighborhood,
     commuteA,
     commuteB,
     leisureA,
     leisureB,
-    filters,
   });
 
   return {
