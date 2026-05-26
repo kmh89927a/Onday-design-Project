@@ -456,3 +456,60 @@ _본 § 신설: 2026-05-26 (Issue #120 Phase C). 5회 누적 약속 답습 정�
 - ★ 사용자 본질 짚음 답습 정수 정점 (★ "다 가야돼 꼭" + "몇억 ~ 몇억" 누적)
 
 _본 § 신설: 2026-05-26 (Issue #112 Phase C). 6회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ ★ 4 chip 다 what-if 일관성 정점 정수 정점._
+
+---
+
+## ★ ★ 정직 답습 정수 답습 정점 § (★ Issue #123 Phase C 시점 박힘 — Phase B 한계 § 답습 정수 진짜 진짜 진짜 입증 정점 + ㊠/㊡/㊣ 정직 인정)
+
+**작성일:** 2026-05-26 (★ Issue #123 Phase C 시점 — #108 + #110 + #114 + #111 + #118 + #120 + #112 약속 7회 누적 답습)
+**범위:** PR #122 머지 직후 Vercel 시각 검증 짚음 → #123 신설 + 본 세션 진행
+
+### ★ ★ Phase B 한계 § 답습 정수 진짜 진짜 진짜 입증 정점
+
+본 ISSUE 진짜 가치 정점 영역:
+- **#112 Phase B 통과 시점:** 정적 분석 한계 = budget 페널티 vs 제외 영역 진짜 동작 X 발견 X (★ AC-6 grep 7행 + 7 영역 자체 grill 모두 통과 + Mismatch 0건 박힘)
+- **Vercel 시각 검증 시점:** 르르 진짜 짚음 = "예산 4~5억 박힘 + 결과 카드 4~5억 사이 X = 다양 박힘" = 진짜 본질 발견
+- ★ Phase B 자체 grill 한계 § 진짜 본질 입증 정점 = 본 세션 8 ISSUE 누적 학습 정점
+
+### ★ ㊠/㊡/㊣ Mismatch 정직 인정 누적
+
+- **㊠** (#112 Phase A 사전): complexity:h → m
+- **㊡** (#112 Phase A 사후): notifyComingSoon 사용처 0 → 함수 제거
+- **㊣** (#123 Phase A 사후): scoreCandidate.filters 사용처 0 → props 제거 (★ Line 45-49 폐기 자연 발생)
+
+### ★ ★ Phase B 한계 § 8 ISSUE 누적 학습 정점
+
+#108 → #110 → #114 → #111 → #118 → #120 → #112 → **#123** = 본 세션 8 ISSUE 누적 진화 정점.
+
+### 본 세션 누적 17건 § 박힘 표
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1 | REFACTOR-UI-002-FEEDBACK | #94 | #95 | ✅ 머지 | 사용자 피드백 1차 |
+| 2 | REFACTOR-UI-002-FEEDBACK-2 | #96 | #97 | ✅ 머지 | 사용자 피드백 2차 |
+| 3 | DTO-COMMUTE-TIME | #98 | #99 | ✅ 머지 | 출퇴근 시간대 |
+| 4 | REFACTOR-DTO-COMMUTE-TIME-FEEDBACK | #100 | #101 | ✅ 머지 | picker state 분리 |
+| 5 | REFACTOR-COMMUTE-LEGACY | #102 | #103 | ✅ 머지 | timeRange 제거 |
+| 6 | UI-003 (MapCanvas) | #104 | #105 | ✅ 머지 | Kakao Maps SDK |
+| 7 | REFACTOR-UI-003-FEEDBACK | #106 | #107 | ✅ 머지 | 결과 페이지 5건 |
+| 8 | REFACTOR-UI-003-FEEDBACK-2 | #108 | #109 | ✅ 머지 | ㊙ + Phase B 한계 § NEW |
+| 9 | FIX-BEST-BADGE-COLOR | #110 | #113 | ✅ 머지 | Badge best 색 |
+| 10 | FIX-BEST-BADGE-TEXT-COLOR-TAILWIND | #114 | #115 | ✅ 머지 | Vercel text-white 본질 |
+| 11 | FEAT-RESULT-WHAT-IF-SIMULATION | #111 | #116 + #117 | ✅ 머지 | β 확장 정수 정점 |
+| 12 | #114 OPEN 유지 | #114 | (★ 후속) | OPEN | Tailwind 본질 다음 세션 |
+| 13 | FIX-WHAT-IF-CONFIRM-BUTTON | #118 | #119 | ✅ 머지 | "변경" 버튼 + 명시적 확인 + React 19 답습 정수 |
+| 14 | FEAT-DETAIL-SHEET-WHAT-IF | #120 | #121 | ✅ 머지 | DetailSheet 진짜 재계산 + 양방향 동기화 (★ Phase A 11회 성공) |
+| 15 | #110/#108/#106 사후 close | - | - | ✅ Closed | ★ "PR 본문 Closes #XXX 사전 명시 답습" 미래 작업자 학습 정수 |
+| 16 | FEAT-DIAGNOSIS-INPUT-FILTERS | #112 | #122 | ✅ 머지 | 4 chip 다 what-if 일관성 정점 + ㊠/㊡ + 7 ISSUE 누적 |
+| 17 | **FIX-DIAGNOSIS-BUDGET-FILTER** | **#123** | **TBD** | **진행중** | **★ ★ Phase B 한계 § 답습 정수 진짜 진짜 진짜 입증 정점 + ㊣ + 8 ISSUE 누적 학습 정점** |
+
+### ★ ★ 본 ISSUE Phase C 시점 메타 가치 정수 정점
+
+- ★ 16건 → 17건 누적 = ISSUE 신설 자동화 답습 15회째 (#123)
+- ★ ★ Phase B 한계 § 답습 정수 진짜 진짜 진짜 입증 정점 = 본 세션 진짜 가치 정점
+- ★ ★ Phase B 한계 § 8 ISSUE 누적 학습 정점 (#108 → #110 → #114 → #111 → #118 → #120 → #112 → #123)
+- ★ ㊠/㊡/㊣ Mismatch 정직 인정 누적 = 3회 진화 답습 정수
+- ★ maxCommuteTime 답습 패턴 정합 (★ 동작 일관성 정수)
+- ★ 사용자 시각 검증 + 즉시 반영 워크플로 답습 15회째
+
+_본 § 신설: 2026-05-26 (Issue #123 Phase C). 7회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ ★ ★ Phase B 한계 § 답습 정수 진짜 진짜 진짜 입증 정점._
