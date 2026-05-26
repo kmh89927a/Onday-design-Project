@@ -32,7 +32,7 @@ import { useUIStore } from "@/stores/ui";
 
 import { SortControl } from "./sort-control";
 import { TimeChipOptions } from "./time-chip-options";
-import { TimeSlotSelector, type TimeSlot } from "./time-slot-selector";
+import { TimeSlotSelector } from "./time-slot-selector";
 
 interface ResultContentProps {
   candidates: CandidateArea[];
@@ -107,9 +107,6 @@ export function ResultContent({
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [openId, setOpenId] = React.useState<string | null>(null);
-  // Issue #106 ㊒ — 진단 입력 출근시간 → 결과 페이지 표시 (데이터 흐름 정합).
-  const initialTime = (filters.commuteSchedule?.departureTime ?? "08:00") as TimeSlot;
-  const [timeSlot, setTimeSlot] = React.useState<TimeSlot>(initialTime);
 
   const selectedCandidate = React.useMemo(
     () => (openId ? sorted.find((c) => c.id === openId) ?? null : null),
@@ -143,12 +140,10 @@ export function ResultContent({
       message: `${label} 변경은 다음 업데이트에 추가됩니다 ✨`,
     });
 
-  const handleTimeSlotChange = (next: TimeSlot) => {
-    setTimeSlot(next);
-    pushToast({
-      variant: "default",
-      message: `${next} 시간대 시뮬레이션은 다음 업데이트에 추가됩니다 ✨`,
-    });
+  // Issue #120 — DetailSheet TimeSlotSelector 진짜 재계산 박힘 (★ handleTimeWhatIf 재사용 = #111+#118 패턴 답습).
+  //   ★ Q-B 통합: value=currentDepartureTime (★ filters single source of truth, 4 옵션 외 시 chip 선택 X 자연).
+  const handleTimeSlotChange = (next: string) => {
+    void handleTimeWhatIf(next);
   };
 
   const handleLike = () => {
@@ -256,7 +251,10 @@ export function ResultContent({
           onLike={handleLike}
           onShare={onShare}
           commuteExtra={
-            <TimeSlotSelector value={timeSlot} onChange={handleTimeSlotChange} />
+            <TimeSlotSelector
+              value={currentDepartureTime}
+              onChange={handleTimeSlotChange}
+            />
           }
           primaryCta={{
             label: selectedCandidate.listingsCount
