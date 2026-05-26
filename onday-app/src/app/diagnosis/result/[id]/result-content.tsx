@@ -30,6 +30,8 @@ import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
 
+import { BudgetChipOptions } from "./budget-chip-options";
+import { CommuteChipOptions } from "./commute-chip-options";
 import { SortControl } from "./sort-control";
 import { TimeChipOptions } from "./time-chip-options";
 import { TimeSlotSelector } from "./time-slot-selector";
@@ -66,7 +68,10 @@ export function ResultContent({
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
   // Issue #111 β — 출근시간 chip 클릭 시 what-if 입력 inline 박힘 토글.
+  // Issue #112 — maxCommuteTime + budget chip 클릭 시 what-if 입력 inline 박힘 토글 답습.
   const [showTimeOptions, setShowTimeOptions] = React.useState(false);
+  const [showCommuteOptions, setShowCommuteOptions] = React.useState(false);
+  const [showBudgetOptions, setShowBudgetOptions] = React.useState(false);
   const currentDepartureTime = filters.commuteSchedule?.departureTime ?? "08:00";
 
   const handleTimeWhatIf = async (time: string) => {
@@ -84,6 +89,57 @@ export function ResultContent({
         departureTime: time,
       },
     };
+    setFilters(newFilters);
+    try {
+      const next = await runMockDiagnosis(
+        coordinateA,
+        coordinateB,
+        newFilters,
+        mode,
+        leisureCoordA,
+        leisureCoordB,
+      );
+      if (diagnosisId) setResult(diagnosisId, next);
+    } catch {
+      pushToast({ variant: "danger", message: "재계산에 실패했습니다" });
+    }
+  };
+
+  // Issue #112 — what-if maxCommuteTime/budget 재계산 (★ handleTimeWhatIf 답습).
+  const handleCommuteWhatIf = async (maxCommute: number) => {
+    if (!coordinateA) {
+      pushToast({
+        variant: "default",
+        message: "페이지 새로고침 후 다시 시도해주세요",
+      });
+      return;
+    }
+    const newFilters = { ...filters, maxCommuteTime: maxCommute };
+    setFilters(newFilters);
+    try {
+      const next = await runMockDiagnosis(
+        coordinateA,
+        coordinateB,
+        newFilters,
+        mode,
+        leisureCoordA,
+        leisureCoordB,
+      );
+      if (diagnosisId) setResult(diagnosisId, next);
+    } catch {
+      pushToast({ variant: "danger", message: "재계산에 실패했습니다" });
+    }
+  };
+
+  const handleBudgetWhatIf = async (min: number, max: number) => {
+    if (!coordinateA) {
+      pushToast({
+        variant: "default",
+        message: "페이지 새로고침 후 다시 시도해주세요",
+      });
+      return;
+    }
+    const newFilters = { ...filters, budget: { min, max } };
     setFilters(newFilters);
     try {
       const next = await runMockDiagnosis(
@@ -134,12 +190,6 @@ export function ResultContent({
     setOpenId(cid);
   };
 
-  const notifyComingSoon = (label: string) =>
-    pushToast({
-      variant: "default",
-      message: `${label} 변경은 다음 업데이트에 추가됩니다 ✨`,
-    });
-
   // Issue #120 — DetailSheet TimeSlotSelector 진짜 재계산 박힘 (★ handleTimeWhatIf 재사용 = #111+#118 패턴 답습).
   //   ★ Q-B 통합: value=currentDepartureTime (★ filters single source of truth, 4 옵션 외 시 chip 선택 X 자연).
   const handleTimeSlotChange = (next: string) => {
@@ -174,12 +224,14 @@ export function ResultContent({
           filters.maxCommuteTime != null && {
             label: "통근시간",
             value: formatCommuteFilter(filters.maxCommuteTime),
-            onClick: () => notifyComingSoon("통근시간 필터"),
+            // Issue #112 — what-if 옵션 inline 박힘 토글 (★ #111 답습).
+            onClick: () => setShowCommuteOptions((prev) => !prev),
           },
           filters.budget != null && {
             label: "예산",
             value: formatBudgetFilter(filters.budget),
-            onClick: () => notifyComingSoon("예산 필터"),
+            // Issue #112 — what-if 옵션 inline 박힘 토글 (★ #111 답습).
+            onClick: () => setShowBudgetOptions((prev) => !prev),
           },
         ].filter(Boolean) as { label: string; value: string; onClick: () => void }[]}
       />
@@ -191,6 +243,23 @@ export function ResultContent({
           key={currentDepartureTime}
           baseTime={currentDepartureTime}
           onConfirm={handleTimeWhatIf}
+        />
+      )}
+
+      {/* Issue #112 — maxCommuteTime + budget what-if 입력 (★ #111+#118 답습). */}
+      {showCommuteOptions && filters.maxCommuteTime != null && (
+        <CommuteChipOptions
+          key={filters.maxCommuteTime}
+          baseValue={filters.maxCommuteTime}
+          onConfirm={handleCommuteWhatIf}
+        />
+      )}
+      {showBudgetOptions && filters.budget != null && (
+        <BudgetChipOptions
+          key={`${filters.budget.min}-${filters.budget.max}`}
+          baseMin={filters.budget.min}
+          baseMax={filters.budget.max}
+          onConfirm={handleBudgetWhatIf}
         />
       )}
 

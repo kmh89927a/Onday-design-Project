@@ -398,3 +398,61 @@ _본 § 신설: 2026-05-25 (Issue #118 Phase C). 4회 누적 약속 답습 정�
 - ★ #110/#108/#106 사후 close = ★ "PR 본문 Closes #XXX 사전 명시 답습" 미래 작업자 학습 정수 박힘
 
 _본 § 신설: 2026-05-26 (Issue #120 Phase C). 5회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ Phase A 사전 박힘 진화 답습 11회 성공 정수 정점._
+
+---
+
+## ★ ★ 정직 답습 정수 답습 정점 § (★ Issue #112 Phase C 시점 박힘 — 4 chip 다 what-if 일관성 정점 + ㊠/㊡ 정직 인정)
+
+**작성일:** 2026-05-26 (★ Issue #112 Phase C 시점 — #108 + #110 + #114 + #111 + #118 + #120 약속 6회 누적 답습)
+**범위:** PR #121 머지 + #112 진행 (★ #106 §9.D 약속 답습)
+
+### ★ ★ 4 chip 다 what-if 일관성 정점
+
+본 ISSUE 머지 시점 = 결과 페이지 4 chip 다 what-if 답습 도달:
+- 출근시간 chip (★ #111 β + #118 변경 버튼 + #120 양방향)
+- 최대 통근시간 chip (★ #112 신규)
+- 예산 chip (★ #112 신규)
+- 진단 모드 변경 (★ 별도 영역)
+
+★ 본 프로젝트 자유 입력 답습 패턴 정점 = 사용자 어느 chip 클릭해도 자유 입력 + 변경 버튼 + 재계산 자연 답습.
+
+### ★ ㊠/㊡ Mismatch 정직 인정
+
+- **㊠** (Phase A 사전 발견): complexity:h → m 정정 (★ 타입/Zod/Calculator/mapper/util 다 이미 박힘 ✅, #98 답습)
+- **㊡** (Phase A 사후 발견 즉시 해소): notifyComingSoon 사용처 0 (ESLint +1 warning) → 함수 제거 = 10 warnings 회복
+
+### ★ ★ Phase B 한계 § 7 ISSUE 누적 학습 정점
+
+#108 → #110 → #114 → #111 → #118 → #120 → **#112** = 본 세션 7 ISSUE 누적 진화 정점.
+
+### 본 세션 누적 16건 § 박힘 표
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1 | REFACTOR-UI-002-FEEDBACK | #94 | #95 | ✅ 머지 | 사용자 피드백 1차 |
+| 2 | REFACTOR-UI-002-FEEDBACK-2 | #96 | #97 | ✅ 머지 | 사용자 피드백 2차 |
+| 3 | DTO-COMMUTE-TIME | #98 | #99 | ✅ 머지 | 출퇴근 시간대 |
+| 4 | REFACTOR-DTO-COMMUTE-TIME-FEEDBACK | #100 | #101 | ✅ 머지 | picker state 분리 |
+| 5 | REFACTOR-COMMUTE-LEGACY | #102 | #103 | ✅ 머지 | timeRange 제거 |
+| 6 | UI-003 (MapCanvas) | #104 | #105 | ✅ 머지 | Kakao Maps SDK |
+| 7 | REFACTOR-UI-003-FEEDBACK | #106 | #107 | ✅ 머지 | 결과 페이지 5건 |
+| 8 | REFACTOR-UI-003-FEEDBACK-2 | #108 | #109 | ✅ 머지 | ㊙ + Phase B 한계 § NEW |
+| 9 | FIX-BEST-BADGE-COLOR | #110 | #113 | ✅ 머지 | Badge best 색 |
+| 10 | FIX-BEST-BADGE-TEXT-COLOR-TAILWIND | #114 | #115 | ✅ 머지 | Vercel text-white 본질 |
+| 11 | FEAT-RESULT-WHAT-IF-SIMULATION | #111 | #116 + #117 | ✅ 머지 | β 확장 정수 정점 |
+| 12 | #114 OPEN 유지 | #114 | (★ 후속) | OPEN | Tailwind 본질 다음 세션 |
+| 13 | FIX-WHAT-IF-CONFIRM-BUTTON | #118 | #119 | ✅ 머지 | "변경" 버튼 + 명시적 확인 + React 19 답습 정수 |
+| 14 | FEAT-DETAIL-SHEET-WHAT-IF | #120 | #121 | ✅ 머지 | DetailSheet 진짜 재계산 + 양방향 동기화 (★ Phase A 11회 성공) |
+| 15 | #110/#108/#106 사후 close | - | - | ✅ Closed | ★ "PR 본문 Closes #XXX 사전 명시 답습" 미래 작업자 학습 정수 |
+| 16 | **FEAT-DIAGNOSIS-INPUT-FILTERS** | **#112** | **TBD** | **진행중** | **★ ★ 4 chip 다 what-if 일관성 정점 + ㊠/㊡ 정직 인정 + Phase B 한계 § 7 ISSUE 누적 학습 정점** |
+
+### ★ ★ 본 ISSUE Phase C 시점 메타 가치 정수 정점
+
+- ★ 15건 → 16건 누적 = ISSUE 신설 자동화 답습 14회째 (#112)
+- ★ ★ 4 chip 다 what-if 일관성 정점 = 본 프로젝트 자유 입력 답습 패턴 정점
+- ★ ★ Phase B 한계 § 7 ISSUE 누적 학습 정점 (#108 → #110 → #114 → #111 → #118 → #120 → #112)
+- ★ ㊠ Phase A 사전 발견 정직 인정 (★ complexity:h → m + 타입/Zod 이미 박힘)
+- ★ ㊡ Phase A 사후 즉시 해소 (★ notifyComingSoon 사용처 0 → 함수 제거)
+- ★ 사용자 본질 짚음 답습 정수 정점 (★ "다 가야돼 꼭" + "몇억 ~ 몇억" 누적)
+
+_본 § 신설: 2026-05-26 (Issue #112 Phase C). 6회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ ★ 4 chip 다 what-if 일관성 정점 정수 정점._
