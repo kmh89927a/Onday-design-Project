@@ -1,8 +1,8 @@
 # Software Requirements Specification (SRS)
 
 **Document ID:** SRS-001
-**Revision:** 1.6
-**Date:** 2026-04-18
+**Revision:** 1.7
+**Date:** 2026-05-27 *(Rev 1.6 → 1.7, PRD/SRS audit 정합 회복)*
 **Standard:** ISO/IEC/IEEE 29148:2018
 
 | 항목 | 내용 |
@@ -93,6 +93,42 @@
 
 - **REQ-NF-009** (§4.2.1) — 공백 행 추가 (번호 공백 유지)
 - **REQ-NF-016** (§4.2.2) — 들여쓰기·셀 정렬 오류 수정
+
+---
+
+## Rev 1.7 Changelog (2026-05-27)
+
+> **변경 사유:** PRD/SRS audit 결과 미반영 요구사항을 v1.4 TASK_LIST에 정합 회복하면서, SRS 본문도 TASK_LIST 매핑·v1.5+ 연기 표기·v1.3 결정 번복 메타를 추가 박힘.
+
+### A. TASK_LIST 매핑 추가 (3건)
+
+- **REQ-FUNC-008** (§4.1.1) — TASK_LIST 매핑 추가: `FEAT-DIAGNOSIS-ZERO-CANDIDATES` (v1.4 신설). v1.3까지는 TEST-001 AC-N3 검증 시나리오만 존재 → v1.4에서 진단 모드 0곳 처리 구현 task 신설로 정합 회복.
+- **REQ-FUNC-012** (§4.1.2) — TASK_LIST 매핑 확장: `UI-007` 범위에 개인 진단 결과 페이지(`/diagnosis/result/[id]`) 출처 배지 포함. v1.3까지는 공유 리포트 페이지에만 한정 → "리포트 내 모든 데이터 항목" 본 SRS 본문 정합 회복.
+- **REQ-FUNC-020** (§4.1.3) — TASK_LIST 매핑 강화: `UI-009` AC에 "100ms 이내 인라인 에러 + 서버 도달률 0%" 명시 추가.
+
+### B. v1.4 부활 메타 (1건 — v1.3 결정 번복)
+
+- **REQ-NF-008** (§4.2.5) — TASK_LIST v1.4 부활: `MON-003` (v1.3에서 "Sentry 기본 알림만 유지"로 폐기됨). 부활 사유: Mixpanel 무료 티어 100K 이벤트/월 = 1인 MVP 평생 무료 수준, 측정 도구 없이 본 REQ 검증 불가. v1.3 폐기 사유 "비용 부담"이 무료 티어 재검토 결과 해당 없음.
+
+### C. MON-001 확장 매핑 (2건)
+
+- **REQ-NF-011** (§4.2.2) — TASK_LIST 매핑 추가: `MON-001` v1.4 확장 (Uptime 모니터링 — `/api/health` 엔드포인트 + 5분 주기 핑).
+- **REQ-NF-012** (§4.2.2) — TASK_LIST 매핑 추가: `MON-001` v1.4 확장 (5xx 오류율 ≤ 0.5% 측정 — Sentry Dashboard 5xx 비율 + PII 마스킹).
+
+### D. v1.5+ 연기 표기 (2건 — TASK_LIST v1.4 미반영)
+
+- **REQ-NF-005** (§4.2.1) — **v1.5+ 적용 예정 (실 부동산 API 연동 시점).** MVP가 mock 데이터를 사용하므로 Cron이 갱신할 실 데이터 없음. v1.3 INFRA-003 "Cron Job 설정 제거" 결정 정합. 실 부동산 API 연동 시점에 부활.
+- **REQ-NF-013** (§4.2.2) — **v1.5+ 적용 예정 (실 카카오 모빌리티 API 연동 시점).** MVP는 mock 데이터로 카카오맵 교차 검증 의미 X. 실 카카오 모빌리티 API 연동 시점에 본격 진행.
+
+### E. 신설 NFR 매핑 (1건)
+
+- **REQ-NF-002** (§4.2.1) — TASK_LIST 매핑 추가: `NFR-PERF-PAGE-LOAD` (v1.4 신설, Lighthouse CI + Vercel Speed Insights).
+
+### F. v1.7 의의
+
+- v1.3 결정 폐기 1건 번복(MON-003) 정직 기록 — Rev 1.7 §B로 명문화
+- v1.5+ 연기 2건 SRS 표기 추가 (TASK_LIST에서는 제외) — 실 데이터 연동 시점 부활 예정
+- REQ-FUNC 박힘률 67.5% → 75.6%, REQ-NF 박힘률 36.8% → 52.6% (사용자 audit 보고 기준)
 
 ---
 
@@ -380,7 +416,7 @@ sequenceDiagram
 | **REQ-FUNC-005** | 시스템은 출근 시간대(오전 7~9시 범위)를 변경했을 때 해당 시간대 평균 소요시간으로 출퇴근 시뮬레이션을 재계산해야 한다. 재계산 응답은 p95 ≤ 2,000ms이며, 시간대별 데이터 커버리지는 수도권 85% 이상이어야 한다. | Must | Story 3-1, AC-3 |
 | **REQ-FUNC-006** | 시스템은 조건 필터(최대 통근 시간, 예산)를 적용했을 때 조건에 맞지 않는 후보를 실시간 필터링하고 지도를 갱신해야 한다. 필터 적용 응답은 p95 ≤ 1,000ms여야 한다. | Must | Story 3-1, AC-4 |
 | **REQ-FUNC-007** | 시스템은 교통 API 타임아웃(5초 이상 무응답) 발생 시 "일시적 오류" 토스트를 표시하고 자동 재시도 1회를 수행해야 한다. 재시도 실패 시 "잠시 후 다시 시도해 주세요" 안내를 표시하고 실패 로그를 전송해야 한다. 재시도 포함 총 응답은 10초 이내이며, 무한 로딩 노출은 0건이어야 한다. | Must | Story 3-1, AC-N2 |
-| **REQ-FUNC-008** | 시스템은 두 직장 간 거리로 인해 교집합 후보가 0곳인 경우 "조건을 만족하는 동네가 없습니다. 최대 통근 시간을 늘려보세요" 안내를 1초 이내에 표시하고, 조건 완화 제안을 2개 이상 제공해야 한다. | Must | Story 3-1, AC-N3 |
+| **REQ-FUNC-008** | 시스템은 두 직장 간 거리로 인해 교집합 후보가 0곳인 경우 "조건을 만족하는 동네가 없습니다. 최대 통근 시간을 늘려보세요" 안내를 1초 이내에 표시하고, 조건 완화 제안을 2개 이상 제공해야 한다. *(v1.4: TASK_LIST 매핑 = `FEAT-DIAGNOSIS-ZERO-CANDIDATES` 신설)* | Must | Story 3-1, AC-N3 |
 
 **REQ-FUNC-003 Acceptance Criteria:**
 
@@ -399,7 +435,7 @@ sequenceDiagram
 | **REQ-FUNC-009** | 시스템은 진단 리포트 생성 완료 후 "공유 링크 생성" 버튼을 제공해야 하며, 클릭 시 고유 URL(UUID v4, entropy ≥ 128bit)을 생성하여 클립보드에 복사해야 한다. 링크 생성 응답 시간은 500ms 이내여야 한다. | Must | Story 3-2, AC-1 |
 | **REQ-FUNC-010** | 공유 링크의 유효기간은 생성일로부터 30일 이상이어야 한다. 만료된 링크 접근 시 "이 링크는 만료되었습니다" 안내 페이지를 1초 이내에 로딩하고, 원 사용자에게 재생성 알림 푸시를 발송해야 한다. 만료된 링크에서 개인정보 노출은 0건이어야 한다. | Must | Story 3-2, AC-N1 |
 | **REQ-FUNC-011** | 배우자(비회원)가 공유 링크를 클릭하면 앱 설치 없이 모바일 웹에서 리포트 전체를 열람하고 무료 미리보기 1곳을 확인할 수 있어야 한다. 3G 환경 기준 페이지 로딩 시간은 p95 ≤ 2,000ms여야 한다. | Must | Story 3-2, AC-2 |
-| **REQ-FUNC-012** | 시스템은 리포트 내 모든 데이터 항목에 출처 배지(공공데이터·API명)와 최종 업데이트 일자를 표시해야 한다. 출처 투명도는 100%(모든 수치에 출처 배지 부착)여야 한다. | Must | Story 3-2, AC-3 |
+| **REQ-FUNC-012** | 시스템은 리포트 내 모든 데이터 항목에 출처 배지(공공데이터·API명)와 최종 업데이트 일자를 표시해야 한다. 출처 투명도는 100%(모든 수치에 출처 배지 부착)여야 한다. *(v1.4: TASK_LIST 매핑 = `UI-007` 확장, 공유 리포트 + 개인 진단 결과 페이지 양쪽 적용)* | Must | Story 3-2, AC-3 |
 | **REQ-FUNC-013** | 비회원이 무료 미리보기 1곳을 소진한 후 추가 동네 상세 조회를 시도하면, 유료 전환 유도 화면을 표시해야 한다. 전환 유도부터 결제 완료까지 단계 수는 3단계 이하여야 한다. | Must | Story 3-2, AC-4 |
 | **REQ-FUNC-014** | 비회원이 무료 미리보기 소진 후 2곳째 동네 접근 시도 시, 유료 전환 유도 모달을 300ms 이내에 표시해야 한다. 뒤로가기 시 원래 리포트로 복귀하며, 강제 이탈을 방지해야 한다. 모달 노출 후 이탈률은 50% 이하를 목표로 모니터링해야 한다. | Must | Story 3-2, AC-N2 |
 
@@ -422,7 +458,7 @@ sequenceDiagram
 | **REQ-FUNC-017** | (조정됨) 매물 직접 필터링 배제 - 아웃링크를 통한 조건 위임으로 대체 | Must | Story 3-3, AC-3 |
 | **REQ-FUNC-018** | 시스템은 "30분 요약" 버튼 클릭 시 Top 3 매물의 핵심 정보(통근 시간·가격·배정 학교 등)를 카드 형태로 요약해야 한다. 요약 카드당 정보 항목은 6개 이상이어야 한다. | Must | Story 3-3, AC-4 |
 | **REQ-FUNC-019** | 시스템은 데드라인 모드에서 교집합 급매 매물이 0건인 경우, "현재 조건의 급매가 없습니다" 안내와 함께 ① 인근 동 반경 확장 제안, ② 조건 완화 슬라이더, ③ 신규 급매 푸시 알림 구독 옵션을 1초 이내에 표시해야 한다. 알림 구독 전환율을 Mixpanel로 추적해야 한다. | Must | Story 3-3, AC-N1 |
-| **REQ-FUNC-020** | 시스템은 사용자가 이사 마감일을 과거 날짜로 입력한 경우, 달력 UI에서 과거 날짜 선택을 차단하고 "마감일은 오늘 이후여야 합니다" 인라인 에러를 100ms 이내에 표시해야 한다. 잘못된 날짜의 서버 도달률은 0%여야 한다. | Must | Story 3-3, AC-N2 |
+| **REQ-FUNC-020** | 시스템은 사용자가 이사 마감일을 과거 날짜로 입력한 경우, 달력 UI에서 과거 날짜 선택을 차단하고 "마감일은 오늘 이후여야 합니다" 인라인 에러를 100ms 이내에 표시해야 한다. 잘못된 날짜의 서버 도달률은 0%여야 한다. *(v1.4: TASK_LIST 매핑 = `UI-009` AC 강화 확장)* | Must | Story 3-3, AC-N2 |
 
 **REQ-FUNC-015 Acceptance Criteria:**
 
@@ -499,13 +535,13 @@ sequenceDiagram
 | ID | 요구사항 | 측정 기준 | 측정 방법 | Source |
 | --- | --- | --- | --- | --- |
 | **REQ-NF-001** | 두 동선 교차 계산 응답 시간 | p95 ≤ 8,000ms (클라이언트 API 콜 기준) | Vercel Analytics + Sentry Performance p95 메트릭 | PRD §5-1, Story 3-1 AC-1 |
-| **REQ-NF-002** | 일반 페이지 로딩 시간 | p95 ≤ 1,500ms (3G 모바일 환경 기준) | Lighthouse/WebPageTest + Vercel Speed Insights | PRD §5-1 |
+| **REQ-NF-002** | 일반 페이지 로딩 시간 | p95 ≤ 1,500ms (3G 모바일 환경 기준) | Lighthouse/WebPageTest + Vercel Speed Insights | PRD §5-1 *(v1.4: TASK_LIST 매핑 = `NFR-PERF-PAGE-LOAD` 신설)* |
 | **REQ-NF-003** | 공유 링크 페이지 로딩 시간 | p95 ≤ 2,000ms (비회원·비설치 환경, 3G) | Lighthouse/WebPageTest + Vercel Speed Insights | PRD §5-1, Story 3-2 AC-2 |
 | **REQ-NF-004** | 필터 적용 / 재계산 응답 시간 | p95 ≤ 1,000ms (클라이언트 사이드 캐싱 활용) | Vercel Analytics + 클라이언트 로그 | PRD §5-1, Story 3-1 AC-4 |
-| **REQ-NF-005** | 급매 데이터 갱신 주기 | ≤ 4시간 (Vercel Cron Job + 알림 파이프라인) | Vercel Cron Job 실행 로그 | PRD §5-1, Story 3-3 AC-2 |
+| **REQ-NF-005** | 급매 데이터 갱신 주기 | ≤ 4시간 (Vercel Cron Job + 알림 파이프라인) | Vercel Cron Job 실행 로그 | PRD §5-1, Story 3-3 AC-2 *(v1.4: **v1.5+ 적용 예정 — 실 부동산 API 연동 시점**. v1.3 INFRA-003 Cron 제거 결정 정합)* |
 | **REQ-NF-006** | 공유 링크 생성 응답 시간 | ≤ 500ms | Vercel Analytics | Story 3-2 AC-1 |
 | **REQ-NF-007** | 교집합 매물 연산 응답 시간 (데드라인 모드) | p95 ≤ 1,500ms | Vercel Analytics | Story 3-3 AC-3 |
-| **REQ-NF-008** | 평균 탐색 완료 시간 | p50 ≤ 10분 (`diagnosis_started` → `diagnosis_completed`) | Mixpanel 이벤트 타임스탬프 차이 | PRD §1-3, 보조 KPI 6 |
+| **REQ-NF-008** | 평균 탐색 완료 시간 | p50 ≤ 10분 (`diagnosis_started` → `diagnosis_completed`) | Mixpanel 이벤트 타임스탬프 차이 | PRD §1-3, 보조 KPI 6 *(v1.4: TASK_LIST 매핑 = `MON-003` **v1.4 부활**, v1.3 결정 번복. Mixpanel 무료 티어 100K 이벤트/월 재검토)* |
 | **REQ-NF-009** | *(제거됨 — 번호 공백 유지)* | — | — | — |
 | **REQ-NF-010** | PDF 리포트 저장 응답 시간 | ≤ 1초 (window.print() 클라이언트 호출) | 클라이언트 로그 | Story 3-4 AC-3 |
 
@@ -513,9 +549,9 @@ sequenceDiagram
 
 | ID | 요구사항 | 측정 기준 | 측정 방법 | Source |
 | --- | --- | --- | --- | --- |
-| **REQ-NF-011** | 월간 서비스 가용성 (Uptime) | Best Effort 지원 (무료 티어 제약 수용) | Vercel Status + Sentry Uptime 모니터링 | PRD §5-2 |
-| **REQ-NF-012** | 서버 오류율 (5xx 응답) | ≤ 0.5% | Sentry 에러 비율 | PRD §5-2 |
-| **REQ-NF-013** | 데이터 정합성 (교통 시간 오차) | ≤ ±10% (카카오맵 기준 교차 검증) | 주간 샘플링 교차 검증 (100건) | PRD §5-2, Story 3-1 AC-2 |
+| **REQ-NF-011** | 월간 서비스 가용성 (Uptime) | Best Effort 지원 (무료 티어 제약 수용) | Vercel Status + Sentry Uptime 모니터링 | PRD §5-2 *(v1.4: TASK_LIST 매핑 = `MON-001` 확장, `/api/health` + 5분 주기 핑)* |
+| **REQ-NF-012** | 서버 오류율 (5xx 응답) | ≤ 0.5% | Sentry 에러 비율 | PRD §5-2 *(v1.4: TASK_LIST 매핑 = `MON-001` 확장, Sentry Dashboard 5xx 비율 + PII 마스킹)* |
+| **REQ-NF-013** | 데이터 정합성 (교통 시간 오차) | ≤ ±10% (카카오맵 기준 교차 검증) | 주간 샘플링 교차 검증 (100건) | PRD §5-2, Story 3-1 AC-2 *(v1.4: **v1.5+ 적용 예정 — 실 카카오 모빌리티 API 연동 시점**. MVP mock 데이터로 비교 의미 X)* |
 | **REQ-NF-016** | 입력값 자동 저장 성공률 | Best effort (저장 실패 시 무시, 사용자 미통지) | 서버 로그 저장 실패 비율 모니터링 | Story 3-5 AC-1 |
 
 #### 4.2.3 보안 (Security)

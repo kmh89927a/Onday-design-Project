@@ -2,7 +2,7 @@
 
 이 파일은 Antigravity, Cursor, Claude Code, Gemini CLI 등 다수의 AI 도구가 공통으로 읽는 **cross-tool 글로벌 규칙(Global Rules)** 이다. 모든 AI 에이전트는 작업 시작 시 본 파일의 모든 섹션을 컨텍스트로 로드한다.
 
-> SSoT(Single Source of Truth): `docs/00_PRD_v1.1-rev.4.md`, `docs/05_SRS_v1.6.md`. 본 파일과 두 문서가 충돌하면 PRD/SRS 가 우선한다.
+> SSoT(Single Source of Truth): `docs/00_PRD_v1.1-rev.4.md`, `docs/05_SRS_v1.7.md`. 본 파일과 두 문서가 충돌하면 PRD/SRS 가 우선한다.
 
 ---
 
