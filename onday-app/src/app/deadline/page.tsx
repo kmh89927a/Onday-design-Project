@@ -28,6 +28,22 @@ function todayPlus(days: number): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
+// #52 v1.4 — REQ-FUNC-020 + ㊧ Mismatch 6번째 영역 분기 (SRS "오늘 이후" vs 본 프로젝트 D+7).
+//   ★ 과거(days<0): SRS REQ-FUNC-020 정합 문구
+//   ★ 오늘~+6일(0≤days<7): 본 프로젝트 wiki/concepts/deadline-mode.md D+7 정책 문구
+//   ★ +7일 이상: null (통과)
+function validateDeadline(draftYmd: string): string | null {
+  const target = new Date(`${draftYmd}T00:00:00`);
+  const days = daysFromNow(target.toISOString());
+  if (days < 0) {
+    return "마감일은 오늘 이후여야 합니다";
+  }
+  if (days < MIN_DAYS_FROM_NOW) {
+    return `최소 ${MIN_DAYS_FROM_NOW}일 후 날짜를 선택해주세요`;
+  }
+  return null;
+}
+
 export default function DeadlinePage() {
   const router = useRouter();
   const deadlineDate = useDiagnosisStore((s) => s.deadlineDate);
@@ -37,18 +53,25 @@ export default function DeadlinePage() {
   const [draft, setDraft] = React.useState<string>(
     deadlineDate ? deadlineDate.slice(0, 10) : todayPlus(30),
   );
+  // #52 v1.4 — AC-FUNC-020-A (인라인 에러 ≤100ms 클라이언트 검증 only).
+  //   ★ onChange 즉시 검증 = 네트워크 X = 100ms 자동 정합.
+  const [inlineError, setInlineError] = React.useState<string | null>(null);
+
+  const handleDraftChange = (next: string) => {
+    setDraft(next);
+    setInlineError(validateDeadline(next));
+  };
 
   const handleSave = () => {
-    const target = new Date(`${draft}T00:00:00`);
-    const days = daysFromNow(target.toISOString());
-    if (days < MIN_DAYS_FROM_NOW) {
-      pushToast({
-        variant: "danger",
-        message: `최소 ${MIN_DAYS_FROM_NOW}일 후 날짜를 선택해주세요`,
-      });
+    const err = validateDeadline(draft);
+    if (err) {
+      setInlineError(err);
+      pushToast({ variant: "danger", message: err });
       return;
     }
+    const target = new Date(`${draft}T00:00:00`);
     setDeadlineDate(target.toISOString());
+    setInlineError(null);
     pushToast({ variant: "ok", message: "데드라인을 저장했어요" });
   };
 
@@ -78,11 +101,28 @@ export default function DeadlinePage() {
               type="date"
               value={draft}
               min={todayPlus(MIN_DAYS_FROM_NOW)}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => handleDraftChange(e.target.value)}
+              aria-invalid={inlineError !== null}
+              aria-describedby={inlineError ? "deadline-input-error" : undefined}
             />
+            {inlineError ? (
+              <p
+                id="deadline-input-error"
+                role="alert"
+                aria-live="polite"
+                className="text-body-sm text-danger"
+              >
+                {inlineError}
+              </p>
+            ) : null}
           </section>
 
-          <Button fullWidth onClick={handleSave} leading={<CalendarIcon />}>
+          <Button
+            fullWidth
+            onClick={handleSave}
+            leading={<CalendarIcon />}
+            disabled={inlineError !== null}
+          >
             데드라인 저장
           </Button>
           <Button
