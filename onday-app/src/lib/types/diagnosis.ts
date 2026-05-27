@@ -119,3 +119,18 @@ export interface DiagnosisErrorDTO {
   httpStatus: number;
   originalError?: string;
 }
+
+// ──────────────────────────────────────────────
+// 6. Relaxation Suggestion (#125 FEAT-DIAGNOSIS-ZERO-CANDIDATES)
+//    REQ-FUNC-008: 진단 0곳 시 조건 완화 제안 ≥2개 (★ Phase A 사전 박힘 발견 정수 — 백엔드는 일부 박힘, 프론트 연결 X였음)
+// ──────────────────────────────────────────────
+
+/**
+ * 조건 완화 제안 — EmptyState 의 SuggestionButton 에 1:1 매핑.
+ * apply 필드 = 클릭 시 useDiagnosisStore.setFilters 에 spread 할 부분 filters.
+ * ★ what-if 답습 정수 (#111/#118/#120/#112) 5번째 사례.
+ */
+export interface RelaxationSuggestion {
+  label: string;
+  apply: Partial<DiagnosisFilters>;
+}

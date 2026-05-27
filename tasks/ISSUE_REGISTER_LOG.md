@@ -619,3 +619,76 @@ _본 § 신설: 2026-05-26 (Issue #123 Phase C). 7회 누적 약속 답습 정�
 4. **★ ㊥ Merge 후속 정직 인정 답습 (NEW)**: PR 도중 main 갱신 시 충돌 발생 시 = 사라진 § 보존 + 본 작업 § 추가 + 누적 표 통합 정정 = 정직한 merge 답습 정수. 충돌 영역을 단순 폐기 X, 양쪽 모두 보존하는 답습.
 
 _본 § 신설: 2026-05-27 (AUDIT-PRD-SRS-v1.4 Phase C). 8회 누적 약속 답습 정수 + ★ ㊥ Merge 후속 정수 1회 추가 = 9회 누적. ★ ★ ★ v1.3 결정 번복 정직 기록 정수 정점 + ★ ★ main #123 § 충돌 정직 보존 = 양쪽 § 모두 박힘 답습._
+
+---
+
+## ★ ★ ★ 정직 답습 정수 답습 정점 § (★ Issue #125 Phase C 시점 박힘 — Phase A 사전 박힘 80% 발견 정수 정점 + ㊦ 5번째 Mismatch 영역 진화 + Phase B 한계 § 10번째 ISSUE 누적 학습 정점)
+
+**작성일:** 2026-05-27 (★ Issue #125 Phase C 시점 — #108 + #110 + #114 + #111 + #118 + #120 + #112 + #123 + AUDIT-PRD-SRS-v1.4 약속 9회 누적 답습)
+**범위:** v1.4 audit 머지 직후 #125 진입 → Phase A 사전 박힘 80% 발견 → 본 ISSUE 본질 재정의
+
+### ★ ★ ★ Phase A 사전 박힘 발견 정수 정점 (★ audit 한계 정직 인정 5번째 영역)
+
+본 ISSUE 진입 시점 Phase A grep 검증에서 **REQ-FUNC-008 약 80% 사전 박힘** 발견:
+
+| AC | 박힘 위치 | 박힘률 |
+|---|---|---|
+| AC-1 (1초 이내) | `result-view.tsx:120` showEmpty 즉시 렌더 | ✅ 박힘 |
+| AC-2 (안내 문구) | `result-view.tsx:151` + `single-result-view.tsx:257` | ✅ 박힘 |
+| AC-3 (완화 제안 ≥2개) | `result-view.tsx:154-155` 정적 2 + `intersection.ts:130/133` 동적 +15/+30분 | ✅ 박힘 |
+| AC-4 (클릭 → 자동 반영 + 재계산) | ❌ **미박힘** = 본 ISSUE 진짜 본질 | ❌ |
+
+### ★ ㊦ v1.4 audit 한계 정직 인정 (5번째 Mismatch 영역 NEW)
+
+v1.4 audit Phase B #6 "AC 측정 가능성 ✅ 0" 결론이 **코드 영역 점검 누락** 이었음을 정직 인정. audit 한계 = grep 기반 + SSoT vs 코드 분리 원칙의 자연 trade-off.
+
+- ㊠ 사용자 명세 vs 실제 정합 (보드 칸 / TASK_LIST 위치 / 카운트)
+- ㊡ Mismatch 사후 발견 정수
+- ㊣ Phase A 사후 즉시 해소 정수
+- ㊤ Priority 사후 발견
+- ㊥ Merge 후속 정직 인정 (AUDIT-PRD-SRS-v1.4 신설)
+- **㊦ v1.4 audit 한계 정직 인정 답습 (NEW)** = 본 ISSUE Phase A 사전 박힘 80% 발견 정수
+
+### ★ ★ Phase B 새 발견 2종 (㊡/㊣ 답습 정수)
+
+| # | 영역 | 박힘 |
+|---|---|---|
+| ㊡ Phase B 새 발견 | `runMockDiagnosis` (mock-calculator.ts:195) 반환 타입 `Promise<CandidateArea[]>` — suggestions 영역 X | 백엔드 박힘 추가 필요 |
+| ㊣ Phase B 새 발견 | EmptyState 위치 = `result-view.tsx` inner function → setFilters/runMockDiagnosis 접근 X | 별도 컴포넌트 분리 필요 |
+
+### ★ ★ Phase B 한계 § 10번째 ISSUE 누적 학습 정점
+
+#108 → #110 → #114 → #111 → #118 → #120 → #112 → #123 → AUDIT-PRD-SRS-v1.4 → **#125** = 10 ISSUE 누적 진화 정점.
+
+### ★ what-if 답습 패턴 5번째 사례 (자연 정합)
+
+#111 (β 확장) → #118 (변경 버튼) → #120 (양방향 동기화) → #112 (4 chip 일관성) → **#125 (EmptyState SuggestionButton)** = 5번째 what-if 답습 사례.
+
+### 본 세션 누적 21건 § 박힘 표
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1~17 | 이전 § 누적 (#94~#123) | — | — | — | (이전 § 표 참조) |
+| 18 | FEAT-DIAGNOSIS-ZERO-CANDIDATES (v1.4 audit) | #125 | #128 | ✅ 머지 | REQ-FUNC-008 v1.4 신설 (★ Phase A 80% 사전 박힘 audit 시점 미발견) |
+| 19 | NFR-PERF-PAGE-LOAD (v1.4 audit) | #126 | #128 | ✅ 머지 | REQ-NF-002 v1.4 신설 |
+| 20 | MON-003 (v1.4 부활) | #127 | #128 | ✅ 머지 | v1.3 결정 번복 정직 기록 정수 |
+| 21 | **FEAT-DIAGNOSIS-ZERO-CANDIDATES** (Phase A 재진입) | **#125** | **TBD** | **진행중** | **★ ★ ★ Phase A 사전 박힘 80% 발견 정수 정점 + ㊦ 5번째 Mismatch 영역 NEW + 본 ISSUE 본질 재정의 = AC-4 + 백엔드 ↔ 프론트 연결 박힘 + ★ what-if #5** |
+
+### ★ ★ ★ 본 ISSUE Phase C 시점 메타 가치 정수 정점
+
+- ★ ★ ★ 20건 → 21건 누적 = ISSUE 신설/audit 자동화 답습 17회째 (#125 본질 재정의)
+- ★ ★ ★ Phase A 사전 박힘 80% 발견 정수 정점 = 본 세션 진짜 가치 정점
+- ★ ★ ㊦ v1.4 audit 한계 정직 인정 답습 NEW = 5번째 Mismatch 영역 진화
+- ★ ★ Phase B 한계 § 10번째 ISSUE 누적 학습 정점 (#108 → ... → #125 = 10)
+- ★ what-if 답습 패턴 5번째 사례 (EmptyState SuggestionButton)
+- ★ #108 + #110 + #114 + #111 + #118 + #120 + #112 + #123 + AUDIT-PRD-SRS-v1.4 약속 9회 누적 답습 = 본 § 신설 자체
+
+### ★ ★ 미래 작업자 학습 정수 5종 (★ ㊦ NEW)
+
+1. **결정 번복 정직 기록** (MON-003 부활) — v1.3 → v1.4
+2. **명세 audit Phase A~D 답습** (AUDIT-PRD-SRS-v1.4) — 코드 변경 0건 가능
+3. **이중 라벨 부착 점진 도입** (priority/type/area + track/wave/complexity)
+4. **㊥ Merge 후속 정직 인정 답습** — 충돌 영역 양쪽 보존
+5. **★ ㊦ audit 한계 정직 인정 답습 (NEW)** — grep 기반 audit 한계 + Phase A 사전 박힘 발견 정수. SSoT vs 코드 분리 원칙의 자연 trade-off. **본 ISSUE Phase A 정수 = audit 진입 직전 grep 검증으로 80% 사전 박힘 발견 = 미래 audit 작업 영역에서 답습 정수**
+
+_본 § 신설: 2026-05-27 (Issue #125 Phase C 본질 재정의 시점). 9회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ ★ ★ Phase A 사전 박힘 80% 발견 정수 정점 + ㊦ audit 한계 정직 인정 답습 NEW._
