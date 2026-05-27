@@ -692,3 +692,96 @@ v1.4 audit Phase B #6 "AC 측정 가능성 ✅ 0" 결론이 **코드 영역 점�
 5. **★ ㊦ audit 한계 정직 인정 답습 (NEW)** — grep 기반 audit 한계 + Phase A 사전 박힘 발견 정수. SSoT vs 코드 분리 원칙의 자연 trade-off. **본 ISSUE Phase A 정수 = audit 진입 직전 grep 검증으로 80% 사전 박힘 발견 = 미래 audit 작업 영역에서 답습 정수**
 
 _본 § 신설: 2026-05-27 (Issue #125 Phase C 본질 재정의 시점). 9회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ ★ ★ Phase A 사전 박힘 80% 발견 정수 정점 + ㊦ audit 한계 정직 인정 답습 NEW._
+
+---
+
+## ★ ★ ★ 정직 답습 정수 답습 정점 § (★ Issue #52 [UI-009] Phase C 시점 박힘 — Phase A ~75% 사전 박힘 발견 답습 11회째 + ㊧ Mismatch 6번째 영역 진화 NEW + AC 자동 정합 정직 인정 답습 NEW + Phase B 한계 § 11번째 ISSUE 누적 학습 정점)
+
+**작성일:** 2026-05-27 (★ Issue #52 [UI-009] Phase C 시점 — #108 + #110 + #114 + #111 + #118 + #120 + #112 + #123 + AUDIT-PRD-SRS-v1.4 + #125 약속 10회 누적 답습)
+**범위:** PR #129 머지 직후 #52 UI-009 v1.4 AC 강화 작업 진입 — REQ-FUNC-020 인라인 에러 + ㊧ Mismatch 분기 박힘
+
+### ★ ★ ★ Phase A 사전 박힘 ~75% 발견 (★ #125 답습 11회째)
+
+본 ISSUE 진입 시점 Phase A grep 검증에서 데드라인 입력 영역 ~75% 사전 박힘:
+
+| 영역 | 박힘 위치 | 박힘률 |
+|---|---|---|
+| HTML5 date input + min attribute | `app/deadline/page.tsx:76-82` | ✅ 박힘 |
+| D+7 미만 차단 (JS daysFromNow) | `page.tsx:44-50` | ✅ 박힘 |
+| Toast 에러 (단순 안내) | `page.tsx:45-49` | ✅ 박힘 |
+| Server Action `activateDeadlineMode` | **존재 X** | **★ AC-FUNC-020-B 자동 정합 정수** |
+| 인라인 에러 (`role="alert"`) | grep 0행 | ❌ 본 PR 박힘 |
+| SRS 정확 문구 "마감일은 오늘 이후" | grep 0행 | ❌ 본 PR 박힘 |
+
+### ★ ㊧ Mismatch 6번째 영역 진화 NEW (SRS vs 본 프로젝트 정책)
+
+| 명세 | SRS REQ-FUNC-020 | 본 프로젝트 (wiki/concepts/deadline-mode.md) |
+|---|---|---|
+| 차단 기준 | "마감일은 **오늘 이후**여야 합니다" (≥ today) | **D+7 이후** (≥ today + 7) — 이사 준비 기간 정책 |
+
+**Q1 결정: 양쪽 분기 = 둘 다 보존**
+
+| 케이스 | 인라인 에러 문구 | 정합 |
+|---|---|---|
+| `days < 0` (과거) | "마감일은 오늘 이후여야 합니다" | **SRS REQ-FUNC-020 정합** |
+| `0 ≤ days < 7` (오늘 ~ +6일) | "최소 7일 후 날짜를 선택해주세요" | **본 프로젝트 D+7 정책 (wiki) 정합** |
+| `days ≥ 7` | (에러 없음) | 통과 |
+
+★ ㊧ Mismatch 6번째 영역 = "SRS vs wiki 정책 충돌 → 양쪽 분기로 둘 다 살리기" 답습 정수 정점.
+
+### ★ ★ AC 자동 정합 정직 인정 답습 NEW (★ AC-FUNC-020-B 영역)
+
+**AC-FUNC-020-B (정확성):** "Server Action `activateDeadlineMode` 호출 0건"
+
+**Phase A 발견:** `activateDeadlineMode` Server Action **자체 미존재** = 호출 0건 **자동 보장**.
+
+★★★ **미래 작업자 학습 정수 NEW**: AC 가 자동 정합되는 케이스도 있다. **정직 인정 + 기록**이 답습 정수.
+- 본 프로젝트 = client-side 만 (useDiagnosisStore.setDeadlineDate)
+- DB 저장은 별도 흐름 (진단 생성 시점)
+- 따라서 활성화/검증 단계에서 Server Action 호출 자체 X = AC-FUNC-020-B 자동 정합
+
+### ★ ★ Phase B 한계 § 11번째 ISSUE 누적 학습 정점
+
+#108 → #110 → #114 → #111 → #118 → #120 → #112 → #123 → AUDIT-PRD-SRS-v1.4 → #125 → **#52** = **11번째**
+
+본 ISSUE Phase B 한계:
+- AC-FUNC-020-A (100ms) 정적 측정 X → Vercel 시각 검증 영역
+- AC-FUNC-020-B = **자동 정합 정수** (Server Action 미존재)
+- ㊧ Mismatch 6번째 영역 = 분기 박힘 = 정적 grep 으로 발견 가능 (#125 답습)
+
+### 본 ISSUE 본 작업 영역 (3종 박힘)
+
+1. **인라인 에러 div 신설** — `<p role="alert" aria-live="polite">...</p>`
+2. **분기 검증 로직 박힘** — `daysFromNow(target)` 결과 → 3 케이스 분기 (과거 / D+7 미만 / 통과)
+3. **`onChange` 즉시 검증** — input 변경 시 inline error state 갱신 (Toast 보완 유지)
+
+### 본 세션 누적 22건 § 박힘 표
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1~17 | 이전 § 누적 (#94~#123) | — | — | — | (이전 § 표 참조) |
+| 18 | FEAT-DIAGNOSIS-ZERO-CANDIDATES (v1.4 audit) | #125 | #128 | ✅ 머지 | REQ-FUNC-008 v1.4 신설 |
+| 19 | NFR-PERF-PAGE-LOAD (v1.4 audit) | #126 | #128 | ✅ 머지 | REQ-NF-002 v1.4 신설 |
+| 20 | MON-003 (v1.4 부활) | #127 | #128 | ✅ 머지 | v1.3 결정 번복 정직 기록 |
+| 21 | FEAT-DIAGNOSIS-ZERO-CANDIDATES (Phase A 재진입) | #125 | #129 | ✅ 머지 | Phase A 80% 사전 박힘 + AC-4 본질 + ㊦ NEW |
+| 22 | **UI-009 v1.4 AC 강화** | **#52** | **TBD** | **진행중** | **★ ★ ★ Phase A ~75% 사전 박힘 + ㊧ Mismatch 6번째 NEW + AC 자동 정합 정직 인정 NEW + Phase B 한계 § 11번째** |
+
+### ★ ★ ★ 본 ISSUE Phase C 시점 메타 가치 정수 정점
+
+- ★ ★ ★ 21건 → 22건 누적 = ISSUE 신설/audit 자동화 답습 18회째 (#52)
+- ★ ★ ★ Phase A 사전 박힘 발견 정수 답습 11회째 = 본 세션 답습 패턴 정점
+- ★ ★ ㊧ Mismatch 6번째 영역 진화 NEW = "SRS vs wiki 정책 충돌 → 양쪽 분기로 둘 다 살리기"
+- ★ ★ AC 자동 정합 정직 인정 답습 NEW = Server Action 미존재 = AC 자동 보장 영역
+- ★ ★ Phase B 한계 § 11번째 ISSUE 누적 학습 정점 (#108 → ... → #52 = 11)
+- ★ #108 + #110 + #114 + #111 + #118 + #120 + #112 + #123 + AUDIT-PRD-SRS-v1.4 + #125 약속 10회 누적 답습 = 본 § 신설 자체
+
+### ★ ★ 미래 작업자 학습 정수 6종 (★ AC 자동 정합 NEW)
+
+1. **결정 번복 정직 기록** (MON-003 부활)
+2. **명세 audit Phase A~D 답습** (AUDIT-PRD-SRS-v1.4)
+3. **이중 라벨 부착 점진 도입**
+4. **㊥ Merge 후속 정직 인정 답습** — 충돌 영역 양쪽 보존
+5. **㊦ audit 한계 정직 인정 답습** — Phase A 사전 박힘 발견 정수
+6. **★ AC 자동 정합 정직 인정 답습 (NEW)** — Server Action 미존재 같은 영역에서 AC 가 자동 보장되는 케이스. **정직 인정 + 기록 + ㊧ Mismatch 양쪽 분기 살리기 답습 = 본 ISSUE 진짜 본질 정점**.
+
+_본 § 신설: 2026-05-27 (Issue #52 [UI-009] Phase C 시점). 10회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ ★ ★ Phase A ~75% 사전 박힘 발견 + ㊧ Mismatch 6번째 영역 진화 NEW + AC 자동 정합 정직 인정 답습 NEW._
