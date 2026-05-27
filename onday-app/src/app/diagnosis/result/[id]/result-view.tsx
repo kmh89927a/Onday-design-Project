@@ -11,10 +11,14 @@ import {
 
 import { DeadlineBanner } from "@/components/deadline/deadline-banner";
 import { DeadlineBell } from "@/components/deadline/deadline-bell";
+import { EmptyState } from "@/components/diagnosis/empty-state";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { useDiagnosis } from "@/features/diagnosis/use-diagnosis";
+import { generateRelaxationSuggestions } from "@/lib/diagnosis/generate-suggestions";
+import type { DiagnosisFilters } from "@/lib/types";
 import { copyToClipboard } from "@/lib/utils/clipboard";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
@@ -32,6 +36,12 @@ export function ResultView({ id }: ResultViewProps) {
   const setResult = useDiagnosisStore((s) => s.setResult);
   // Issue #108 ㊙ — 시나리오 B (페이지 reload / 직접 URL 접속) filters store 박힘 (★ "사용자 입력 → 결과" 자연 흐름 양방향 정합).
   const setFilters = useDiagnosisStore((s) => s.setFilters);
+  // Issue #125 — EmptyState SuggestionButton 클릭 시 runMockDiagnosis 재계산 (★ what-if 답습 #5).
+  const coordinateA = useDiagnosisStore((s) => s.coordinateA);
+  const coordinateB = useDiagnosisStore((s) => s.coordinateB);
+  const mode = useDiagnosisStore((s) => s.mode);
+  const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
+  const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
   const pushToast = useUIStore((s) => s.pushToast);
 
   const inSync = storeId === id && storeCandidates.length > 0;
@@ -48,6 +58,42 @@ export function ResultView({ id }: ResultViewProps) {
   const isLoading = !inSync && query.isLoading;
   const error = !inSync ? query.error : null;
   const showEmpty = !isLoading && !error && candidates.length === 0;
+
+  // Issue #125 — REQ-FUNC-008 AC-4 본 ISSUE 진짜 본질 (★ Phase A 사전 박힘 80% 위에 박힘).
+  //   ★ what-if 답습 패턴 정수 (#111/#118/#120/#112 → 본 ISSUE = 5번째 사례).
+  const suggestions = React.useMemo(
+    () => (showEmpty ? generateRelaxationSuggestions(filters) : []),
+    [showEmpty, filters],
+  );
+
+  const handleApplyRelaxation = async (apply: Partial<DiagnosisFilters>) => {
+    if (!coordinateA) {
+      pushToast({
+        variant: "default",
+        message: "페이지 새로고침 후 다시 시도해주세요",
+      });
+      return;
+    }
+    const newFilters = { ...filters, ...apply };
+    setFilters(newFilters);
+    try {
+      const next = await runMockDiagnosis(
+        coordinateA,
+        coordinateB,
+        newFilters,
+        mode,
+        leisureCoordA,
+        leisureCoordB,
+      );
+      setResult(id, next);
+      pushToast({
+        variant: "ok",
+        message: "조건을 완화해서 다시 계산했어요",
+      });
+    } catch {
+      pushToast({ variant: "danger", message: "재계산에 실패했습니다" });
+    }
+  };
 
   const [isSharing, setIsSharing] = React.useState(false);
 
@@ -118,7 +164,10 @@ export function ResultView({ id }: ResultViewProps) {
         ) : error ? (
           <ErrorState message={error.message} />
         ) : showEmpty ? (
-          <EmptyState />
+          <EmptyState
+            suggestions={suggestions}
+            onApply={handleApplyRelaxation}
+          />
         ) : (
           <ResultContent
             candidates={candidates}
@@ -140,25 +189,6 @@ function ResultSkeleton() {
       {["card-1", "card-2", "card-3"].map((id) => (
         <Skeleton key={id} className="h-[112px] w-full" />
       ))}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="rounded-lg border border-card-border bg-bg p-s-6 text-center">
-      <p className="text-body font-bold text-ink">
-        조건을 만족하는 동네가 없습니다
-      </p>
-      <ul className="mt-s-3 space-y-1 text-body-sm text-ink-3">
-        <li>· 최대 통근 시간을 늘려보세요</li>
-        <li>· 예산 범위를 조정해보세요</li>
-      </ul>
-      <Link href="/diagnosis" className="mt-s-4 inline-block">
-        <Button variant="outline" leading={<ChevronLeft />}>
-          진단 다시 입력
-        </Button>
-      </Link>
     </div>
   );
 }
