@@ -785,3 +785,73 @@ _본 § 신설: 2026-05-27 (Issue #125 Phase C 본질 재정의 시점). 9회 �
 6. **★ AC 자동 정합 정직 인정 답습 (NEW)** — Server Action 미존재 같은 영역에서 AC 가 자동 보장되는 케이스. **정직 인정 + 기록 + ㊧ Mismatch 양쪽 분기 살리기 답습 = 본 ISSUE 진짜 본질 정점**.
 
 _본 § 신설: 2026-05-27 (Issue #52 [UI-009] Phase C 시점). 10회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ ★ ★ Phase A ~75% 사전 박힘 발견 + ㊧ Mismatch 6번째 영역 진화 NEW + AC 자동 정합 정직 인정 답습 NEW._
+
+---
+
+## ★ ★ ★ Phase B 한계 § 진짜 본질 입증 정점 NEW — Issue #52 [UI-009] PR #130 시각 검증 박힘 발견 (★ ★ ★ #114 답습 정수 진짜 본질 입증 영역 답습 — Vercel 시각 검증으로만 잡힌 버그 2건)
+
+**작성일:** 2026-05-27 (★ Issue #52 [UI-009] PR #130 시각 검증 후속)
+**범위:** PR #130 1차 머지 직전 르르 시각 검증 박힘 → 버그 2건 발견 → 추가 커밋 박힘
+
+### ★ ★ ★ Phase B 한계 § 진짜 본질 입증 정점 (Vercel 시각 검증 박힘 정수)
+
+본 영역 = **#114 답습 정수 진짜 본질 입증 정점 답습** = "정적 분석 통과 + 시각 검증 시점 진짜 본질 발견" 답습.
+
+| 시점 | 검증 결과 | 박힘 영역 |
+|---|---|---|
+| Phase B 정적 grep 7행 | 모두 통과 (인라인 에러 + 분기 로직 + AC 자동 정합) | ★ 정적 분석 한계 — 박힘 발견 X |
+| Phase D TypeScript + ESLint | 0 errors | ★ 정적 분석 한계 — 박힘 발견 X |
+| **★ Vercel 시각 검증 (르르)** | **★ ★ 버그 2건 발견** | **★ ★ ★ Phase B 한계 § 진짜 본질 입증** |
+
+### ★ 버그 2건 발견 표 (★ 시각 검증 박힘 정수)
+
+| # | 버그 | 시각 검증 발견 영역 |
+|---|---|---|
+| 버그 1 | 분기 로직 미박힘 — 과거 날짜 입력 시 SRS 문구 박힘 X, D+7 문구만 박힘 | 시도 A: 2026-01-07 + 시도 B: 2025-06-16 → "최소 7일 후 ..." 박힘 |
+| 버그 2 | 저장 버튼 disabled 미박힘 — 인라인 에러 박힘 상태에서도 버튼 활성 | 인라인 에러 + 저장 활성 동시 박힘 |
+
+### ★ ★ 진짜 원인 분석 (★ 시각 검증으로만 발견 가능)
+
+**버그 1+2 동일 원인** = `min={todayPlus(MIN_DAYS_FROM_NOW)}` (today+7) **native HTML5 min attribute 가 너무 강력** 박힘:
+- 사용자가 어제 날짜 입력 시도 → 브라우저 native clamp 가 input.value 를 today+6 또는 다른 valid 값으로 자동 강제
+- onChange 가 강제된 값(today+6) 으로 발화 → days ∈ [0, 6] → "D+7 미만" 분기 박힘 → **SRS 문구 박힘 X**
+- 사용자는 어제 입력했다고 생각하지만 실제 input.value 는 다른 값 = ★★★ ㊧ Mismatch "사용자 의도 vs 실제 input value"
+- 인라인 에러 박힘 X → 저장 버튼 disabled X → 버튼 활성
+
+### ★ ★ 수정 박힘 영역
+
+| 영역 | Before | After |
+|---|---|---|
+| min attribute | `min={todayPlus(MIN_DAYS_FROM_NOW)}` (today+7) | `min={todayPlus(0)}` (today) |
+| disabled prop | `disabled={inlineError !== null}` (정합) | `disabled={Boolean(inlineError)}` (명확화) |
+
+★ **수정 영향**:
+- 어제 이전 = native 차단 그대로 유지 (SRS "달력 UI에서 차단" 본질 사수)
+- 오늘 ~ +6일 = input 자유 허용 → onChange 가 사용자 진짜 입력으로 발화 → validateDeadline 분기 정확 박힘
+- DevTools 우회 시 어제 입력 → onChange 발화 → days < 0 → **SRS "마감일은 오늘 이후" 문구 박힘**
+- 오늘 ~ +6일 입력 → days ∈ [0, 6] → **D+7 "최소 7일 후 ..." 문구 박힘**
+
+### ★ ★ ★ 미래 작업자 학습 정수 7종 (★ Phase B 한계 § 진짜 본질 입증 정점 NEW)
+
+1. 결정 번복 정직 기록 (MON-003 부활)
+2. 명세 audit Phase A~D 답습 (AUDIT-PRD-SRS-v1.4)
+3. 이중 라벨 부착 점진 도입
+4. ㊥ Merge 후속 정직 인정 답습
+5. ㊦ audit 한계 정직 인정 답습 (Phase A 사전 박힘 발견)
+6. AC 자동 정합 정직 인정 답습 (Server Action 미존재)
+7. **★ ★ ★ Phase B 한계 § 진짜 본질 입증 정점 답습 (NEW)** — 정적 분석 (TypeScript + ESLint + grep) 통과 후에도 **시각 검증으로만 잡히는 박힘 본질**. HTML5 native API (min attribute) 의 자동 clamp 동작 같은 영역. ★ 본 ISSUE 시점 답습 정수 = **#114 답습 정수 진짜 본질 입증 정점** (Vercel text-white 박힘 X 본질) → **#125 답습 정수 정직 인정** (Phase A 80% 사전 박힘) → **#52 답습 정수 정점** (시각 검증 박힘 발견 + min attribute clamp 진짜 본질) = 3단계 진화 답습.
+
+### ★ Phase B 한계 § 본질 추가 학습
+
+본 ISSUE 가 박힘 = "정적 grep + TypeScript + ESLint 통과 = 충분 X". **Vercel preview 시각 검증 박힘 정수 = 본 프로젝트 답습 정수 정점**.
+
+미래 작업자 정수: **Phase D = 코드 박힘 + 정적 검증 + 시각 검증 박힘 양쪽 모두 필수**. 시각 검증 박힘 = "사용자가 진짜로 입력 → 진짜로 결과 확인 → 박힘 발견" 답습.
+
+### 본 세션 누적 22건 § 박힘 표 (★ #52 본 시점 PR #130 시각 검증 박힘 발견 정수 정점)
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1~21 | (이전 § 누적) | — | — | — | (이전 § 표 참조) |
+| 22 | **UI-009 v1.4 AC 강화** | **#52** | **#130 + ★ 시각 검증 박힘 발견 추가 커밋** | **진행중** | **★ ★ ★ Phase B 한계 § 진짜 본질 입증 정점 NEW = 시각 검증 박힘 발견 + min attribute clamp 진짜 원인 박힘 + ㊧ Mismatch "사용자 의도 vs input value" 영역** |
+
+_본 § 신설: 2026-05-27 (Issue #52 PR #130 시각 검증 후속). ★ ★ ★ Phase B 한계 § 진짜 본질 입증 정점 NEW = #114→#125→#52 3단계 진화 답습 정수 정점 + 미래 작업자 학습 정수 #7 NEW = "정적 검증 통과 ≠ 충분, Vercel preview 시각 검증 박힘 필수"._

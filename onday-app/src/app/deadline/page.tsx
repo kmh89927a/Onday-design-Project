@@ -96,11 +96,20 @@ export default function DeadlinePage() {
 
           <section className="space-y-s-2">
             <Label htmlFor="deadline-input">이사 마감일</Label>
+            {/*
+              #52 v1.4 — PR #130 버그 1+2 수정 (★ Phase B 한계 § 진짜 본질 입증 정점 NEW).
+                ★ 시각 검증 발견: min={today+7} 가 너무 강해서 사용자가 어제 입력 시도 시
+                  브라우저 native clamp 가 input.value 를 today+6 같은 valid 값으로 자동 강제
+                  → onChange 가 강제된 값으로 발화 → days ∈ [0, 6] → SRS 문구 박힘 X (D+7 문구만 박힘).
+                ★ 해결: min={today} 로 약화 → 어제 이전만 native 차단 + 오늘~+6일 input 자유
+                  → onChange 가 사용자 진짜 입력으로 발화 → validateDeadline 분기 정확 박힘
+                  → SRS "마감일은 오늘 이후" 문구 (DevTools 우회 시) + D+7 문구 양쪽 모두 박힘.
+            */}
             <Input
               id="deadline-input"
               type="date"
               value={draft}
-              min={todayPlus(MIN_DAYS_FROM_NOW)}
+              min={todayPlus(0)}
               onChange={(e) => handleDraftChange(e.target.value)}
               aria-invalid={inlineError !== null}
               aria-describedby={inlineError ? "deadline-input-error" : undefined}
@@ -121,7 +130,7 @@ export default function DeadlinePage() {
             fullWidth
             onClick={handleSave}
             leading={<CalendarIcon />}
-            disabled={inlineError !== null}
+            disabled={Boolean(inlineError)}
           >
             데드라인 저장
           </Button>
