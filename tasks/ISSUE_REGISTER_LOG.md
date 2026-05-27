@@ -513,3 +513,109 @@ _본 § 신설: 2026-05-26 (Issue #112 Phase C). 6회 누적 약속 답습 정�
 - ★ 사용자 시각 검증 + 즉시 반영 워크플로 답습 15회째
 
 _본 § 신설: 2026-05-26 (Issue #123 Phase C). 7회 누적 약속 답습 정수 = 매 ISSUE Phase C 시점 본 로그 박힘 답습 정점 + ★ ★ ★ Phase B 한계 § 답습 정수 진짜 진짜 진짜 입증 정점._
+
+---
+
+## ★ ★ ★ PRD/SRS audit v1.4 정합 회복 § (★ AUDIT-PRD-SRS-v1.4 Phase C 시점 박힘 — 명세 audit 첫 사례 + v1.3 결정 번복 1건 정직 기록)
+
+**작성일:** 2026-05-27 (★ AUDIT-PRD-SRS-v1.4 Phase C 시점 — 본 세션 최초 명세 audit 작업 + #108 + #110 + #114 + #111 + #118 + #120 + #112 + #123 약속 8회 누적 답습)
+**범위:** PRD/SRS audit 결과 미반영 요구사항 정합 회복 + TASK_LIST v1.3 → v1.4 + SRS v1.6 → v1.7 + 신설 3 + 확장 3
+
+### ★ ★ ★ v1.3 결정 번복 1건 정직 기록 (가장 중요한 메타 가치)
+
+본 audit § 의 진짜 본질 = **MON-003 v1.3 폐기 → v1.4 부활** 결정 번복 정직 기록.
+
+| 시점 | 결정 | 사유 | 재검토 |
+|---|---|---|---|
+| v1.3 (2026-04-22) | MON-003 폐기 | "Sentry 기본 알림만 유지" — 비용 부담 | — |
+| **v1.4 (2026-05-27)** | **MON-003 부활** | Mixpanel 무료 티어 100K 이벤트/월 = 1인 MVP 평생 무료 + 측정 도구 없이 REQ-NF-008 검증 불가 | **본 audit 에서 데이터 + 본질 재검토** |
+
+★ ★ 미래 작업자 학습 정수: **데이터(무료 티어 수치) + 본질(NFR 검증 가능성) 재검토는 v1.3 결정을 번복할 정당한 근거다. 결정은 한 번에 확정되지 않는다.**
+
+### ★ ★ v1.4 audit 작업 영역 (6 박힘)
+
+| # | Task ID | 유형 | Issue # | 매핑 REQ | 본질 |
+|---|---|---|---|---|---|
+| 1 | **FEAT-DIAGNOSIS-ZERO-CANDIDATES** | 신설 | #125 | REQ-FUNC-008 | 진단 0곳 안내 1초 + 완화 제안 2개 (CMD-DL-003은 데드라인 영역, 본 task는 진단 영역) |
+| 2 | **NFR-PERF-PAGE-LOAD** | 신설 | #126 | REQ-NF-002 | 페이지 로딩 p95 ≤ 1500ms (Lighthouse CI + Speed Insights) |
+| 3 | **MON-003** | 부활 (v1.3 결정 번복) | #127 | REQ-NF-008 | Mixpanel 이벤트 트래킹 (탐색 p50 ≤ 10분 측정) |
+| 4 | UI-007 확장 | 본문 갱신 | #45 (기존) | REQ-FUNC-012 | 개인 진단 결과 페이지 출처 배지 추가 ("리포트 내 모든 데이터" 정합) |
+| 5 | UI-009 확장 | 본문 갱신 | #52 (기존) | REQ-FUNC-020 | AC 강화 (100ms 인라인 에러 + 서버 도달률 0%) |
+| 6 | MON-001 확장 | 본문 갱신 | #73 (기존) | REQ-NF-011 + REQ-NF-012 | Uptime 모니터링 (/api/health + 5분 주기 핑) + 5xx 오류율 측정 |
+
+### ★ SRS v1.7 연기 표기 2건 (TASK_LIST 미반영)
+
+| REQ ID | v1.5+ 연기 사유 |
+|---|---|
+| REQ-NF-005 (Cron 4시간) | MVP mock 데이터 → Cron 갱신할 실 데이터 없음. v1.3 INFRA-003 정합. 실 부동산 API 연동 시점 부활 |
+| REQ-NF-013 (교통 ±10%) | MVP mock → 카카오맵 비교 의미 X. 실 카카오 모빌리티 API 연동 시점 부활 |
+
+### ★ ★ Phase B 자체 grill 7 영역 사전 박힘 발견 (코드 0 명세 작업의 자체 grill 정의)
+
+본 audit 는 **코드 작업이 아닌 명세 audit** 이므로 Phase B 자체 grill 영역도 코드 회귀 대신 **명세 정합성 영역**으로 재정의:
+
+| # | 영역 | 결과 | 사전 박힘 |
+|---|---|---|---|
+| 1 | 라벨 체계 정합성 | 기존 `track/wave/complexity` vs 사용자 명시 `priority/type/area` 신설 | ㊠ 박힘 → 이중 부착 결정 (르르 Q-A) |
+| 2 | 보드 필드/컬럼 정합성 | Priority custom field 미존재 추정 (default --limit 30 으로 사후 발견 = 기존 P0/P1/P2 존재) | ㊤ 박힘 (사후) → MoSCoW 별도 신설로 정합 |
+| 3 | MON-003 ISSUE 존재 여부 | GitHub 미신설 → 부활 = 신규 ISSUE 신설 | ㊡ 박힘 → MON-003 ID 그대로 (르르 Q-B) |
+| 4 | tasks/MON-003.md 명세 파일 | 없음 → 신규 작성 필요 | ㊡ 박힘 → 신규 작성 (Phase C #3) |
+| 5 | SRS v1.7 갱신 범위 | 최소 vs 종합 | ㊣ 박힘 → 종합 갱신 결정 (르르 Q-C) |
+| 6 | AC 측정 가능성 (신설 2건) | NF-002, FUNC-008 측정 가능 | ✅ 0 |
+| 7 | 최신 ISSUE 번호 | #123 → 신설 #125~#127 정합 | ✅ 0 |
+
+### ★ ★ ㊠/㊡/㊣/㊤ Mismatch 정직 인정 (사용자 명세 vs 실제) + ㊥ Merge 후속 정정
+
+| # | 영역 | 사용자 명세 | 실제 | 정정 |
+|---|---|---|---|---|
+| ㊠ | 보드 칸 수 | 35칸 | **30칸 default → 실 91칸 (--limit 200)** | 사용자 명세 오기 인정 (르르 Q1 답변) → 91 → 94칸 (신설 3건 추가) |
+| ㊡ | TASK_LIST 위치 | `docs/06_TASK_LIST_v1_4.md` | **`tasks/06_TASK_LIST_v1_4.md`** | 실제 폴더 구조 정합 (르르 Q2 답변) |
+| ㊣ | 본 ISSUE 신설 카운트 | 7건 (FEAT 3 + NFR 4) | **3건 신설 + 3건 확장 + 2건 SRS 연기** | Cron/교통 정합성/MON-001 흡수 결정 결과 정합 |
+| ㊤ | 보드 Priority 필드 | 미존재 추정 (Phase B 사전 누락) | **존재 (P0/P1/P2)** | MoSCoW 별도 신설로 정합 (사후 발견 후 정정) |
+| ㊥ | PR #128 main merge 충돌 | 충돌 0 추정 | **#123 § 가 main 에 먼저 박힘 → audit § 위치 충돌** | merge 시점 ★ #123 § 보존 + audit § 그 뒤 추가 + 누적 표 17→20 통합 정정 |
+
+★ 사용자 명세 vs 실제 정합 정직 인정 = 가장 단순 정수 (★ #120 답습 정수).
+
+### 본 세션 누적 20건 § 박힘 표 (★ main #123 § 17행 + audit § 신설 3행 = 20행 통합)
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1 | REFACTOR-UI-002-FEEDBACK | #94 | #95 | ✅ 머지 | 사용자 피드백 1차 |
+| 2 | REFACTOR-UI-002-FEEDBACK-2 | #96 | #97 | ✅ 머지 | 사용자 피드백 2차 |
+| 3 | DTO-COMMUTE-TIME | #98 | #99 | ✅ 머지 | 출퇴근 시간대 |
+| 4 | REFACTOR-DTO-COMMUTE-TIME-FEEDBACK | #100 | #101 | ✅ 머지 | picker state 분리 |
+| 5 | REFACTOR-COMMUTE-LEGACY | #102 | #103 | ✅ 머지 | timeRange 제거 |
+| 6 | UI-003 (MapCanvas) | #104 | #105 | ✅ 머지 | Kakao Maps SDK |
+| 7 | REFACTOR-UI-003-FEEDBACK | #106 | #107 | ✅ 머지 | 결과 페이지 5건 |
+| 8 | REFACTOR-UI-003-FEEDBACK-2 | #108 | #109 | ✅ 머지 | ㊙ + Phase B 한계 § NEW |
+| 9 | FIX-BEST-BADGE-COLOR | #110 | #113 | ✅ 머지 | Badge best 색 |
+| 10 | FIX-BEST-BADGE-TEXT-COLOR-TAILWIND | #114 | #115 | ✅ 머지 | Vercel text-white 본질 |
+| 11 | FEAT-RESULT-WHAT-IF-SIMULATION | #111 | #116 + #117 | ✅ 머지 | β 확장 정수 정점 |
+| 12 | #114 OPEN 유지 | #114 | (★ 후속) | OPEN | Tailwind 본질 다음 세션 |
+| 13 | FIX-WHAT-IF-CONFIRM-BUTTON | #118 | #119 | ✅ 머지 | "변경" 버튼 + 명시적 확인 + React 19 답습 정수 |
+| 14 | FEAT-DETAIL-SHEET-WHAT-IF | #120 | #121 | ✅ 머지 | DetailSheet 진짜 재계산 + 양방향 동기화 |
+| 15 | #110/#108/#106 사후 close | - | - | ✅ Closed | ★ "PR 본문 Closes #XXX 사전 명시 답습" |
+| 16 | FEAT-DIAGNOSIS-INPUT-FILTERS | #112 | #122 | ✅ 머지 | 4 chip 다 what-if 일관성 정점 |
+| 17 | FIX-DIAGNOSIS-BUDGET-FILTER | #123 | #124 | ✅ 머지 | Phase B 한계 § 답습 정수 진짜 입증 + ㊣ |
+| 18 | **FEAT-DIAGNOSIS-ZERO-CANDIDATES** | **#125** | **#128 (본 PR)** | 신설 대기 | **★ REQ-FUNC-008 정합 회복 — 진단 0곳 안내 + 완화 제안** |
+| 19 | **NFR-PERF-PAGE-LOAD** | **#126** | **#128 (본 PR)** | 신설 대기 | **★ REQ-NF-002 정합 회복 — Lighthouse CI + Speed Insights** |
+| 20 | **MON-003** (v1.4 부활) | **#127** | **#128 (본 PR)** | 부활 대기 | **★ ★ ★ v1.3 결정 번복 — Mixpanel 무료 티어 재검토** |
+
+### ★ ★ ★ 본 audit Phase C 시점 메타 가치 정수 정점
+
+- ★ ★ ★ 17건 → 20건 누적 = ISSUE 신설/audit 자동화 답습 16회째 (AUDIT-PRD-SRS-v1.4)
+- ★ ★ ★ v1.3 결정 번복 1건 정직 기록 — 본 audit 메타 가치 정점 (MON-003 부활)
+- ★ ★ 명세 audit 첫 사례 = "코드 작업 외 명세 정합성 audit 도 Phase A~D 답습 가능" 입증
+- ★ ★ Phase B 자체 grill 7 영역 명세 정합성 재정의 = "코드 작업이 아니어도 사전 박힘 발견 답습 사수"
+- ★ ㊠/㊡/㊣/㊤/㊥ Mismatch 5건 정직 인정 (보드 칸/TASK_LIST 위치/카운트/Priority 사후/Merge 후속) = #120 답습 정수 + 사후 누적 진화
+- ★ Phase B 한계 § 9 ISSUE 누적 학습 정점 (#108 → #110 → #114 → #111 → #118 → #120 → #112 → #123 → **본 audit**)
+- ★ #108 + #110 + #114 + #111 + #118 + #120 + #112 + #123 약속 8회 누적 답습 = 본 § 신설 자체 + ★ ㊥ Merge 후속 정직 인정 1회 추가 = 9회
+
+### ★ ★ 미래 작업자 학습 정수 4종 (★ ㊥ Merge 후속 정수 신규 추가)
+
+1. **"결정 번복 정직 기록"**: v1.3 결정 폐기 → v1.4 부활은 비밀이 아니다. v1.4 changelog + tasks/MON-003.md §0 + 본 § 3중 기록으로 추적성 사수.
+2. **"명세 audit 도 Phase A~D 답습 가능"**: 코드 변경 0건이어도 PRD/SRS 정합성 audit 작업은 Phase A (baseline) → Phase B (자체 grill 명세 정합성) → Phase C (TASK_LIST + SRS 갱신) → Phase D (ISSUE + 보드) 답습 정합.
+3. **"이중 라벨 부착 = 점진 도입 답습"**: 기존 `track/wave/complexity` 호환성 사수 + 신규 `priority/type/area` 점진 도입. 한꺼번에 라벨 체계 갈아엎기 X 답습.
+4. **★ ㊥ Merge 후속 정직 인정 답습 (NEW)**: PR 도중 main 갱신 시 충돌 발생 시 = 사라진 § 보존 + 본 작업 § 추가 + 누적 표 통합 정정 = 정직한 merge 답습 정수. 충돌 영역을 단순 폐기 X, 양쪽 모두 보존하는 답습.
+
+_본 § 신설: 2026-05-27 (AUDIT-PRD-SRS-v1.4 Phase C). 8회 누적 약속 답습 정수 + ★ ㊥ Merge 후속 정수 1회 추가 = 9회 누적. ★ ★ ★ v1.3 결정 번복 정직 기록 정수 정점 + ★ ★ main #123 § 충돌 정직 보존 = 양쪽 § 모두 박힘 답습._

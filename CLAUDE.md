@@ -2,7 +2,7 @@
 
 이 문서는 Claude Code 가 모든 세션 시작 시 자동으로 로드하는 **프로젝트 컨텍스트** 다. 본 파일은 cross-tool 글로벌 규칙 `AGENTS.md` 와 정합한다. 두 파일이 충돌하면 `AGENTS.md` 가 우선한다.
 
-> SSoT(Single Source of Truth): `docs/00_PRD_v1.1-rev.4.md`, `docs/05_SRS_v1.6.md`. 본 파일과 두 문서가 충돌하면 PRD/SRS 가 우선한다.
+> SSoT(Single Source of Truth): `docs/00_PRD_v1.1-rev.4.md`, `docs/05_SRS_v1.7.md`. 본 파일과 두 문서가 충돌하면 PRD/SRS 가 우선한다.
 
 ---
 
