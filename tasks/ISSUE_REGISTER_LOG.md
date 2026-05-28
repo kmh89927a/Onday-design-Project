@@ -1194,3 +1194,86 @@ _본 § 신설: 2026-05-28 (Issue #73 MON-001 v1.4 확장 진입). ★ Phase B �
 | 26 | **MON-003 v1.4 부활** | **#127** | **(신설 예정)** | **진행중** | **★ ★ 완전 신설 영역(0건) #126 답습 + 외부 서비스 환경변수 의존 (MIXPANEL_TOKEN = 르르 영역) + ㊧ Mismatch 10번째 영역 진화 NEW (trigger 시점) + Sentry PII 답습 진화 (Mixpanel 이중 방어) + Module-level lazy init 가드 진화 + v1.3 폐기 → v1.4 부활 결정 번복 답습 정수 + Phase B 한계 § 15번째 누적 정수 정점** |
 
 _본 § 신설: 2026-05-28 (Issue #127 MON-003 v1.4 부활 진입). ★ Phase B 한계 § 15번째 누적 = #114→#125→#52→#45→#126→#73→#127 7단계 진화 답습 정수 정점 + ㊧ Mismatch 10번째 영역 진화 NEW (trigger 시점 mismatch) + ★ 완전 신설 영역(0건) #126 답습 + v1.3 폐기 → v1.4 부활 결정 번복 답습 정수._
+
+---
+
+## 27. PERF-OPTIMIZE-BUNDLE-SIZE 후보 ISSUE 정직 등록 + #126 baseline 재측정 TODO (2026-05-28 신설 NEW)
+
+### 본 § 영역
+
+★ **르르 옵션 A 채택 답습 (2026-05-28):**
+- MON-003 PR #134 = 본질(이벤트 추적) 완성 = **머지 진행 답습**
+- 번들 크기 회귀(+203kB /diagnosis) = 별도 본질 = **PERF-OPTIMIZE-BUNDLE-SIZE 후속 ISSUE 분리 답습**
+
+### ★ PERF-OPTIMIZE-BUNDLE-SIZE 후보 ISSUE (정직 사전 등록)
+
+**Bundle 회귀 현황 (MON-003 PR #134 머지 후 예상):**
+
+| 영역 | MON-003 이전 | MON-003 이후 | 회귀 |
+|---|---:|---:|---:|
+| Middleware | 32.5 kB | 41.6 kB | +9.1 kB |
+| `/diagnosis` First Load JS | 142 kB | 345 kB | **+203 kB** |
+| `/` First Load JS | 102 kB | 180 kB | +78 kB |
+
+**원인 분석:**
+- mixpanel-browser bundle (MON-003 PR #134) 누적
+- @sentry/nextjs 클라이언트 bundle (MON-001 PR #133) 누적
+- 두 외부 SDK 동시 누적 = First Load JS 폭증
+
+**최적화 방향 (차후 ISSUE 답습):**
+- Sentry / Mixpanel **dynamic import (지연 로드)** = 초기 페이지 로드 영역 격리
+- Tree-shaking 점검 (mixpanel-browser는 큰 bundle 박힘 = subset import 가능 여부)
+- Mixpanel SDK 영역 차후 = `mixpanel-browser` vs `mixpanel-lite` 또는 직접 HTTP fetch (이벤트 2개만 = SDK 과잉 가능)
+- Next.js dynamic + ssr: false 답습
+
+**트리거 조건 (정직 등록):**
+- (1) #126 Speed Insights 실 데이터 1주 후 → Production p95 LCP/INP 미달 시 트리거
+- (2) baseline 재측정 (Lighthouse warm) → /diagnosis 97점 회귀 시 트리거
+- (3) 둘 다 정상이면 = 최적화 X (1인 MVP 영역 = 측정 후 결정 답습)
+
+### ★ #126 baseline 재측정 TODO
+
+**baseline-2026-05.md §3.2 영역 무효화 가능성:**
+- 어제 측정: /diagnosis warm Performance 97 / LCP 2.5s / FCP 1.7s = **MON-003 이전 baseline**
+- 본 PR #134 Bundle 회귀 (+203kB) = baseline 영역 데이터 부정확 가능성
+
+**재측정 영역 (MON-003 PR #134 머지 후 르르 영역):**
+- `/diagnosis` warm Lighthouse 재측정 (회귀 폭 확인)
+- `/` 또는 `/login` baseline 별도 측정 (NFR-PERF-PAGE-LOAD-LANDING 답습)
+- LCP/INP/CLS 변화 비교 (이전 97점 → 회귀 후)
+
+**baseline-2026-05.md 갱신 영역 (본 PR §4.3 신설):**
+- ★ "MON-003 (Issue #127) 머지 이후 baseline 재측정 TODO" § 박힘
+- 회귀 폭 명시 (Bundle 영역 표)
+- 차후 ISSUE 후보 = PERF-OPTIMIZE-BUNDLE-SIZE 박힘
+
+### ★ MON-003 본질 vs 번들 본질 분리 답습 정수 NEW
+
+**미래 작업자 학습 정수:**
+- ★ "하나의 PR에 두 본질이 섞이면 머지 결정 영역 복잡" = MON-003 본질(측정 셋업) + 번들 본질(최적화) 분리 답습 정수
+- ★ **본질 단일성 답습** = "이벤트 추적 추가" = 머지 진행 / "Bundle 최적화" = 별도 ISSUE 답습 정합
+- ★ #126 답습 진화 = "측정 셋업 vs 실 데이터 분리" → "구현 본질 vs 최적화 본질 분리" 답습 진화
+
+### Phase B 한계 § 후속 영역 (15번째 답습 진화 + 후속 영역)
+
+**본 § = 15번째 누적 본질 확장 영역:**
+- (기존) MON-003 = 측정 셋업 본질 = 머지 답습
+- (NEW) **Bundle 회귀 = 별도 본질 = PERF-OPTIMIZE-BUNDLE-SIZE 분리 답습**
+- (NEW) **baseline 재측정 = #126 답습 진화 = MON-003 머지 후 자동 트리거**
+
+### 차후 ISSUE 후보 영역 누적 표 (2026-05-28 기준)
+
+| 후보 ISSUE | 트리거 | 영역 |
+|---|---|---|
+| PERF-LIGHTHOUSE-CI-AUTOMATION | Issue #126 본문 AC-1/AC-4 분리 영역 (㊧ Mismatch 8번째) | GitHub Actions + lighthouserc.json |
+| PERF-OPTIMIZE-IMAGES | baseline LCP 미달 시 | next/image 0건 + lazy/priority 0건 |
+| PERF-OPTIMIZE-FONTS | baseline FCP 미달 시 | Pretendard preload + display=swap |
+| **PERF-OPTIMIZE-BUNDLE-SIZE** (NEW) | **MON-003 PR #134 머지 후 baseline 재측정 미달 시 또는 Speed Insights 미달 시** | **Sentry + Mixpanel dynamic import (지연 로드) + tree-shaking 점검** |
+| **NFR-PERF-PAGE-LOAD-LANDING** (NEW) | /diagnosis 측정만 박힘 = / 또는 /login 별도 baseline | 일반 정적 페이지 영역 |
+| **A11Y-FORM-FIELD-LABELS** (NEW — #126 답습) | Lighthouse Issues 탭 발견 | form field id/name 누락 정정 |
+| **REFACTOR-ADDRESS-MASKING** (NEW — #73 답습) | 주소 정보 = 민감 PII | Sentry + Mixpanel 양쪽 정규식 마스킹 확장 |
+| **diagnosis_page_viewed 이벤트** (NEW — #127 답습) | 입력 단계 funnel 분석 원할 시 | trigger 시점 mismatch §10번째 답습 |
+| **Dev/Prod Mixpanel project 이원화** (NEW — #127 답습) | 1인 MVP 영역 외 (트래픽 증가 시) | Mixpanel project 2개 |
+| **A11Y-FORM-FIELD-LABELS** (NEW — #126 답습) | Lighthouse 발견 | 접근성 영역 |
+
+_본 § 신설: 2026-05-28 (MON-003 PR #134 옵션 A 채택 답습 — 머지 진행 + Bundle 최적화 후속 ISSUE 분리). ★ MON-003 본질 vs Bundle 본질 분리 답습 정수 NEW + #126 baseline 재측정 TODO 정직 § + PERF-OPTIMIZE-BUNDLE-SIZE 후보 ISSUE 정직 사전 등록._
