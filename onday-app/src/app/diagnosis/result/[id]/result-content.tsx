@@ -4,6 +4,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 
 import { CandidateCard } from "@/components/card/candidate-card";
+import { DataSourceBadge } from "@/components/data/data-source-badge";
 import { FilterPanel } from "@/components/form/filter-panel";
 import { MapCanvas } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
@@ -262,6 +263,33 @@ export function ResultContent({
           onConfirm={handleBudgetWhatIf}
         />
       )}
+
+      {/* Issue #45 (UI-007 v1.4) — REQ-FUNC-012 출처 배지 박힘 영역.
+          share-report-view 인라인 3개 답습 = 공유 vs 개인 시각 일관성 100% 사수.
+          정상 결과 상태 한정 부착 = result-view.tsx showEmpty/error 분기에선 본 컴포넌트 미렌더링 = #125 EmptyState 충돌 회피. */}
+      <section
+        aria-label="진단 결과 데이터 출처"
+        className="flex flex-wrap gap-s-2"
+      >
+        <DataSourceBadge
+          kind="official"
+          source="공공데이터포털"
+          updatedAt="2026.04"
+          tone="on-light"
+        />
+        <DataSourceBadge
+          kind="aggregated"
+          source="카카오 모빌리티"
+          updatedAt="2026.04.01"
+          tone="on-light"
+        />
+        <DataSourceBadge
+          kind="estimate"
+          source="통근 추정"
+          updatedAt="—"
+          tone="on-light"
+        />
+      </section>
 
       <MapCanvas markers={markers} onMarkerClick={open} height={320} />
 
