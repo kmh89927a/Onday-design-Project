@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { useDiagnosis } from "@/features/diagnosis/use-diagnosis";
+import { trackDiagnosisCompleted } from "@/lib/analytics/mixpanel";
 import { generateRelaxationSuggestions } from "@/lib/diagnosis/generate-suggestions";
 import type { DiagnosisFilters } from "@/lib/types";
 import { copyToClipboard } from "@/lib/utils/clipboard";
@@ -53,6 +54,15 @@ export function ResultView({ id }: ResultViewProps) {
       setFilters(query.data.filters);
     }
   }, [inSync, query.data, setResult, setFilters]);
+
+  // MON-003 v1.4 부활 (Issue #127) — REQ-NF-008 funnel 완료점.
+  //   ref 가드 = React Strict Mode 2회 실행 + 같은 id 재마운트 중복 방지.
+  const trackedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (trackedRef.current) return;
+    trackedRef.current = true;
+    trackDiagnosisCompleted(id);
+  }, [id]);
 
   const candidates = inSync ? storeCandidates : query.data?.candidates ?? [];
   const isLoading = !inSync && query.isLoading;

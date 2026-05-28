@@ -103,6 +103,27 @@ production_url: "(르르 Phase D 측정 시 확정 — memory `onday-design-proj
 
 ★ 본 ISSUE = 측정 셋업만 = 위 영역 최적화 X. 측정 결과 미달 시 별도 ISSUE 답습.
 
+### 4.3 ⚠️ MON-003 (Issue #127) 머지 이후 baseline 재측정 TODO (2026-05-28 신설 NEW)
+
+★ ★ **현 baseline = MON-003 이전 측정값** = mixpanel-browser 추가 전 영역 = **무효화 가능성 박힘**.
+
+**원인 — MON-003 PR #134 Bundle 크기 회귀:**
+
+| 영역 | MON-003 이전 (baseline 측정 시점) | MON-003 이후 | 회귀 |
+|---|---:|---:|---:|
+| Middleware | 32.5 kB | 41.6 kB | +9.1 kB |
+| `/diagnosis` First Load JS | 142 kB | 345 kB | +203 kB |
+| `/` First Load JS | 102 kB | 180 kB | +78 kB |
+
+**재측정 영역 박힘 (MON-003 머지 후):**
+- /diagnosis (warm 97점 baseline 무효화 가능성)
+- / 또는 /login (NFR-PERF-PAGE-LOAD-LANDING 답습)
+- LCP/INP/CLS 변화 확인
+
+★ **트리거 조건:** MON-003 PR #134 머지 완료 후 + Speed Insights 실 데이터 1주 후 둘 다 갱신 답습.
+
+★ **차후 ISSUE 후보 = PERF-OPTIMIZE-BUNDLE-SIZE** ([[issue_register_log §27]] 참조). 재측정 결과 미달 시 트리거 답습.
+
 ---
 
 ## 5. Vercel Speed Insights 실 데이터 (1주 후 갱신)
@@ -126,8 +147,11 @@ production_url: "(르르 Phase D 측정 시 확정 — memory `onday-design-proj
 | **PERF-LIGHTHOUSE-CI-AUTOMATION** | GitHub Actions + lighthouserc.json + PR 코멘트 자동화 | Issue #126 본문 AC-1/AC-4 분리 영역 (㊧ Mismatch 8번째) |
 | **PERF-OPTIMIZE-IMAGES** | `<img>` → `next/image` 전환 + lazy/priority | 본 baseline LCP 미달 시 |
 | **PERF-OPTIMIZE-FONTS** | Pretendard 폰트 preload + display=swap | 본 baseline FCP 미달 시 |
-| **MON-003 Mixpanel** | 페이지뷰/이벤트 분석 (analytics 영역) | CLAUDE.md §2 답습 = 본 ISSUE 영역 외 |
+| **PERF-OPTIMIZE-BUNDLE-SIZE** (NEW — 2026-05-28) | Sentry + Mixpanel dynamic import (지연 로드) + tree-shaking 점검 | MON-003 PR #134 머지 후 Bundle 회귀 (/diagnosis +203kB, Middleware +9.1kB) — Speed Insights 실 데이터 미달 또는 baseline 재측정 미달 시 트리거 |
+| **NFR-PERF-PAGE-LOAD-LANDING** (NEW — 2026-05-28 baseline 측정 후) | / 또는 /login baseline 별도 측정 | /diagnosis(동적) 1페이지만 측정 = 일반 페이지 영역 외 |
+| **MON-003 Mixpanel** | ✅ Issue #127 PR #134 머지 대기 (analytics 영역) | (완료 트리거 — Bundle 회귀 발견 → PERF-OPTIMIZE-BUNDLE-SIZE 후속) |
 
 ---
 
-_본 문서 신설: 2026-05-28 (Issue #126 NFR-PERF-PAGE-LOAD 측정 셋업 시점). Phase D 측정 후 르르가 TBD 영역 갱신 박힘._
+_본 문서 신설: 2026-05-28 (Issue #126 NFR-PERF-PAGE-LOAD 측정 셋업 시점)._
+_갱신 1: 2026-05-28 (MON-003 PR #134 Bundle 회귀 정직 § + §4.3 baseline 재측정 TODO 신설 + §6 차후 ISSUE 후보 갱신 — PERF-OPTIMIZE-BUNDLE-SIZE + NFR-PERF-PAGE-LOAD-LANDING NEW)._

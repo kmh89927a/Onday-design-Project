@@ -18,6 +18,7 @@ import { useCreateDiagnosis } from "@/features/diagnosis/use-diagnosis";
 import { useAddressSuggest } from "@/features/diagnosis/use-address-suggest";
 // ★ Mismatch ⑬ 정정: isWithinSeoulMetropolitan → isWithinMetroBounds (★ CMD-DIAG-001 산출물 정합, α₁ page.tsx 책임).
 import { isWithinMetroBounds } from "@/lib/diagnosis";
+import { trackDiagnosisStarted } from "@/lib/analytics/mixpanel";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
 
@@ -148,6 +149,8 @@ export default function DiagnosisPage() {
         filters,
       });
       setResult(data.diagnosisId, data.candidates);
+      // MON-003 v1.4 부활 (Issue #127) — REQ-NF-008 funnel 시작점.
+      trackDiagnosisStarted(data.diagnosisId);
       // ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — 진단 시작 성공 시 localStorage 저장 (★ "이전 조건 불러오기" 버튼 호출처).
       if (typeof window !== "undefined") {
         try {
