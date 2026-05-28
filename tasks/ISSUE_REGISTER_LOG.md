@@ -922,3 +922,74 @@ MOCK_DATA_SOURCES (카카오 모빌리티 API / 국토교통부 / 경찰청) 는
 | 23 | **UI-007 v1.4 확장** | **#45** | **(신설 예정)** | **진행중** | **★ ★ ★ Phase A ~70% 사전 박힘 답습 + Q4 전제 오류 정직 인정 (인라인 복제 정정) + Issue 본문 AC-4 vs SSoT mismatch 정직 § + Q5 부착 layer 정상 상태 한정 (#125 EmptyState 충돌 회피) + Phase B 한계 § 12번째 누적 진화** |
 
 _본 § 신설: 2026-05-28 (Issue #45 UI-007 v1.4 확장 진입). ★ Phase B 한계 § 12번째 누적 = #114→#125→#52→#45 4단계 진화 답습 정수 정점._
+
+---
+
+## 24. NFR-PERF-PAGE-LOAD — REQ-NF-002 측정 셋업 (2026-05-28 신설)
+
+### 본 ISSUE 영역
+
+**Issue #126 [NFR-PERF-PAGE-LOAD]** = REQ-NF-002 "일반 페이지 로딩 p95 ≤ 1,500ms (3G 모바일)" 측정 도구 셋업. 성능 최적화 X (미달 시 별도 PERF-OPTIMIZE-* ISSUE 신설 답습).
+
+### Phase A 사전 박힘 점검 (0건 — 완전 신설 영역)
+
+| 영역 | 박힘 여부 | 본 작업 영향 |
+|---|---|---|
+| `@vercel/speed-insights` 패키지 | ❌ 0건 | 본 작업 = 설치 |
+| `SpeedInsights` 컴포넌트 박힘 | ❌ 0건 | 본 작업 = layout.tsx 배치 |
+| `@vercel/analytics` 패키지 | ❌ 0건 | 본 작업 영역 외 (MON-003 Mixpanel 영역) |
+| `tasks/NFR-PERF-PAGE-LOAD.md` 명세 | ❌ 0건 | 본 작업 = 신설 |
+| `docs/perf/` 폴더 | ❌ 0건 | 본 작업 = 신설 |
+| `next/image` 사용 | ❌ 0건 | ★ 차후 PERF-OPTIMIZE-IMAGES 후보 영역 (정직 인정) |
+| `loading="lazy"` / `priority` | ❌ 0건 | 같이 PERF-OPTIMIZE-IMAGES 영역 |
+
+### ★ ㊧ Mismatch 8번째 영역 진화 — Lighthouse CI 자동화 분리
+
+| 영역 | Issue #126 본문 AC | 본 ISSUE 영역 합의 |
+|---|---|---|
+| AC-1 | Lighthouse CI 활성 (GitHub Actions) | @vercel/speed-insights 설치 + layout.tsx 배치 |
+| AC-4 | PR 본문 Lighthouse 점수 자동 노출 | Core Web Vitals (LCP/INP/CLS) 측정 가능 |
+
+★ **정직 인정 + 분리 정합:**
+- Issue 본문 = Lighthouse CI GitHub Actions + lighthouserc.json + PR 코멘트 자동화 영역
+- 본 ISSUE = Speed Insights(runtime) 셋업 + Lighthouse 수동 baseline만
+- 분리 근거: Speed Insights(runtime) vs Lighthouse CI(lab) = 영역 분리 자연 + 1인 MVP 작업량 제한 + "한 ISSUE 한 본질" 답습
+- 차후 영역 = **PERF-LIGHTHOUSE-CI-AUTOMATION** 별도 ISSUE 신설 답습
+
+### ★ FID → INP 정직 정정 NEW (Google 2024-03 표준)
+
+- 르르 prompt AC-4 = "LCP/**FID**/CLS"
+- **★ FID 2024-03 Deprecated → INP (Interaction to Next Paint) 공식 대체** (Google 표준)
+- Vercel Speed Insights = INP 측정 (FID 측정 X)
+- 본 명세 AC-4 = LCP / **INP** / CLS 정정 박힘
+
+### ★ @vercel/analytics 제외 (CLAUDE.md §2 답습)
+
+- 르르 prompt = "(선택) @vercel/analytics도 함께"
+- CLAUDE.md §2 분석 도구 = **Mixpanel / Amplitude** 명시
+- analytics 영역 = MON-003(#127) 영역 = 본 ISSUE 영역 외 사수
+- 본 명세 = `@vercel/speed-insights` 단독 설치
+
+### Phase B 한계 § 13번째 누적 진화 (★ 측정 셋업 vs 실 데이터 수집 분리 영역 NEW)
+
+| 누적 | ISSUE | 본질 |
+|---|---|---|
+| 11번째 | #52 UI-009 | HTML5 min attribute clamp 진짜 본질 (시각 검증 정수) |
+| 12번째 | #45 UI-007 | 부착 layer + source pool mismatch + Issue 본문 vs SSoT mismatch |
+| **13번째** | **#126 NFR-PERF-PAGE-LOAD** | **★ 측정 셋업 vs 실 데이터 수집 분리 영역 NEW + 1주 데이터 의존 + 1인 MVP 실 사용자 트래픽 제한 + FID→INP 정직 정정 + ㊧ Mismatch 8번째 영역 (Lighthouse CI 분리) + 차후 PERF-OPTIMIZE-IMAGES 핫스팟 사전 발견 (next/image 0건)** |
+
+**본 ISSUE Phase B 한계 본질 NEW:**
+- 정적 grep = `SpeedInsights` 박힘 박힘 확인 만 가능
+- 실 p95 데이터 = Vercel Dashboard 1주 트래픽 후 = 본 ISSUE 완료 시점 측정 X
+- 1인 MVP = 실 사용자 트래픽 제한 = 통계적 유의미성 한계
+- Lighthouse baseline = lab 측정 1회 = 실 사용자 환경 미반영
+
+### 본 세션 누적 24건 § 박힘 표 (★ Phase B 한계 § 13번째 누적 정수 정점)
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1~22 | (이전 § 누적) | — | — | — | (이전 § 표 참조) |
+| 23 | **UI-007 v1.4 확장** | **#45** | **#131 머지 완료** | **완료** | **Phase A ~70% 사전 박힘 + Q4 전제 오류 정정 + Issue 본문 AC-4 vs SSoT mismatch + Q5 부착 layer 정상 상태 한정 + Phase B 한계 § 12번째 누적** |
+| 24 | **NFR-PERF-PAGE-LOAD** | **#126** | **(신설 예정)** | **진행중** | **★ 측정 셋업 vs 실 데이터 수집 분리 영역 NEW + ㊧ Mismatch 8번째 (Lighthouse CI 분리) + FID→INP 정직 정정 + @vercel/analytics 제외 (CLAUDE.md §2 답습) + 차후 PERF-OPTIMIZE-IMAGES 핫스팟 사전 발견 + Phase B 한계 § 13번째 누적 정점** |
+
+_본 § 신설: 2026-05-28 (Issue #126 NFR-PERF-PAGE-LOAD 진입). ★ Phase B 한계 § 13번째 누적 = #114→#125→#52→#45→#126 5단계 진화 답습 정수 정점 + ㊧ Mismatch 8번째 영역 진화 NEW (Issue 본문 AC vs 본 ISSUE 영역 합의 mismatch — Lighthouse CI 분리 정직 §)._
