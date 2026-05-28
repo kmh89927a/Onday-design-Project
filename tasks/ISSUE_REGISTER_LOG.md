@@ -993,3 +993,98 @@ _본 § 신설: 2026-05-28 (Issue #45 UI-007 v1.4 확장 진입). ★ Phase B �
 | 24 | **NFR-PERF-PAGE-LOAD** | **#126** | **(신설 예정)** | **진행중** | **★ 측정 셋업 vs 실 데이터 수집 분리 영역 NEW + ㊧ Mismatch 8번째 (Lighthouse CI 분리) + FID→INP 정직 정정 + @vercel/analytics 제외 (CLAUDE.md §2 답습) + 차후 PERF-OPTIMIZE-IMAGES 핫스팟 사전 발견 + Phase B 한계 § 13번째 누적 정점** |
 
 _본 § 신설: 2026-05-28 (Issue #126 NFR-PERF-PAGE-LOAD 진입). ★ Phase B 한계 § 13번째 누적 = #114→#125→#52→#45→#126 5단계 진화 답습 정수 정점 + ㊧ Mismatch 8번째 영역 진화 NEW (Issue 본문 AC vs 본 ISSUE 영역 합의 mismatch — Lighthouse CI 분리 정직 §)._
+
+---
+
+## 25. MON-001 v1.4 확장 — REQ-NF-011 Uptime + REQ-NF-012 5xx 흡수 (2026-05-28 신설)
+
+### 본 ISSUE 영역
+
+**Issue #73 [MON-001]** = Sentry 기본 통합 (v1.3) + v1.4 확장 (REQ-NF-011 Uptime + REQ-NF-012 5xx 흡수). v1.4 audit 결정 = 별도 ISSUE 신설 X, MON-001로 흡수.
+
+### ★ ★ ★ Phase A 사전 박힘 ~85% 정수 정점 (UI-007 70% / #126 0% 초과 정점)
+
+| 영역 | 박힘 위치 | 본 작업 영향 |
+|---|---|---|
+| `@sentry/nextjs ^10.53.1` | `onday-app/package.json` | ✅ 사수 |
+| Sentry config 3종 | `sentry.client.config.ts` + `server.config.ts` + `edge.config.ts` (Sentry.init + DSN env + tracesSampleRate 1.0) | ✅ 사수 + PII 마스킹 추가 |
+| withSentryConfig (silent skip 가드) | `next.config.ts` | ✅ 사수 |
+| `Sentry.captureException` 호출처 4건 | `lib/helpers/sentry-error.ts` + `lib/diagnosis/geocoding.ts` + `lib/diagnosis/use-intersection.ts` + `lib/types/errors/index.ts` | ✅ 사수 |
+| `.env.example` SENTRY 영역 | `NEXT_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN` | ✅ 사수 |
+| **`/api/health` 엔드포인트** | ❌ 0건 | **본 작업 영역 1** |
+| **`/api/sentry-test` 엔드포인트** | ❌ 0건 | **본 작업 영역 2** |
+| **`beforeSend` / `sendDefaultPii`** | ❌ 0건 | **본 작업 영역 3 — config 3종 동일 적용** |
+
+★ **본 작업 영역 = 5파일 (2 신설 + 3 수정)**. 사전 박힘 ~85% 답습 정수 정점.
+
+### ★ ㊧ Mismatch 9번째 영역 진화 NEW — DB ping mismatch
+
+| 영역 | 응답 본질 |
+|---|---|
+| Issue #73 본문 AC-NF-011-A (SSoT) | 단순 `{ status: "ok", timestamp }` |
+| 르르 prompt AC-6 | "200 OK + DB ping" (Prisma) |
+| 현 코드 상태 | mock 모드 + Vercel 서버리스 = SQLite 쓰기 X = DB ping 환경 부적합 |
+
+★ **르르 prompt AC-6 vs SSoT mismatch 정직 인정 + SSoT 사수:**
+- 르르 prompt = DB ping = mock 모드 부적합 (OnDay 실제 제약 미고려 경솔)
+- SSoT(Issue 본문) = 단순 응답 = mock + 서버리스 정합
+- 차후 영역 = Production DB(PostgreSQL) 연결 시점(Step 13+) DB ping 확장 답습
+- 누적: ㊧ Mismatch 영역 = 1(#108) → 2(#110) → 3(#114) → 4(#125) → 5(#52) → 6(UI-009) → 7(#45 Issue 본문 AC-4) → 8(#126 Lighthouse CI 분리) → **9(#73 DB ping mismatch)**
+
+### ★ 르르 prompt env 가드 누락 경솔 정정 정직 §
+
+- 르르 prompt = "/api/sentry-test 신설 (의도 throw)" — 가드 X 영역 박힘
+- ★ Production 노출 시 Sentry 5K errors/mo 티어 소모 + 5xx 인위 발생 리스크
+- **정정 = `process.env.NODE_ENV === 'production'` 시 404 가드 추가**
+- dev/preview 한정 throw = Preview URL에서 르르 1회 검증
+
+### ★ AC 자동 정합 정수 답습 NEW (5xx 자동 캡처)
+
+- AC-4 "Server Action + API Route 5xx 자동 캡처" = `withSentryConfig` 사전 박힘 = **추가 코드 0건**
+- 사전 박힘 captureException 4곳 사수
+- 명세/LOG 명시 = 미래 작업자 "5xx 캡처 코드 어디?" 찾을 때 = "자동 동작 사수" 명시로 해소
+- AC 자동 정합 정수 영역 = #52 UI-009 (Server Action 부재) → **#73 (withSentryConfig 자동 동작) 답습 진화**
+
+### ★ Sentry PII 마스킹 이중 방어 영역 (Sentry 공식 권장)
+
+- (1) `sendDefaultPii: false` = ip/cookies/headers/sensitive headers 자동 제거 (Sentry SDK 옵션)
+- (2) `beforeSend` 정규식 마스킹 = 이메일(`\w+@\w+\.\w+`) / 전화(`010-\d{4}-\d{4}`) `[REDACTED]` 치환
+- client + server + edge 3곳 동일 적용 = PII 노출 영역 격리 = 외부 서비스 PII 전송 0건 사수
+- 차후 영역 = 주소 정보 마스킹 확장 (출퇴근 주소 = 민감) — 별도 ISSUE 후보
+
+### ★ 르르 영역 정직 § (클로드코드 영역 X)
+
+| 영역 | 르르 영역 작업 |
+|---|---|
+| `NEXT_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN` | `.env.local` 등록 + Vercel Dashboard 환경변수 등록 (Production + Preview + Development) |
+| Sentry Uptime Monitor 5분 핑 | Sentry Dashboard 영역 설정 (코드 영역 X) |
+| AC-3 의도 에러 검증 | Preview URL → `/api/sentry-test` 1회 호출 → Sentry Dashboard 캡처 확인 |
+| 5xx 비율 1주 데이터 수집 | Sentry Dashboard 1주 트래픽 후 확인 |
+
+### Phase B 한계 § 14번째 누적 진화 정수 정점 NEW
+
+| 누적 | ISSUE | 본질 |
+|---|---|---|
+| 11번째 | #52 UI-009 | HTML5 min attribute clamp 진짜 본질 (시각 검증 정수) |
+| 12번째 | #45 UI-007 | 부착 layer + source pool mismatch |
+| 13번째 | #126 NFR-PERF-PAGE-LOAD | 측정 셋업 vs 실 데이터 수집 분리 + Lighthouse cold/warm 편차 정수 |
+| **14번째** | **#73 MON-001 v1.4** | **★ ★ 사전 박힘 ~85% 정수 정점 + Sentry 무료 티어 5K 제한 + Uptime 실 데이터 수집 차후 + 외부 서비스 환경변수 의존 (DSN 등록 = 르르 영역) + ㊧ Mismatch 9번째 영역 진화 NEW + env 가드 경솔 정정 + AC 자동 정합 정수 답습 (5xx)** |
+
+**6단계 진화 답습:** #114 → #125 → #52 → #45 → #126 → **#73 정점**
+
+**본 ISSUE Phase B 한계 본질 NEW:**
+- 정적 grep = config 3종 `beforeSend` 박힘 확인 + `/api/health` `route.ts` 박힘 확인만 가능
+- 실 5xx 비율 = Sentry Dashboard 1주 트래픽 후 박힘 = 본 ISSUE 완료 시점 측정 X
+- Uptime 핑 5분 주기 활성 = Sentry Dashboard 설정 = 르르 영역
+- ★ DSN 환경변수 등록 = `.env.local` + Vercel = 르르 영역 = 클로드코드 영역 X
+- ★ Sentry 무료 티어 5K errors/mo 제한 = 트래픽 증가 시 별도 plan 영역 차후
+
+### 본 세션 누적 25건 § 박힘 표 (★ Phase B 한계 § 14번째 누적 정수 정점)
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1~23 | (이전 § 누적) | — | — | — | (이전 § 표 참조) |
+| 24 | NFR-PERF-PAGE-LOAD | #126 | #132 (Draft) | 진행중 | 측정 셋업 vs 실 데이터 분리 + Lighthouse cold/warm 편차 + ㊧ Mismatch 8번째 |
+| 25 | **MON-001 v1.4 확장** | **#73** | **(신설 예정)** | **진행중** | **★ ★ ★ Phase A 사전 박힘 ~85% 정수 정점 (UI-007 70% / #126 0% 초과 정점) + ㊧ Mismatch 9번째 (DB ping) + env 가드 경솔 정정 + AC 자동 정합 정수 답습 (5xx withSentryConfig 자동 동작) + Sentry PII 마스킹 이중 방어 + 르르 영역 정직 § (DSN 등록 + Sentry Uptime 설정) + Phase B 한계 § 14번째 누적 정점** |
+
+_본 § 신설: 2026-05-28 (Issue #73 MON-001 v1.4 확장 진입). ★ Phase B 한계 § 14번째 누적 = #114→#125→#52→#45→#126→#73 6단계 진화 답습 정수 정점 + ㊧ Mismatch 9번째 영역 진화 NEW (DB ping mismatch) + ★ ★ ★ Phase A 사전 박힘 ~85% 정수 정점 (UI-007 70% / #126 0% 초과 정점)._
