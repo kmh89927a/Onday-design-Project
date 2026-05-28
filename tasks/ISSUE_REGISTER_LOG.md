@@ -855,3 +855,70 @@ _본 § 신설: 2026-05-27 (Issue #52 [UI-009] Phase C 시점). 10회 누적 약
 | 22 | **UI-009 v1.4 AC 강화** | **#52** | **#130 + ★ 시각 검증 박힘 발견 추가 커밋** | **진행중** | **★ ★ ★ Phase B 한계 § 진짜 본질 입증 정점 NEW = 시각 검증 박힘 발견 + min attribute clamp 진짜 원인 박힘 + ㊧ Mismatch "사용자 의도 vs input value" 영역** |
 
 _본 § 신설: 2026-05-27 (Issue #52 PR #130 시각 검증 후속). ★ ★ ★ Phase B 한계 § 진짜 본질 입증 정점 NEW = #114→#125→#52 3단계 진화 답습 정수 정점 + 미래 작업자 학습 정수 #7 NEW = "정적 검증 통과 ≠ 충분, Vercel preview 시각 검증 박힘 필수"._
+
+---
+
+## 23. UI-007 v1.4 확장 — REQ-FUNC-012 개인 결과 페이지 출처 배지 (2026-05-28 신설)
+
+### 본 ISSUE 영역
+
+**Issue #45 [UI-007] SSR 공유 리포트 페이지** v1.4 확장 = 공유 리포트 → **개인 진단 결과 페이지(`/diagnosis/result/[id]`) 까지 DataSourceBadge 부착 영역 확대**. SRS REQ-FUNC-012 "리포트 내 **모든** 데이터 항목" 정합 회복.
+
+### ★ ★ ★ Phase A 사전 박힘 ~70% 발견 정수 (12번째 누적 진화)
+
+| 사전 박힘 영역 | 박힘 위치 | 본 작업 영향 |
+|---|---|---|
+| DataSourceBadge 컴포넌트 | `components/data/data-source-badge.tsx` (★ 명세 vs 실제 mismatch) | 사수 + 명세 갱신 |
+| 공유 리포트 출처 박힘 | share-hero + share-report-view (인라인 3개) | 사수 (v1.3 영역) |
+| MOCK_DATA_SOURCES | lib/mocks/share-link/report-data.ts | 사수 (본 ISSUE 미사용) |
+| DataSourceDTO type | lib/types/share-link.ts | 사수 |
+| **개인 결과 출처 박힘** | **result-content.tsx ❌** | **본 작업 영역** |
+
+**본 작업 영역 = result-content.tsx 1파일 수정만** = 사전 박힘 ~70% 답습 정점.
+
+### ★ ★ ★ Phase B mismatch 정직 인정 § (Q4 전제 오류 답습)
+
+**Q4 원래 결정** = MOCK_DATA_SOURCES 재사용 (공유와 동일 source pool 가정)
+
+**Phase B 발견 (사전 박힘 실 점검)** = share-report-view 는 **인라인 3개 하드코딩** 박힘:
+- `공공데이터포털 / 2026.04` (official)
+- `카카오 모빌리티 / 2026.04.01` (aggregated)
+- `통근 추정 / —` (estimate)
+
+MOCK_DATA_SOURCES (카카오 모빌리티 API / 국토교통부 / 경찰청) 는 scenarios.ts (API mock) 전용 박힘.
+
+**★ Q4 전제 오류 정직 인정 → 옵션 1 (인라인 복제) 정정**:
+- 공유 vs 개인 시각 일관성 100% 사수
+- scenarios.ts 미수정 = 회귀 위험 0
+- 차후 영역 = REFACTOR-SOURCE-POOL-UNIFY 별도 ISSUE 후보
+
+### ★ ★ Issue 본문 AC-4 vs SSoT mismatch 정직 §
+
+- Issue #45 v1.4 본문 (르르 grill 직전 제공) AC-4 = "배지 클릭 시 출처 상세 영역 박힘 (모달 또는 툴팁)"
+- SSoT (tasks/UI-007.md AC-6) = 클릭 동작 X
+- ★ SSoT 우선순위 답습 사수 = 클릭 동작 X
+- DataSourceBadge 사전 박힘 = `role="img"` + `aria-label` 종합 = 접근성 충족
+- 차후 영역 = 실 API 연동 시점 출처 URL 박힘 시 Tooltip/Modal 재검토
+
+### ★ Q5 부착 layer 분기 (정상 상태 한정 답습)
+
+- result-content.tsx **최상단, MapCanvas 위** (Q5 채택)
+- loading/empty/error 분기와 격리 = **#125 EmptyState 충돌 회피**
+- 후보 0건/error 상태 = 데이터 X = 출처 X = REQ-FUNC-012 취지 정합
+- result-view.tsx (AppHeader 영역) X — empty/error 상태에서도 노출되면 어색 (#125 답습 정수)
+
+### Phase B 한계 § 박힘 (12번째 누적 진화)
+
+| 누적 | ISSUE | 본질 |
+|---|---|---|
+| 11번째 | #52 UI-009 | HTML5 min attribute clamp 진짜 본질 정점 (시각 검증 박힘 정수) |
+| **12번째** | **#45 UI-007** | **부착 layer 분기 + source pool mismatch 진짜 본질 답습 정수 + Issue 본문 AC-4 vs SSoT mismatch 정직 인정 + Q4 전제 오류 정직 인정** |
+
+### 본 세션 누적 23건 § 박힘 표 (★ Phase B 한계 § 12번째 누적 정수 정점)
+
+| # | Task ID | Issue # | PR # | 상태 | 본질 (한 줄) |
+| --- | ---:| ---:| ---:| --- | --- |
+| 1~22 | (이전 § 누적) | — | — | — | (이전 § 표 참조) |
+| 23 | **UI-007 v1.4 확장** | **#45** | **(신설 예정)** | **진행중** | **★ ★ ★ Phase A ~70% 사전 박힘 답습 + Q4 전제 오류 정직 인정 (인라인 복제 정정) + Issue 본문 AC-4 vs SSoT mismatch 정직 § + Q5 부착 layer 정상 상태 한정 (#125 EmptyState 충돌 회피) + Phase B 한계 § 12번째 누적 진화** |
+
+_본 § 신설: 2026-05-28 (Issue #45 UI-007 v1.4 확장 진입). ★ Phase B 한계 § 12번째 누적 = #114→#125→#52→#45 4단계 진화 답습 정수 정점._
