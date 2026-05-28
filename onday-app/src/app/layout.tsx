@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { Toaster } from "@/components/layout/toaster";
 import { QueryProvider } from "@/providers/query-provider";
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body>
         <QueryProvider>{children}</QueryProvider>
         <Toaster />
+        <SpeedInsights />
       </body>
     </html>
   );
