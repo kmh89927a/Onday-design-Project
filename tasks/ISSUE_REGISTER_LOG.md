@@ -993,3 +993,53 @@ _본 § 신설: 2026-05-28 (Issue #45 UI-007 v1.4 확장 진입). ★ Phase B �
 | 24 | **NFR-PERF-PAGE-LOAD** | **#126** | **(신설 예정)** | **진행중** | **★ 측정 셋업 vs 실 데이터 수집 분리 영역 NEW + ㊧ Mismatch 8번째 (Lighthouse CI 분리) + FID→INP 정직 정정 + @vercel/analytics 제외 (CLAUDE.md §2 답습) + 차후 PERF-OPTIMIZE-IMAGES 핫스팟 사전 발견 + Phase B 한계 § 13번째 누적 정점** |
 
 _본 § 신설: 2026-05-28 (Issue #126 NFR-PERF-PAGE-LOAD 진입). ★ Phase B 한계 § 13번째 누적 = #114→#125→#52→#45→#126 5단계 진화 답습 정수 정점 + ㊧ Mismatch 8번째 영역 진화 NEW (Issue 본문 AC vs 본 ISSUE 영역 합의 mismatch — Lighthouse CI 분리 정직 §)._
+
+### ★ ★ Lighthouse cold/warm 편차 발견 정직 § (2026-05-28 갱신 NEW)
+
+**측정 영역:** Preview URL (feat/NFR-PERF-PAGE-LOAD-MEASURE), /diagnosis 페이지, Chrome DevTools Lighthouse Mobile
+
+**측정 결과 — cold start vs warm 편차 큼 (같은 URL/페이지):**
+
+| 측정 | Performance | FCP | LCP | TBT | CLS | SI |
+|---|---:|---:|---:|---:|---:|---:|
+| 1차 (cold start) | **63** 🔴 | 5.6s | 6.6s | 0ms | 0 | 5.6s |
+| 2차 (warm) | **97** 🟢 | 1.7s | 2.5s | 0ms | 0 | 1.7s |
+
+**baseline 채택값 = 2차 (warm).** /diagnosis 무거운 페이지(지도+진단 로직)치고 LCP 2.5s 양호.
+
+### ★ ★ Phase B 한계 § 정수 추가 NEW (Lighthouse Preview cold/warm 편차)
+
+**발견 본질 (미래 작업자 학습 정수 #8 NEW):**
+- Preview URL Lighthouse = Vercel serverless lambda cold start 영향 = 1회 측정 편차 큼
+- warm 상태 2~3회 측정 후 평균/중앙값 답습 정수
+- 1차 측정 무시 + 2~3회 warm 측정이 진짜 baseline
+- Production baseline 별도 측정 답습 (Vercel Production = warm 유지, Preview = 매번 cold start)
+- ★ Q3 결정 (Production 측정 추천) vs 실 측정 (Preview /diagnosis) mismatch 정직 인정 = 차후 Production baseline 측정 답습
+
+**누적 학습 정수 8종 진화:**
+- 1~7 = 이전 (결정 번복/audit/이중 라벨/Merge/audit 한계/AC 자동 정합/Phase B 한계 § 정점)
+- **8 NEW = Lighthouse Preview cold/warm 편차 정수** = "Preview URL 1회 측정 ≠ 실 baseline, warm 2~3회 평균 답습 정수"
+
+### ★ 측정 추가 발견 영역 (정직 §)
+
+**a11y 핫스팟 발견 (Lighthouse Issues 탭):**
+- "form field should have id/name" = 접근성 영역 박힘
+- 차후 영역 = **A11Y-FORM-FIELD-LABELS** ISSUE 후보 신설 답습
+
+**측정 페이지 영역 정직 인정 §:**
+- /diagnosis = 동적 페이지 (지도 + 진단 로직) = REQ-NF-002 "일반 페이지" 영역 엄밀히는 외
+- 일반 페이지 (/ 또는 /login) baseline = 차후 측정 영역 = **NFR-PERF-PAGE-LOAD-LANDING** ISSUE 후보 신설 답습
+
+### Phase B 한계 § 13번째 누적 갱신 (cold/warm 편차 정수 추가 박힘)
+
+13번째 본질 영역 확장:
+- (기존) 측정 셋업 vs 실 데이터 수집 분리 영역
+- (기존) 1주 데이터 의존 + 1인 MVP 실 사용자 트래픽 제한
+- (기존) FID→INP 정직 정정
+- (기존) ㊧ Mismatch 8번째 영역 (Lighthouse CI 분리)
+- (기존) 차후 PERF-OPTIMIZE-IMAGES 핫스팟 사전 발견 (next/image 0건)
+- **(NEW) ★ Lighthouse Preview cold/warm 편차 정수 = warm 2~3회 평균 답습 필수**
+- **(NEW) ★ 측정 페이지 mismatch 정직 인정 = /diagnosis(동적) vs / 또는 /login(일반 정적) 분리 영역**
+- **(NEW) ★ a11y 핫스팟 사전 발견 = form field id/name 누락 = A11Y-FORM-FIELD-LABELS 차후 후보**
+
+_본 갱신: 2026-05-28 (/diagnosis Preview Lighthouse 측정 완료 후속). ★ ★ Phase B 한계 § 정수 8번째 미래 작업자 학습 정수 NEW = Lighthouse Preview cold/warm 편차._
