@@ -193,5 +193,11 @@
     .tabular {
       font-variant-numeric: tabular-nums;
     }
+    /* UI-013 AC-7: 흑백 프린터 대응 — 배경 색이 녹아도 등급 경계 유지 */
+    .grade-badge {
+      border: 1px solid #000;
+      color: #000;
+      background: transparent !important;
+    }
   }
 }
