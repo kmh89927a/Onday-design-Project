@@ -1471,3 +1471,129 @@ _본 § 신설: 2026-05-29 (Issue #59 UI-013 야간 안전 등급 표시 UI 진�
 | 29 | **CMD-SINGLE-002** | **#56** | **(예정)** | **진행중** | **★ 사전 박힘 ~95% 정수 정점 답습 진화 (UI-013 §28 ~85% 진화) + 정직 § 10건 누적 + "갭 추가 vs 방식 차이 보존" 구분 정수 NEW + color-adjust ↔ AC-7 충돌 사전 검토 + !important 공존 + Phase B 한계 § 17번째 누적 + ㊧ Mismatch 12번째(4건 동시) 영역 진화 NEW + CMD-SINGLE-002-SPEC-WRITE 차후 ISSUE 분리 정직 등록** |
 
 _본 § 신설: 2026-05-29 (Issue #56 CMD-SINGLE-002 리포트 저장 (print) 진입). ★ Phase B 한계 § 17번째 누적 = #114→#125→#52→#45→#126→#73→#127→#59→#56 9단계 진화 답습 정수 정점 + ㊧ Mismatch 12번째 영역 진화 NEW (4건 동시 박힘) + ★ "갭 추가 vs 방식 차이 보존" 구분 정수 NEW (본 ISSUE 본질 정점) + ★ color-adjust ↔ AC-7 충돌 사전 검토 + !important 공존 확인 (UI-013 답습 직후 인접 정수) + ★ 메모리 백로그 매핑 답습 정착 (UI-013 #6 매핑 두 번째 답습) + ★ 사전 박힘 ~95% 정수 정점 답습 진화. 자동 머지 X, ISSUE Close X (르르 직접)._
+
+---
+
+## 30. MASTER-PLAN-REAL-API 신설 — 졸업 전 실 API 전환 마스터 플랜 (2026-05-29 신설 NEW)
+
+**문서:** `tasks/MASTER-PLAN-REAL-API.md` (575줄, 11섹션)
+**ISSUE:** 없음 (메타 작업 = 계획 박힘, 코드 X)
+**선행 audit:** AUDIT-PRD-SRS-v1.4 (LOG §22)
+**가용 시간:** 63시간 (3주 × 21h/주) / 84시간 (4주 여유)
+
+### 본 § = 정직 § 10건 누적 (메타 작업 = 계획 박힘 본질 정수 NEW)
+
+**1. MASTER-PLAN-REAL-API 신설 = 본질 (메타 작업, ISSUE X):**
+- UI-013 #59 + CMD-SINGLE-002 #56 답습 = 작업 ISSUE 진수
+- 본 § = 메타 작업 = "졸업 전 실 API 전환 계획 박힘" 본질
+- 코드 변경 0 = 계획 박힘 + LOG § 박힘만
+- **★ 작업 ISSUE 진수 → 메타 작업 진수 진화 NEW = AUDIT-PRD-SRS-v1.4 답습 정착**
+
+**2. AUDIT-PRD-SRS-v1.4 답습 정수 정점 (LOG §22 정합):**
+- AUDIT-PRD-SRS-v1.4 = 명세 audit Phase A~D 답습 박힘
+- 본 § = 실 API 전환 audit + 마스터 플랜 박힘
+- **★ "audit → 계획 박힘 → 실행" 3단계 답습 정수**
+
+**3. 사전 박힘 평균 ~67% 정직 인정 (5 묶음 평균):**
+- W1-1 Supabase DB: 85% (db.ts wrapper 100% 박힘, schema 변경만)
+- W1-2 Supabase Auth: 80% (IS_MOCK 분기 + signInWithOAuth 박힘)
+- W2-1 카카오 모빌리티 client: 70% (types + mapper 100%, client stub)
+- W2-2 ScoringEngine: 60% (mock-calculator Haversine 박힘)
+- W3-1 야간 안전 JSON: 40% (sample JSON 박힘, 실 데이터 수집 필요)
+- **★ 평균 ~67% 박힘 = UI-013 ~85% / CMD-SINGLE-002 ~95% 진화 패턴 = "작업별 차등 사전 박힘 정직 인정" 정수 진화 NEW**
+
+**4. Tier 0/1/2 3계층 분리 정수 NEW:**
+- **Tier 0** = 르르 직접 영역 (외부 키 등록) — 코드 X = 본 플랜 가용시간 영역 외
+- **Tier 1** = 코드 작업 (6 묶음)
+- **Tier 2** = 의존 자동 동작 (Tier 1 완료 시 자연 동작 — 공유 링크 persist 등)
+- **★ "외부 의존 vs 코드 작업 vs 자동 동작" 3계층 분리 정수 NEW**
+
+**5. NEXT_PUBLIC_USE_MOCK 단일 토글 4건 박힘 정직 검증 (메모리 vs SSoT 정합 확인):**
+- 메모리 박힘: "전부 mock 모드 NEXT_PUBLIC_USE_MOCK=true"
+- grep 검증: 실 코드 IS_MOCK 분기 4건 박힘 정합
+  · `api/diagnosis/route.ts:6,24`
+  · `use-address-suggest.ts:26`
+  · `login-form.tsx:17,32`
+  · `lib/auth.ts:4,30`
+- **★ 메모리 ↔ SSoT 매핑 일치 검증 정수 (UI-013/CMD-SINGLE-002 #6 매핑 갭 답습 → 본 § 정합 확인)**
+
+**6. kakao-transport types/mapper 100% 박힘 정수 정점 (Wave 2 답습 정점):**
+- types.ts = DTO 8종 + IKakaoTransportClient + Config 100% 박힘 (6.6KB)
+- mapper.ts = mapKakaoResponseToCommuteInfo 100% 박힘 (2.2KB)
+- client.ts = throw Error 스텁만 박힘 (2.1KB)
+- **★ "interface 100% / 구현 0%" 분리 정수 = API-007 박힘 시 의도된 분리 (CMD-DIAG-001 위임 트리거)**
+
+**7. db.ts Prisma 호환 wrapper = 호출자 0 변경 어댑터 패턴 정수:**
+- db.ts = `prisma.<model>.<method>` API 100% 호환 박힘
+- 호출자 (api/diagnosis/route.ts 등) = 변경 0
+- 어댑터 교체 = `PrismaClient + adapter-pg` 박힘만으로 전환
+- **★ "인터페이스 사수 + 구현 교체" 어댑터 패턴 정수 정점 (db.ts 주석에 'Step 13' 명시 박힘)**
+
+**8. Week 4 여유 버퍼 정직 명시 (3주 가능 / 4주 안전):**
+- 추정 32~50시간 vs 가용 63시간 (3주) = ~20% 여유
+- 추정 32~50시간 vs 가용 84시간 (4주) = ~40% 여유
+- 빠듯 영역 = W2-1 카카오 모빌리티 client (10시간+ 단일 묶음) + W3-1 데이터 수집 (Week 0 선행)
+- **★ "3주 목표 + 4주 안전" 정직 평가 정수 = 발표 준비 + 회귀 대응 영역 확보**
+
+**9. 차후 ISSUE 후보 6 묶음 사전 등록 정직 (REAL-API-W1~W3):**
+- REAL-API-W1-SUPABASE-DB (NEW)
+- REAL-API-W1-SUPABASE-AUTH (NEW)
+- REAL-API-W2-KAKAO-MOBILITY-CLIENT (NEW)
+- REAL-API-W2-SCORING-ENGINE (NEW)
+- REAL-API-W3-NIGHT-SAFETY-JSON (NEW)
+- REAL-API-W3-ISSUE-CLEANUP (NEW, 30+ 건 Close 정합)
+- **★ "마스터 플랜 = 6 ISSUE 사전 등록 정직" 정수 (UI-013 #135 INFRA-TEST-001 등록 답습 진화)**
+
+**10. OPEN 50건 vs 실제 박힘 ~30+ 건 매핑 갭 = 본 audit 진짜 본질 정직 인정:**
+- 현재 OPEN 50건 (track:diagnosis-ui 5 + diagnosis-be 7 + sharelink 7 + deadline 8 + single 3 + savedsearch 3 + auth 4 + test-nfr 11 + foundation 3 + 기타 2)
+- 실제 prototype 박힘 = PRD Must-have 5/5 + 데드라인/싱글/공유 박힘
+- **갭 = PR 머지 후 ISSUE Close 미박힘 (UI-013 #59만 Close)**
+- 본 마스터 플랜 W3-2 = 30+ 건 Close 정합 정리 (졸업 전 완료)
+- **★ "PR 머지 vs ISSUE Close 매핑 갭" = 본 audit 진짜 본질 정직 인정 정수 NEW**
+
+### Phase B 한계 § 18번째 누적 진화 정수 정점 NEW
+
+**누적 진화 체인 10단계 답습:**
+#114 → #125 → #52 → #45 → #126 → #73 → #127 → #59 → #56 → **MASTER-PLAN-REAL-API**
+
+**본 § = 작업 ISSUE 진수 → 메타 작업 진수 진화 정점 NEW:**
+- (기존 9단계) ISSUE 진수 정수 = #114~#56 9단계 답습
+- (NEW 10단계째) **MASTER-PLAN-REAL-API = 메타 작업 진수 진화 정점 NEW**
+- (NEW) **"작업 ISSUE → 메타 작업 + 계획 박힘" 답습 정수 = AUDIT-PRD-SRS-v1.4 답습 정착**
+- (NEW) **"3주 가능 / 4주 안전" 정직 평가 정수 = 발표 준비 + 회귀 대응 영역 확보**
+
+### ㊧ Mismatch 13번째 영역 진화 NEW (★ 4건 동시 박힘)
+
+- 메모리 백로그 임의 표현 vs SSoT ISSUE 번호 = **정합 확인** (UI-013 #6 / CMD-SINGLE-002 "PDF 다운로드" 답습 → 본 § 정착)
+- 메모리 USE_MOCK=true 박힘 vs 실 코드 IS_MOCK 분기 4건 박힘 = **정합 검증 결과 일치**
+- OPEN 50건 ISSUE vs 실 코드 박힘 ~30+ 건 = **PR 머지 vs ISSUE Close 매핑 갭** (본 audit 진짜 본질)
+- SRS v1.7 위치 (`docs/05_SRS_v1.7.md`) vs `tasks/docs/05_SRS_v1.6.md` (구버전 사본 박힘) = **문서 동기화 갭**
+
+**★ 4건 동시 박힘 = "메모리 vs SSoT" / "ISSUE vs 코드" / "문서 버전 동기화" 3대 정합 영역 동시 검증 정수 NEW**
+
+### 차후 ISSUE 후보 영역 누적 표 갱신 (2026-05-29 기준)
+
+| 후보 ISSUE | 트리거 | 영역 | 본 플랜 위치 |
+|---|---|---|---|
+| **REAL-API-W1-SUPABASE-DB** (NEW) | Tier 0 DATABASE_URL 등록 | Postgres 어댑터 교체 + schema + migrate + seed | Week 1 (M, 8~12h) |
+| **REAL-API-W1-SUPABASE-AUTH** (NEW) | Tier 0 Auth Provider 등록 | callback 검증 + IS_MOCK=false 활성 | Week 1 (S, 3~5h) |
+| **REAL-API-W2-KAKAO-MOBILITY-CLIENT** (NEW) | Tier 0 MOBILITY_API_KEY 등록 | client.ts fetch + timeout + retry + Error 변환 | Week 2 (M, 8~12h) |
+| **REAL-API-W2-SCORING-ENGINE** (NEW) | W2-1 완료 | mock-calculator + 실 통근시간 통합 + api/diagnosis Production | Week 2 (M, 5~8h) |
+| **REAL-API-W3-NIGHT-SAFETY-JSON** (NEW) | (독립) | 경찰청 데이터 수집 + safety-grade.ts + coverage-check | Week 3 (M, 5~8h) |
+| **REAL-API-W3-ISSUE-CLEANUP** (NEW) | W1~W3 완료 | OPEN 50건 → 20건 Close 정합 정리 | Week 3 (S, 3~5h) |
+| #135 INFRA-TEST-001 | (기존 §28) | (기존) | 졸업 후 |
+| CMD-SINGLE-002-SPEC-WRITE | (기존 §29) | (기존) | 졸업 후 |
+| UI-013-SPEC-WRITE | (기존 §28) | (기존) | 졸업 후 |
+| QRY-SINGLE-001 실 데이터 | (기존 §28) | → REAL-API-W3-NIGHT-SAFETY-JSON 흡수 | 졸업 전 |
+| PERF-OPTIMIZE-BUNDLE-SIZE | (기존 §27) | (기존) | 졸업 후 |
+| **AUDIT-OPEN-ISSUE-CLOSE-MAPPING** (NEW) | OPEN 50건 정합 정리 별도 audit | PR 머지 vs ISSUE Close 매핑 갭 정직 정렬 | W3-2 흡수 가능 |
+
+### 본 세션 누적 30건 § 박힘 표 (★ Phase B 한계 § 18번째 누적 정수 정점)
+
+| § | 영역 | ISSUE | PR | 상태 | 답습 정수 |
+|---|---|---|---|---|---|
+| 28 | **UI-013** | **#59** | **#136 머지 완료** | **완료** | (기존) |
+| 29 | **CMD-SINGLE-002** | **#56** | **#137 Draft** | **진행중 (르르 머지 대기)** | (기존) |
+| 30 | **MASTER-PLAN-REAL-API** | **(메타 작업)** | **(별도 docs PR 예정)** | **계획 완료 (실행 대기)** | **★ 메타 작업 진수 진화 정점 NEW + 정직 § 10건 누적 + 사전 박힘 ~67% 평균 정직 인정 + Tier 0/1/2 3계층 분리 정수 NEW + AUDIT-PRD-SRS-v1.4 답습 정착 + Phase B 한계 § 18번째 누적 (10단계 답습) + ㊧ Mismatch 13번째 영역 진화 NEW (4건 동시) + 차후 6 ISSUE 사전 등록 정직 + "3주 가능 / 4주 안전" 정직 평가** |
+
+_본 § 신설: 2026-05-29 (MASTER-PLAN-REAL-API.md 신설 — 졸업 전 실 API 전환 마스터 플랜 박힘). ★ Phase B 한계 § 18번째 누적 = #114→#125→#52→#45→#126→#73→#127→#59→#56→MASTER-PLAN 10단계 진화 답습 정수 정점 + ㊧ Mismatch 13번째 영역 진화 NEW (4건 동시 박힘) + ★ 메타 작업 진수 진화 정점 NEW (작업 ISSUE 진수 → 메타 작업 + 계획 박힘) + ★ AUDIT-PRD-SRS-v1.4 답습 정착 (LOG §22 → §30 8 § 누적 답습) + ★ Tier 0/1/2 3계층 분리 정수 NEW + ★ 사전 박힘 ~67% 평균 정직 인정 (UI-013 ~85% / CMD-SINGLE-002 ~95% 진화 패턴) + ★ 메모리 ↔ SSoT 매핑 정합 확인 정수 (USE_MOCK 4건 분기 박힘 정직 검증) + ★ "PR 머지 vs ISSUE Close 매핑 갭" 본 audit 진짜 본질 정직 인정 + ★ 차후 6 ISSUE 사전 등록 정직 (REAL-API-W1~W3). 자동 머지 X, ISSUE Close X = 르르 직접 처리 (본 마스터 플랜 전체)._
