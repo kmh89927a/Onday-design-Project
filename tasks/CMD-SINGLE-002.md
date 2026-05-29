@@ -41,6 +41,26 @@ Web→User: 브라우저 인쇄 다이얼로그 표시
 
 ## 3. 🛠️ Task Breakdown (실행 체크리스트)
 
+> **Rev 1.1 (2026-05-29):** UI-013 #59 작업 결과 사전 박힘 ~95% 정직 인정. 실제 구현 = `src/app/single/[id]/single-result-view.tsx` (PrintHeader + "리포트 저장" 버튼 인라인) + `src/app/globals.css` (@media print) 참조. 본 §3 진짜 갭 = §3.2 일부 7줄 (`feat/CMD-SINGLE-002-PRINT-CSS` 커밋 `ddeeec2`).
+>
+> **§3.1 SaveReportButton + §3.3 PrintHeader → 인라인 보존** (`single-result-view.tsx`, UI-013 Q1 답습 = 재사용 0건 + 1인 MVP 단순 원칙)
+>
+> **§3.2 @media print 갱신:**
+> - `@page margin: 1cm` → **`16mm 12mm`** (Step 11.6 의도 보존)
+> - 일괄 숨김 규칙 (`nav, header, footer, .floating-button, [data-no-print]`) → **Tailwind `print:hidden` 유틸리티 분산 패턴** (`single-result-view.tsx` 5건 명시적)
+> - `.print-only { display: block !important }` → **`print:block` Tailwind 유틸리티 동등**
+> - `.map-container { height: 300px !important }` / `.report-container { ... }` → **onday-app 사용처 0건 = YAGNI 미적용**
+> - `.grade-badge { border: 1px solid #000 !important }` → **UI-013 AC-7로 강화 박힘** (`transparent !important + color #000 + border` 3중, `safety-grade-badge.tsx` className)
+> - **신규 박힘 (진짜 갭):** `@page size: A4` 1줄 + `body` 안 `color-adjust/-webkit-print/print-color-adjust: exact` 3종 + `font-size: 12pt` + `padding/margin: 0`
+>
+> **§3.5/3.6/3.7 tests 12개 → INFRA-TEST-001 (#135) 선행 deferral** (vitest config·jsdom·RTL·npm script·__tests__ 0건, UI-013 Q2 답습)
+>
+> **AC-4:** `margin: 1cm` 표현 → `16mm 12mm` 갱신 (§3.2 정합)
+>
+> ★ **"갭 추가 vs 방식 차이 보존" 구분 정수 NEW**: 없던 항목(color-adjust/A4/font-size/padding/margin) = 추가 / 있는데 방식만 다른 것(컴포넌트 분리·일괄 규칙·margin·.grade-badge) = 실제 보존 + 명세 역방향 갱신.
+>
+> ★ **color-adjust ↔ AC-7 충돌 검토:** body `color-adjust: exact` (색·배경 보존) vs AC-7 `.grade-badge { background: transparent !important }` (배지 흑백 사수). `!important` 우선순위 → AC-7 사수, SafetyBar는 color-adjust 적용 = 의도된 공존 (Badge 흑백 안전망 + Bar 색 정보).
+
 - [ ] **3.1** `components/single/save-report-button.tsx` — 클라이언트 컴포넌트
   ```typescript
   'use client';

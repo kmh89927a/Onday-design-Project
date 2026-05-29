@@ -1363,3 +1363,111 @@ _본 § 신설: 2026-05-28 (MON-003 PR #134 옵션 A 채택 답습 — 머지 �
 | 28 | **UI-013** | **#59** | **(예정)** | **진행중** | **★ 사전 박힘 ~85% 정수 정점 답습 (MON-001 §25 정합) + 정직 § 6건 누적 (메모리 #6 매핑 + 5건 갭) + AC-7 흑백 border 1건 갭 좁힘 + Phase B 한계 § 16번째 누적 + ㊧ Mismatch 11번째 영역 진화 NEW + INFRA-TEST-001/UI-013-SPEC-WRITE 차후 ISSUE 분리 정직 등록** |
 
 _본 § 신설: 2026-05-29 (Issue #59 UI-013 야간 안전 등급 표시 UI 진입). ★ Phase B 한계 § 16번째 누적 = #114→#125→#52→#45→#126→#73→#127→#59 8단계 진화 답습 정수 정점 + ㊧ Mismatch 11번째 영역 진화 NEW (명세 컴포넌트 분리 vs 인라인 + 명세 색상 vs 디자인 토큰) + ★ 메모리 백로그 #6 ≠ GitHub Issue #6 매핑 정직 정렬 (SSoT 사수) + ★ 사전 박힘 ~85% 정수 정점 답습 (MON-001 §25 정합) + ★ 명세 역방향 정합 답습 정수 NEW. 자동 머지 X, ISSUE Close X (르르 직접)._
+
+---
+
+## 29. CMD-SINGLE-002 #56 — 리포트 저장 (window.print + @media print 정합) (2026-05-29 신설 NEW)
+
+**브랜치:** `feat/CMD-SINGLE-002-PRINT-CSS`
+**ISSUE:** [#56 CMD-SINGLE-002 리포트 저장 (print)](https://github.com/kmh89927a/Onday-design-Project/issues/56)
+**커밋:**
+- `ddeeec2` feat(single): CMD-SINGLE-002 인쇄 정합 (color-adjust 3종 + @page size A4 + body 인쇄 단위)
+- (예정) docs(tasks): CMD-SINGLE-002.md §3 Rev 1.1 갱신 + ISSUE_REGISTER_LOG.md +1 §
+
+### 본 § = 정직 § 10건 누적 (메모리 매핑 + SRS 정직 정렬 + 8건 명세-실제 갭 정직 인정)
+
+**1. 메모리 백로그 "PDF 리포트 다운로드" ↔ #56 매핑** (UI-013 #6 매핑 답습 진화):
+- 메모리 "10대 추가 기능 백로그" 임의 표현 = 공식 번호 X
+- 실제 = `#56 [CMD-SINGLE-002] 리포트 저장 (print)` (OPEN, track:single, wave:4, complexity:L)
+- 관련 명세 = `tasks/CMD-SINGLE-002.md` + SRS §REQ-FUNC-023 + §REQ-NF-010
+- **★ UI-013 #6 매핑 답습 정착 = 메모리 표현 폐기, GitHub ISSUE 번호 SSoT 사수**
+
+**2. SRS Rev v0.3 서버 PDF 폐기 = window.print() 안내** (PRD vs SRS 정직 정렬):
+- PRD §AC-3 = "PDF 다운로드 ≤ 3초" 표현 박힘 (자동 다운로드 인상)
+- SRS Rev v0.3 = "PDF 서버 사이드 생성(`@react-pdf/renderer`) 제거 → `window.print()` + CSS `@media print` 전환"
+- 실제 = window.print() 박힘 (`single-result-view.tsx:227`) + PDF 라이브러리 0건 (정합)
+- 본 ISSUE = SRS 우선 사수
+- **★ SRS = SSoT, PRD 표현 = 사용자 인상 영역 (실제 명세 우선)**
+
+**3. color-adjust ↔ AC-7 충돌 검토 → !important 우선 공존 확인 (Q1):**
+- 명세 §3.2 body `color-adjust/-webkit-print/print-color-adjust: exact` 3종 = 색·배경 보존
+- AC-7 (UI-013 박힘) `.grade-badge { background: transparent !important; color: #000; border: 1px solid #000 }` = 배지 흑백 사수
+- `!important` 우선순위 → **공존 가능**: Badge 흑백 (등급 식별 안전망) + SafetyBar 색 (등급 정보 풍부) 분리
+- 추가 정직: 사용자 "어제 미리보기 색 정상" → Chrome '배경 그래픽 인쇄' 옵션 sticky 또는 모던 브라우저 일부 보존 추정. color-adjust: exact 명시 = 옵션/브라우저 무관 보장
+- **★ UI-013 답습 직후 인접 ISSUE 충돌 사전 검토 정수 NEW**
+
+**4. @page margin 명세 1cm vs 실제 16mm 12mm → 실제 보존 + 명세 역방향 갱신 (Q2):**
+- 명세 §3.2 `margin: 1cm` = v1.0 default
+- 실제 = `margin: 16mm 12mm` (상하 16mm + 좌우 12mm, Step 11.6 의도)
+- 디자인 근거: PrintHeader 상단 공간 + 모바일 레이아웃 인쇄 적합
+- 채택 = 실제 보존 + CMD-SINGLE-002.md §3.2 Rev 1.1 갱신
+- **★ UI-013 Q3 답습 (디자인 토큰 보존 + 명세 역방향 갱신) 정착**
+
+**5. "갭 추가 vs 방식 차이 보존" 구분 정수 NEW (Q4) = 본 ISSUE 본질 정점:**
+- **없던 항목** (color-adjust 3종 + @page size: A4 + font-size: 12pt + padding/margin: 0) = **추가 (진짜 갭)**
+- **있는데 방식만 다른 것** (컴포넌트 분리 vs 인라인 / 일괄 숨김 vs Tailwind 분산 / margin 1cm vs 16mm 12mm / .grade-badge vs AC-7 강화) = **실제 보존 + 명세 역방향 갱신**
+- **★ UI-013 답습 진화 = "명세 충실 vs 사전 박힘 보존" 단순 이분법 → "갭 추가 vs 방식 차이" 정밀 구분 정수**
+
+**6. 명세 일괄 숨김 규칙 vs Tailwind print: 분산 → 실제 보존 + 명세 갱신 (Q4):**
+- 명세 §3.2 = `nav, header, footer, .floating-button, [data-no-print] { display: none !important }` 일괄 안전망
+- 실제 = `single-result-view.tsx`에서 `className="print:hidden"` 5건 명시적 분산
+- 명시적 = 어느 요소 숨김인지 추적 용이 + 의도적 인쇄 nav/header 우회 가능
+- 채택 = 실제 보존 + 명세 갱신 (CMD-SINGLE-002.md §3.2)
+
+**7. `.map-container` / `.report-container` = onday-app 사용처 0건 → YAGNI 정직 인정 (Q5):**
+- 명세 §3.2 `.map-container { height: 300px !important }` + `.report-container { width: 100% ... }` 박힘
+- 실제 grep = 0건 (싱글 모드는 지도 미박힘)
+- 채택 = 박지 않음 + 명세 갱신 (YAGNI 정직 인정)
+
+**8. `.grade-badge` = UI-013 AC-7로 이미 강화 박힘 (사전 박힘 답습 정수):**
+- 명세 §3.2 `.grade-badge { border: 1px solid #000 !important }` (border만)
+- 실제 = UI-013 AC-7로 `border + color #000 + background: transparent !important` 3중 강화 박힘
+- 본 ISSUE = 추가 박힘 X (사전 박힘 정수 사수)
+
+**9. tests 12개 = INFRA-TEST-001 #135 선행 deferral (UI-013 Q2 답습 정착):**
+- 명세 §3.5/3.6/3.7 = save-report-button.spec(3) + print-css.spec(5) + save-report-no-server.spec(4) = 12 spec
+- 실제 onday-app/ = vitest dep만 박힘, config·scripts·__tests__ 0건
+- 채택 = INFRA-TEST-001 (#135) 선행 후 작성 (UI-013 §28 답습 정착)
+- **★ UI-013 → CMD-SINGLE-002 답습 정착 = 같은 deferral 패턴 두 번째 박힘**
+
+**10. body 박는 위치 = @media print 안 (사용자 지적 정직 §):**
+- 사용자 지적: "font-size: 12pt = @media print 안 박기 (전역 body면 화면 폰트도 바뀜)"
+- 명세 §3.2 위치 = @media print 안 body 셀렉터 (사용자 지적 정합)
+- 실제 박힘 = 정확히 @media print 안 body = 화면 영향 0
+- **★ 사용자 지적 정직 § = 박는 위치 명시 정수 (전역 vs @media 구분)**
+
+### Phase B 한계 § 17번째 누적 진화 정수 정점 NEW
+
+**누적 진화 체인 9단계 답습:**
+#114 → #125 → #52 → #45 → #126 → #73 → #127 → #59 → **#56 (CMD-SINGLE-002)**
+
+**본 § = 사전 박힘 ~95% 정수 정점 답습 (UI-013 ~85% 진화):**
+- (기존) UI-013 §28 = 사전 박힘 ~85% 정수 정점
+- (NEW) **CMD-SINGLE-002 = 사전 박힘 ~95% 정수 정점 답습 진화 + 진짜 갭 7줄만 좁힘 (globals.css)**
+- (NEW) **"갭 추가 vs 방식 차이 보존" 구분 정수 NEW = 본 ISSUE 본질 정점**
+- (NEW) **color-adjust ↔ AC-7 충돌 사전 검토 + !important 공존 확인 = UI-013 답습 직후 인접 ISSUE 정수 진화**
+
+### ㊧ Mismatch 12번째 영역 진화 NEW
+
+- (기존 11건) UI-013 외 10건 누적
+- (NEW 12건째 = 본 ISSUE) **명세 컴포넌트 분리 vs 인라인 (UI-013 답습) + 명세 일괄 숨김 vs Tailwind 분산 (Q4) + 명세 margin 1cm vs 실제 16mm 12mm (Q2) + 명세 .map-container/.report-container vs onday-app 사용처 0건 (Q5)** 4건 Mismatch 동시 추가
+- **★ 한 ISSUE에서 4건 Mismatch 동시 박힘 = "방식 차이 보존" 정수 정점**
+
+### 차후 ISSUE 후보 영역 누적 표 갱신 (2026-05-29 기준)
+
+| 후보 ISSUE | 트리거 | 영역 |
+|---|---|---|
+| INFRA-TEST-001 (#135) | UI-013/CMD-SINGLE-002 spec deferral | vitest config + jsdom + RTL + npm script + first spec |
+| **CMD-SINGLE-002-SPEC-WRITE** (NEW) | INFRA-TEST-001 선행 후 | save-report-button.spec(3) + print-css.spec(5) + save-report-no-server.spec(4) = 12 spec |
+| UI-013-SPEC-WRITE | (기존 §28) | (기존) |
+| QRY-SINGLE-001 실 데이터 | (기존 §28) | (기존) |
+| PERF-OPTIMIZE-BUNDLE-SIZE | (기존 §27) | (기존) |
+
+### 본 세션 누적 29건 § 박힘 표 (★ Phase B 한계 § 17번째 누적 정수 정점)
+
+| § | 영역 | ISSUE | PR | 상태 | 답습 정수 |
+|---|---|---|---|---|---|
+| 28 | **UI-013** | **#59** | **#136 머지 완료** | **완료** | (기존) |
+| 29 | **CMD-SINGLE-002** | **#56** | **(예정)** | **진행중** | **★ 사전 박힘 ~95% 정수 정점 답습 진화 (UI-013 §28 ~85% 진화) + 정직 § 10건 누적 + "갭 추가 vs 방식 차이 보존" 구분 정수 NEW + color-adjust ↔ AC-7 충돌 사전 검토 + !important 공존 + Phase B 한계 § 17번째 누적 + ㊧ Mismatch 12번째(4건 동시) 영역 진화 NEW + CMD-SINGLE-002-SPEC-WRITE 차후 ISSUE 분리 정직 등록** |
+
+_본 § 신설: 2026-05-29 (Issue #56 CMD-SINGLE-002 리포트 저장 (print) 진입). ★ Phase B 한계 § 17번째 누적 = #114→#125→#52→#45→#126→#73→#127→#59→#56 9단계 진화 답습 정수 정점 + ㊧ Mismatch 12번째 영역 진화 NEW (4건 동시 박힘) + ★ "갭 추가 vs 방식 차이 보존" 구분 정수 NEW (본 ISSUE 본질 정점) + ★ color-adjust ↔ AC-7 충돌 사전 검토 + !important 공존 확인 (UI-013 답습 직후 인접 정수) + ★ 메모리 백로그 매핑 답습 정착 (UI-013 #6 매핑 두 번째 답습) + ★ 사전 박힘 ~95% 정수 정점 답습 진화. 자동 머지 X, ISSUE Close X (르르 직접)._
