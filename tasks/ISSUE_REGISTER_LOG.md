@@ -1277,3 +1277,89 @@ _본 § 신설: 2026-05-28 (Issue #127 MON-003 v1.4 부활 진입). ★ Phase B 
 | **A11Y-FORM-FIELD-LABELS** (NEW — #126 답습) | Lighthouse 발견 | 접근성 영역 |
 
 _본 § 신설: 2026-05-28 (MON-003 PR #134 옵션 A 채택 답습 — 머지 진행 + Bundle 최적화 후속 ISSUE 분리). ★ MON-003 본질 vs Bundle 본질 분리 답습 정수 NEW + #126 baseline 재측정 TODO 정직 § + PERF-OPTIMIZE-BUNDLE-SIZE 후보 ISSUE 정직 사전 등록._
+
+---
+
+## 28. UI-013 #59 — 야간 안전 등급 표시 UI + AC-7 흑백 인쇄 border (2026-05-29 신설 NEW)
+
+**브랜치:** `feat/UI-013-PRINT-A11Y-BORDER`
+**ISSUE:** [#59 UI-013 야간 안전 등급 표시](https://github.com/kmh89927a/Onday-design-Project/issues/59)
+**커밋:**
+- `25f024a` feat(single): UI-013 AC-7 흑백 인쇄 border (.grade-badge @media print)
+- (예정) docs(tasks): UI-013.md §3.1 색상 onday 토큰 갱신 + ISSUE_REGISTER_LOG.md +1 §
+
+### 본 § = 정직 § 6건 누적 (메모리 #6 매핑 + 5건 명세-실제 갭 정직 인정)
+
+**1. 메모리 백로그 #6 ≠ GitHub Issue #6 — SSoT 매핑 정직 정렬:**
+- 메모리 "10대 추가 기능 백로그" 6번째 (Tier 1) = 임의 우선순위 (공식 체계 X)
+- GitHub Issue #6 = `[DB-002] USER 스키마` (Wave 1, CLOSED, 무관)
+- 실제 매핑 = `#57 [QRY-SINGLE-001] 야간 안전 등급 (A~D)` + `#59 [UI-013] 야간 안전 등급 표시`
+- 본 ISSUE = #59 채택 (데이터는 mock 박힘, UI 강화가 1인 MVP 정합)
+- **★ SSoT 우선 = 메모리 백로그 임의 번호 폐기, 실제 GitHub Issue 번호 사수**
+
+**2. 명세 컴포넌트 분리(4개) → 인라인 보존 (Q1):**
+- 명세 3.2/3.3 = SafetyGradePanel + SingleReportView + PrintHeader + SaveReportButton 4파일 분리
+- 실제 = `single-result-view.tsx` 안 인라인 박힘 (289줄, 자연스러움)
+- 채택 = 인라인 보존 (재사용 0건 + CLAUDE.md §3/§8 "1인 MVP 단순·명시")
+- 3 strikes rule = 재사용 3회 시 사후 추출 (현재 0건)
+- **★ 명세 vs CLAUDE.md 원칙 충돌 → 실제 환경/원칙 우선 (api/health DB ping 답습)**
+
+**3. UI-013 spec 12개 → INFRA-TEST-001 분리 (Q2):**
+- 명세 3.5/3.6/3.7 = SafetyGradeBadge.spec(6) + SafetyGradePanel.spec(3) + print-integration.spec(3) = 12 spec
+- 실제 onday-app/ = vitest dep만 박힘, config·scripts·__tests__ 0건
+- 채택 = INFRA-TEST-001 신규 ISSUE 등록 → UI-013 spec deferral
+- **★ 한 ISSUE 한 본질 (#126 Lighthouse CI 분리 + #127 번들 최적화 분리 답습 진화)**
+
+**4. 명세 색상 vs onday 토큰 → Step 11.9 정렬 보존 + 명세 역방향 갱신 (Q3):**
+- 명세 v1.0 = green-500/blue-500/yellow-500/red-500 + text-white
+- 실제 = primary-pastel/deep, primary-soft/primary, warning-soft/warning, danger-soft/danger
+- 채택 = 실제 보존 + `tasks/UI-013.md §3.1` Rev 1.1 갱신 (2026-05-29)
+- **★ 코드(Step 11.9 디자인 큐레이션) > 명세(v1.0 default 톤) — 명세 역방향 정합 답습 정수 NEW**
+
+**5. AC-6 "데이터 없음" → #57 QRY-SINGLE-001 deferral (Q5):**
+- 명세 AC-6 = nearby=0 시 D + "데이터 없음" 표기
+- 실제 = mock safetyGrade 항상 박힘 + 수도권 차단(CON-03) = "데이터 없음" 발생 불가
+- 채택 = #57 실 데이터 도입 시 자연 해소 (UI-009 AC-FUNC-020-B 자동 정합 답습)
+
+**6. AC-7 흑백 border 박힘 = 본 ISSUE 진짜 갭 해소 (Q4):**
+- 명세 3.4 = `.grade-badge { border: 1px solid #000 }` @media print
+- 사전 박힘 X (Step 11.6 print CSS 박힘 시 누락)
+- 박힘 = globals.css 6줄 + safety-grade-badge.tsx className "grade-badge" 1단어 (최소 침습)
+- 색맹 a11y(letter+label+색 3중) + 흑백 인쇄 border = 색 무관 등급 식별 보장
+
+### Phase B 한계 § 16번째 누적 진화 정수 정점 NEW
+
+**누적 진화 체인 8단계 답습:**
+#114 → #125 → #52 → #45 → #126 → #73 → #127 → **#59 (UI-013)**
+
+**본 § = 사전 박힘 ~85% 정수 정점 답습 (MON-001 §25 패턴 정합):**
+- (기존) MON-001 §25 = 사전 박힘 ~85% 정수 정점
+- (NEW) **UI-013 = 사전 박힘 ~85% 정수 정점 답습 + 진짜 갭 1건만 좁힘 (globals.css 6줄 + className 1단어)**
+- (NEW) **명세-실제 모순 5건 정직 인정 = 본 ISSUE 진짜 가치 정점 (AC-7 1건보다 큰 자산)**
+
+### ㊧ Mismatch 11번째 영역 진화 NEW
+
+- (기존 10건) MON-003(trigger 시점) 외 9건 누적
+- (NEW 11건째 = 본 ISSUE) **명세 컴포넌트 분리 vs 인라인 박힘 (Q1) + 명세 색상 vs 디자인 토큰 (Q3)** 2건 Mismatch 추가
+- **★ 명세-실제 모순 해소 = SSoT 즉시 단결 (코드 = Step 11.9 후 정렬 / 명세 = v1.0 default → 명세 역방향 갱신)**
+
+### 차후 ISSUE 후보 영역 누적 표 갱신 (2026-05-29 기준)
+
+| 후보 ISSUE | 트리거 | 영역 |
+|---|---|---|
+| **INFRA-TEST-001** (NEW) | UI-013 spec 12개 deferral | vitest config + jsdom + @testing-library/react + npm script + first spec |
+| **UI-013-SPEC-WRITE** (NEW) | INFRA-TEST-001 선행 후 | SafetyGradeBadge/SafetyGradePanel/print-integration spec 12개 작성 |
+| **QRY-SINGLE-001 실 데이터** (NEW) | mock → 정적 JSON 전환 결정 시 | crime-stats.json + nearby + 수도권 90% 커버리지 + AC-6 "데이터 없음" 표기 자연 도입 |
+| PERF-OPTIMIZE-BUNDLE-SIZE | (기존 §27) | (기존 §27) |
+| NFR-PERF-PAGE-LOAD-LANDING | (기존) | (기존) |
+| A11Y-FORM-FIELD-LABELS | (기존) | (기존) |
+| REFACTOR-ADDRESS-MASKING | (기존) | (기존) |
+
+### 본 세션 누적 28건 § 박힘 표 (★ Phase B 한계 § 16번째 누적 정수 정점)
+
+| § | 영역 | ISSUE | PR | 상태 | 답습 정수 |
+|---|---|---|---|---|---|
+| 27 | **PERF-OPTIMIZE-BUNDLE-SIZE 후보** | (분리 등록 예정) | — | 후보 | (기존) |
+| 28 | **UI-013** | **#59** | **(예정)** | **진행중** | **★ 사전 박힘 ~85% 정수 정점 답습 (MON-001 §25 정합) + 정직 § 6건 누적 (메모리 #6 매핑 + 5건 갭) + AC-7 흑백 border 1건 갭 좁힘 + Phase B 한계 § 16번째 누적 + ㊧ Mismatch 11번째 영역 진화 NEW + INFRA-TEST-001/UI-013-SPEC-WRITE 차후 ISSUE 분리 정직 등록** |
+
+_본 § 신설: 2026-05-29 (Issue #59 UI-013 야간 안전 등급 표시 UI 진입). ★ Phase B 한계 § 16번째 누적 = #114→#125→#52→#45→#126→#73→#127→#59 8단계 진화 답습 정수 정점 + ㊧ Mismatch 11번째 영역 진화 NEW (명세 컴포넌트 분리 vs 인라인 + 명세 색상 vs 디자인 토큰) + ★ 메모리 백로그 #6 ≠ GitHub Issue #6 매핑 정직 정렬 (SSoT 사수) + ★ 사전 박힘 ~85% 정수 정점 답습 (MON-001 §25 정합) + ★ 명세 역방향 정합 답습 정수 NEW. 자동 머지 X, ISSUE Close X (르르 직접)._

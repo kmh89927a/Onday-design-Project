@@ -41,7 +41,8 @@ export function SafetyGradeBadge({
       role="img"
       aria-label={`야간 안전 등급 ${grade}, ${text}`}
       className={cn(
-        "inline-flex w-fit items-center gap-1 rounded-sm px-s-2 py-1 text-caption-xs font-extrabold",
+        // grade-badge: globals.css @media print 흑백 인쇄 시 border + color #000 (UI-013 AC-7)
+        "grade-badge inline-flex w-fit items-center gap-1 rounded-sm px-s-2 py-1 text-caption-xs font-extrabold",
         GRADE_STYLES[grade],
         className,
       )}
