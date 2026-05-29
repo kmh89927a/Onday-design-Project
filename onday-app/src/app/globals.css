@@ -163,6 +163,7 @@
   /* wiki/single-mode.md: window.print() + @media print, 라이브러리 0건 */
   @media print {
     @page {
+      size: A4;
       margin: 16mm 12mm;
     }
     body {
@@ -170,6 +171,15 @@
       color: #000;
       /* Pretendard 폰트 명시 (한글 글꼴 보장) */
       font-family: "Pretendard", system-ui, -apple-system, sans-serif;
+      /* CMD-SINGLE-002 §3.2: 색·배경 보존 (SafetyBar 등급 막대) — '배경 그래픽 인쇄' 옵션 의존성 제거 */
+      /* AC-7 .grade-badge { background: transparent !important } 는 !important 우선순위로 공존 */
+      color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      /* 인쇄 단위 정합 (16px ≈ 12pt) + 브라우저 기본 body margin 제거 (@page margin 이중 적용 방지) */
+      font-size: 12pt;
+      padding: 0;
+      margin: 0;
     }
     .no-print {
       display: none !important;
