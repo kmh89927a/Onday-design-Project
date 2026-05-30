@@ -59,7 +59,12 @@ export function LoginForm() {
         provider: "kakao",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: "account_email profile_nickname",
+          // ★ KOE205 회피 — Supabase 의 kakao 기본 scope 엔 account_email 이 박혀 있고
+          //   (gotrue 내장, config 로 제거 불가), 카카오 앱은 이메일 권한이 없어 KOE205.
+          //   options.scopes 는 기본값에 "추가"만 되지만, authorize 의 `scope`(단수)
+          //   쿼리 파라미터는 기본값을 "교체"한다 → queryParams 로 직접 주입해 account_email 제거.
+          //   (실제 사용 동의항목: profile_nickname 필수 + profile_image 선택)
+          queryParams: { scope: "profile_nickname profile_image" },
         },
       });
       if (error) throw new Error(error.message);

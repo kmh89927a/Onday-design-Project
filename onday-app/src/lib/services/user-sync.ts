@@ -10,10 +10,11 @@ export async function syncUserFromAuth(user: User): Promise<void> {
   const authProvider: AuthProviderType =
     rawProvider === "naver" ? "naver" : "kakao";
 
-  // ★ 카카오 account_email = 비즈앱 검수 전이라 권한 없음 → user.email = null.
-  //   schema 의 email String @unique 충족용 placeholder (auth uuid 라 항상 unique).
-  //   비즈 검수 후 실 email 이 들어오면 아래 update 로 자동 치환(self-heal).
-  const email = user.email ?? `${user.id}@${authProvider}.local`;
+  // ★ 카카오 account_email = 권한 없음(비즈검수 전) → Supabase 가 user.email 을
+  //   null 이 아닌 빈 문자열("")로 줄 수 있음. `??`(nullish)는 ""를 안 잡으므로
+  //   `||`(falsy)로 빈 문자열까지 placeholder 치환 → email @unique 충돌 방지.
+  //   auth uuid 기반이라 무이메일 유저끼리도 항상 unique. 실 email 유입 시 self-heal.
+  const email = user.email || `${user.id}@${authProvider}.local`;
 
   await prisma.user.upsert({
     where: { id: user.id },

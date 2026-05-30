@@ -1776,6 +1776,32 @@ _본 § 신설: 2026-05-30 (REAL-API-W1-SUPABASE-DB 실행 — #2 INFRA-002 in-m
 | § | 영역 | ISSUE | PR | 상태 | 답습 정수 |
 |---|---|---|---|---|---|
 | 31 | **REAL-API-W1-SUPABASE-DB** | **#2 INFRA-002** | **#139 머지 완료** | **완료** | (기존) |
-| 32 | **REAL-API-W1-SUPABASE-AUTH** | **#21+#23** | **(커밋 대기)** | **(a) 코드 완료 (Tier 0 후 (b) / 르르 머지·Close 대기)** | **★ 사전 박힘 45% 실측 하향 정정 정수 NEW (마스터플랜 80% 과대평가 정직) + ㊧ Mismatch 15번째 (선행 산출물 허상) + Phase B 한계 § 20번째 (12단계 답습) + R1 도메인별 토글 분리 + R2 호출자 3곳 의도적 변경 (W1-1 0변경 대비) + 게스트 회귀 방어 2건 (INITIAL_SESSION no-op + client server-import 오염 차단) + tsc 0 + ESLint 0 error + mock 무변경 입증 + DEFER 5종 (네이버/게스트풀/라우트보호/mapper/테스트)** |
+| 32 | **REAL-API-W1-SUPABASE-AUTH** | **#21+#23** | **#140 Draft** | **(a)+(b) 완료 — 실 카카오 로그인 로컬 검증 통과 (르르 머지·Close 대기)** | **★ 사전 박힘 45% 실측 하향 정정 정수 NEW (마스터플랜 80% 과대평가 정직) + ㊧ Mismatch 15번째 (선행 산출물 허상) + Phase B 한계 § 20번째 (12단계 답습) + R1 도메인별 토글 분리 + R2 호출자 3곳 의도적 변경 (W1-1 0변경 대비) + 게스트 회귀 방어 2건 (INITIAL_SESSION no-op + client server-import 오염 차단) + (b) KOE205 gotrue 내장 scope override fix + email `\|\|` 버그 fix + Sentry DSN 가드 + tsc 0 + ESLint 0 error + mock 무변경 입증 + DEFER 5종** |
+
+### (b) 검증 후일담 — Tier 0 후 실 카카오 로그인 로컬 검증 (정직 § 5건 추가, 누적 13건)
+
+**11. ★ KOE205 = Supabase gotrue 내장 kakao scope `account_email` 강제 (정직 § 정수 NEW):**
+- 카카오 이메일 동의 = 권한 없음(비즈검수 전) → KOE205("설정 안 된 동의항목 요청").
+- Management API 진단(PAT 일시 주입→즉시 제거): kakao 관련 config 필드 = client_id/email_optional/enabled/secret뿐, **scope 필드 없음** → account_email은 **gotrue 내장** = config/대시보드/Management API 어디로도 제거 불가. `email_optional=true`(이미 켬)도 scope 안 바꿈(유저 생성만 허용).
+- **해결:** `signInWithOAuth` `options.scopes`(복수)는 기본값에 "추가"만 하지만, authorize `scope`(단수) 쿼리 파라미터는 "교체" → `queryParams: { scope: "profile_nickname profile_image" }`로 account_email 제거. 헤드리스로 kakao 최종 scope account_email 빠짐 검증.
+- **★ "라이브러리 내장 강제값 vs config 가능값" 판별 = Management API GET 진단 정수 NEW (값 노출 X, PAT 즉시 제거)**
+
+**12. ★ email 빈 문자열 `??`→`||` 버그 (실 검증에서만 발견):**
+- 카카오가 `user.email = null`이 아니라 `""`(빈 문자열)을 반환 → `"" ?? placeholder` = `""`(nullish는 ""를 안 잡음) → `email @unique` 위반 위험(2번째 무이메일 유저).
+- `||`(falsy)로 빈 문자열까지 placeholder 치환. **헤드리스/mock으론 안 잡히고 실 카카오 응답에서만 드러난 버그 = (b) 실 검증의 진짜 가치 정수 NEW**
+
+**13. Sentry DSN 가드 (실 검증 중 발견된 별건 크래시):**
+- `NEXT_PUBLIC_SENTRY_DSN`에 wizard 설치 명령어 오입력 → `Sentry.init` "Invalid Dsn" 크래시로 페이지 다운.
+- `sentry.{client,server,edge}.config.ts`: DSN이 유효 URL(`^https?://`)일 때만 init → 빈 값+잘못된 값 모두 안전 skip.
+
+**14. ★ 로컬/프로덕션 구분 정직 (vercel 500 = 정상):**
+- 르르가 vercel.app(프로덕션)에서 로그인 시도 → 500. 원인 = 프로덕션은 **의도대로 flip 안 함**(Tier 0 env·USE_MOCK_AUTH 로컬에만). vercel 500 = 정상·의도된 상태(mock fallback). 로컬(localhost:3000)에선 정상 작동.
+- **★ "프로덕션 무변경 보장 = 머지해도 안전" 설계가 실제로 입증된 순간 (flip은 르르 별도)**
+
+**15. (b) 전 항목 검증 통과:**
+- 카카오 로그인→콜백(307)→users UPSERT(실 uuid 33deaf63, kakao, placeholder email)→진단 귀속(실 유저, mock-user-001 아님, 2건)→로그아웃(POST /diagnosis 303→GET /login)→게스트/mock 무회귀(세션없는 POST→mock-user-001 fallback).
+- logout-button 신규(로그인 시에만 노출, signOutAction). 배치는 임시(디자인 보존 — 르르 조정 여지).
+
+**중복 key 버그(seodaemun-sinchon)** = auth 무관 선재 버그(Step 9.5 mock 확장) → **별도 브랜치 `fix/mock-dup-neighborhood`**(neighborhoods.ts 중복 1개 삭제 + mock-calculator id dedup), W1-2와 분리.
 
 _본 § 신설: 2026-05-30 (REAL-API-W1-SUPABASE-AUTH (a) 실행 — #21+#23 카카오 vertical slice). ★ Phase B 한계 § 20번째 누적 = 12단계 진화 답습 + ㊧ Mismatch 15번째 영역 진화 NEW (명세 선행 산출물 허상) + ★ 사전 박힘 ~45% 실측 하향 정정 정수 NEW (마스터플랜 80% 과대평가 = "추정 vs 실측" 양방향 정직, §31 ~85% 상향 정확과 대비) + ★ R1 도메인별 mock 토글 분리 + 하위호환 fallback + ★ R2 getEffectiveUserId 호출자 3곳 의도적 변경 (W1-1 호출자 0변경 대비 = 실 유저 귀속 본질) + ★ 게스트 회귀 방어 2건 (SessionBridge INITIAL_SESSION no-op + client 컴포넌트 server-import 오염 차단) + ★ tsc exit 0 + ESLint 0 error + mock 모드 무변경 입증 (POST 200 / userId=mock-user-001 / login 200 / 라우트 3곳 외 0변경) + ★ DEFER 5종 (네이버 #22 / 게스트풀·라우트보호 #24 / auth-mapper YAGNI / 테스트 #135). 자동 머지 X, ISSUE Close X, 프로덕션 flip X = 르르 직접 처리._
