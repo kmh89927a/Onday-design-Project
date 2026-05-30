@@ -5,6 +5,14 @@ labels: ['feature', 'priority:M', 'epic:Diagnosis', 'wave:3']
 assignees: []
 ---
 
+## 0. ⚠️ Rev 1.1 — 대중교통 데이터 소스 = ODsay (2026-05-30, 역방향 갱신 / W2)
+
+> 본 명세·SRS EXT-01 은 "카카오 모빌리티 API = 대중교통 경로·환승·소요시간"을 전제하나, **카카오 모빌리티 공개 REST 는 자동차 길찾기 전용**(대중교통 미제공) = 사실오류다. REAL-API-W2-ODSAY-TRANSIT 에서 **대중교통 = ODsay LAB API**(`searchPubTransPathT`)로 구현. 자차(카카오 car)는 후속 REAL-API-W2B-CAR-COMMUTE. 충돌 시 본 Rev 우선. (LOG §34 / ㊧ Mismatch 16번째)
+>
+> **실제 구현:** `lib/external/odsay-transit/`(client/mapper, totalTime→time·transfers=(지하철+버스)−1) + `/api/commute` 프록시(ODsay CORS·Server key IP 화이트리스트 → 서버 호출) + 클라 B2 오케스트레이션(Haversine 사전필터 + Promise.all, Vercel 10초 회피). **EXT-01/CON-07/ASM-01(카카오 50만건)은 ODsay(무료 1,000/일) 정합으로 정정.**
+
+---
+
 ## 1. 🎯 Summary
 
 - **기능명:** [QRY-DIAG-002] 출퇴근 시간 조회 — 후보 동네 탭 시 양쪽 직장까지 예상 소요시간 반환 (±10% 오차)

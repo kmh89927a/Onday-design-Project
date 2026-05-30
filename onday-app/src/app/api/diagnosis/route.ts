@@ -58,8 +58,38 @@ export async function POST(request: Request) {
       });
     }
 
-    // Production: TODO — Kakao Mobility API + AI scoring
-    return NextResponse.json({ error: "Production mode not implemented" }, { status: 501 });
+    // Production (B2): 클라가 ODsay 로 계산한 candidates 를 받아 저장만 한다
+    //   (외부 API 반복 호출은 클라 /api/commute Promise.all — Vercel 10초 timeout 회피).
+    const candidates = body.candidates;
+    if (!Array.isArray(candidates)) {
+      return NextResponse.json(
+        { error: "candidates 가 필요합니다 (production)" },
+        { status: 400 },
+      );
+    }
+
+    const userId = await getEffectiveUserId();
+    const diagnosis = await prisma.diagnosis.create({
+      data: {
+        userId,
+        addressA: input.addressA,
+        addressB: input.addressB ?? null,
+        filters: JSON.stringify(input.filters),
+        candidates: JSON.stringify(candidates),
+        mode: input.mode,
+        deadlineMode: !!input.deadlineDate,
+        deadline: input.deadlineDate ? new Date(input.deadlineDate) : null,
+        status: "completed",
+      },
+    });
+
+    return NextResponse.json({
+      diagnosisId: diagnosis.id,
+      candidates,
+      timeline: input.deadlineDate
+        ? { daysLeft: Math.ceil((new Date(input.deadlineDate).getTime() - Date.now()) / 86400000) }
+        : null,
+    });
   } catch (error) {
     console.error("[API] POST /api/diagnosis error:", error);
     return NextResponse.json({ error: "서버 오류가 발생했습니다" }, { status: 500 });

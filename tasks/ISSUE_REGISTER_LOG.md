@@ -1820,3 +1820,85 @@ _본 § 신설: 2026-05-30 (REAL-API-W1-SUPABASE-AUTH (a) 실행 — #21+#23 카
 - **★ "auth 무관 선재 버그 분리 처리" 정수 = W1-2 검증이 부수적으로 잡아낸 데이터 버그 (스코프 분리 정직)** — auth PR 에 안 섞고 별도 브랜치.
 
 _본 § 신설: 2026-05-30 (fix/mock-dup-neighborhood — neighborhoods.ts 중복 동네 1개 삭제 + mock-calculator id dedup 가드. §32 W1-2 (b) 실 검증 중 발견된 auth 무관 선재 버그(Step 9.5 mock 확장 잔재) → 스코프 분리 별도 브랜치. tsc 0 / 후보 중복 id 0. 자동 머지 X._
+
+---
+
+## 34. REAL-API-W2-ODSAY-TRANSIT — 대중교통 실 통근시간 (2026-05-30 신설 NEW)
+
+**ISSUE:** #27(ScoringEngine) + #30(CMD-DIAG-006 timeout) + #33(QRY-DIAG-002 통근조회)
+**브랜치:** `feat/REAL-API-W2-ODSAY-TRANSIT`
+**선행 §:** §30 MASTER-PLAN W2 / §31 W1-DB / §32 W1-AUTH
+**grill-me:** R1(둘 다 단계적) / R2(transit-only 먼저) / R3(B2 아키텍처) / R4(odsay 신규 모듈) / Q5(범위) 합의
+
+### 본 § = 정직 § 10건 누적 (★ ㊧ Mismatch 16번째 = "카카오 모빌리티=대중교통" SRS 사실오류)
+
+**1. ★ ㊧ Mismatch 16번째 — SRS 전제 사실오류 (카카오 모빌리티 = 대중교통 X):**
+- SRS EXT-01 "카카오 모빌리티 API = 대중교통 경로·환승·소요시간 / 일 50만 건", CON-07 "교통 API 카카오 1종만", ASM-01.
+- 웹 검증: **카카오 모빌리티 공개 REST = 자동차 길찾기 전용** (대중교통 API 미제공). → SRS 전제 사실오류.
+- mapper(kakao-transport)가 가상 transit 응답 형태로 지어진 근본 원인.
+- **해소:** 대중교통=ODsay(신규 모듈) / 자차=카카오(후속). SSoT 역방향 갱신. (Auth "DB-007 산출물 허상" 답습 — SSoT 레벨)
+
+**2. car vs transit 결정 — 대중교통(ODsay) 우선 + 단계적 (R1/R2):**
+- 통근=대중교통이 OnDay 본질(3040 부부 수도권) → car time은 핵심가치 왜곡.
+- ODsay 무료 Basic tier(1,000/일) = 앱 모델(환승+소요시간) 정확 일치.
+- 자차(카카오 car, 이미 검증) = 후속 REAL-API-W2B-CAR-COMMUTE.
+
+**3. ★ B2 아키텍처 — ODsay CORS 차단 → 클라 오케스트레이션 + 서버 프록시 (R3):**
+- ODsay = 브라우저 직접 CORS 차단(Web key도) + Server key IP 화이트리스트 → 서버 호출 강제.
+- B2: 클라가 Haversine 사전필터(top12) → `/api/commute`(함수당 1 ODsay 호출) Promise.all → 점수 → 저장 POST.
+- **각 서버 함수 1 호출 = Vercel 10초 timeout 무관** (CLAUDE.md "클라 Promise.all" 정신 + ODsay CORS 우회). B1(서버 일괄)은 ODsay throttle 미공개라 비채택.
+
+**4. odsay-transit 신규 모듈 + ScoringEngine 추출 (R4/#27):**
+- `lib/external/odsay-transit/`(types/client/mapper/index) — kakao-transport는 자차 후속 보존.
+- `lib/diagnosis/scoring.ts` = scoreCandidate 추출(client+server 공유). mock-calculator 재사용 = 회귀 0.
+- mapper: totalTime→time, mode='transit', transfers=(지하철+버스)−1. 앱 모델 무변경.
+
+**5. ★ Tier 0 ODsay Server IP 화이트리스트 정직 (Vercel 유동 IP 비용 플래그):**
+- ODsay Server key = 공인 IP 화이트리스트 강제. 로컬=공인 IP 등록 OK / Vercel 서버리스=유동 IP → 고정 IP 유료(Pro Static IPs/프록시) 필연.
+- **로컬 (b) 검증은 무료 가능, 프로덕션 ODsay 운영 = 유료 비용 인지** (production flip 흡수).
+
+**6. ★ geocode 잠복 버그 발견·수정 (production 첫 실행에서 드러남):**
+- production 자동완성이 `address.json`(주소) → "강남역" 0건 + GeocodeResult camelCase가 실 응답 snake_case와 불일치 = 이중 버그(여태 mock만 써서 미실행).
+- **수정:** `keyword.json`(장소) + 실 필드 매핑. → "강남역 2호선" 매칭. **production 진단 흐름의 전제라 W2 포함** (르르 결정).
+
+**7. ★ 출처 배지 mode-aware 정합 (실 데이터 정직 표기):**
+- result-content(개인) + share-report-view(공유) = mock 하드코딩("카카오 모빌리티"/"통근 추정") → production은 **"ODsay 대중교통·실시간"**. mock 무변경(회귀 0). 개인↔공유 일관.
+
+**8. (b) 실 검증 통과:**
+- geocode keyword → autocomplete → coords → ODsay /api/commute(강남역→서울역 35분 transit 환승1) → 점수 → 저장.
+- 실 유저(33deaf63) 귀속 진단 2건, 후보 = 실 ODsay 통근(왕십리 22분/성수동 32분, transit, 환승1). mock 모드 무변경.
+
+**9. what-if 불일치 정직 발견 → 후속 (배지 무관):**
+- result 필터 what-if 재계산 = production에서도 `runMockDiagnosis`(Haversine) → 초기(ODsay)와 불일치.
+- 초기 진단=ODsay 정상(핵심) / what-if=부가 → **REAL-API-W2-WHATIF-ODSAY 후속 ISSUE 등록** (W2 한 바퀴 후).
+
+**10. 사전 박힘 ~50% 실측 (마스터플랜 70/60% 과대):**
+- types/config 100%지만 mapper가 실 응답 불일치 + car/transit 의미갭 + 아키텍처 이동 → 실측 ~50% (Auth 45% 답습).
+
+### Phase B 한계 § 21번째 누적 (13단계 답습)
+
+체인: #114 → … → MASTER-PLAN → W1-DB → W1-AUTH → **W2-ODSAY-TRANSIT**
+
+### ㊧ Mismatch 16번째 영역 진화 NEW
+
+- SRS EXT-01/CON-07/ASM-01 "카카오 모빌리티=대중교통" = **외부 API 제공범위 사실오류** (기존 15건 = 산출물 허상/버전/필드형태, 본 건 = SRS의 외부 API 기능 가정 오류). 해소 = ODsay 신규 + SSoT 역방향 갱신.
+
+### 차후 ISSUE 후보 영역 누적 표 갱신 (2026-05-30 기준)
+
+| 후보 ISSUE | 트리거 | 영역 | 상태 |
+|---|---|---|---|
+| **REAL-API-W2-ODSAY-TRANSIT** | (본 §) | 대중교통 실 통근 | **코드+(b) 완료 / 르르 머지·Close 대기** |
+| **REAL-API-W2B-CAR-COMMUTE** (NEW) | W2 완료 후 | 자차=카카오 car + commute 모델 양모드 + 카드 UI | 후속 (REQ-FUNC-004 나머지 절반) |
+| **REAL-API-W2-WHATIF-ODSAY** (NEW) | W2 완료 후 | result 필터 what-if = ODsay 재호출 (Haversine 불일치 해소) | 후속 |
+| ODsay 프로덕션 고정 IP | production flip | Vercel Static IPs(유료) or 프록시 | flip 단계 |
+| 후보 수 튜닝 (top N / 근거리 ODsay 404) | (관찰) | PREFILTER_TOP_N / 근거리 처리 | 후속 (관찰) |
+
+### 본 세션 누적 34건 § 박힘 표 (★ Phase B 한계 § 21번째)
+
+| § | 영역 | ISSUE | PR | 상태 | 답습 정수 |
+|---|---|---|---|---|---|
+| 32 | REAL-API-W1-SUPABASE-AUTH | #21+#23 | #140 머지 | 완료 | (기존) |
+| 33 | fix/mock-dup-neighborhood | (버그) | #141 머지 | 완료 | (기존) |
+| 34 | **REAL-API-W2-ODSAY-TRANSIT** | **#27+#30+#33** | **(커밋 대기)** | **코드+(b) 완료** | **★ ㊧ Mismatch 16번째 (SRS "카카오=대중교통" 사실오류) + B2 아키텍처(ODsay CORS→클라 오케스트레이션) + odsay 신규 모듈 + ScoringEngine 추출(#27) + geocode 잠복버그 수정(keyword.json) + 배지 mode-aware + (b) 실 ODsay 검증(왕십리 22분 transit) + Tier 0 IP 유료 정직 + what-if 후속 분리 + 사전박힘 ~50% 실측** |
+
+_본 § 신설: 2026-05-30 (REAL-API-W2-ODSAY-TRANSIT — 대중교통 실 통근시간). ★ ㊧ Mismatch 16번째 = SRS EXT-01 "카카오 모빌리티=대중교통" 사실오류(실제 car 전용) → 대중교통=ODsay 신규 모듈 + SSoT 역방향 갱신 + ★ B2 아키텍처(ODsay CORS 차단→클라 Haversine 사전필터 + /api/commute 프록시 Promise.all, 함수당 1호출=10초 무관) + ★ odsay-transit 신규(types/client/mapper/index) + ScoringEngine 추출(scoring.ts, #27) + ★ geocode 이중 잠복버그 수정(address.json→keyword.json + camelCase→snake_case, production 첫 실행에서 드러남) + ★ 출처 배지 mode-aware(개인/공유 ODsay 대중교통) + ★ (b) 실 검증 통과(geocode→ODsay 35분 transit→실유저 귀속 저장) + ★ Tier 0 ODsay Server IP 화이트리스트 = Vercel 유동IP 유료 정직 플래그 + ★ what-if 불일치 후속 분리(REAL-API-W2-WHATIF-ODSAY) + ★ 자차 후속(REAL-API-W2B-CAR-COMMUTE, REQ-FUNC-004 나머지) + ★ 사전박힘 ~50% 실측(마스터플랜 70/60% 과대). 자동 머지 X, ISSUE Close X, 프로덕션 flip X._

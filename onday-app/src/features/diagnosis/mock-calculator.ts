@@ -10,52 +10,8 @@ import {
   estimateTransfers,
 } from "@/lib/haversine";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
-
-interface ScoreInput {
-  neighborhood: (typeof MOCK_NEIGHBORHOODS)[number];
-  commuteA: number;
-  commuteB: number | null;
-  leisureA: number | null;
-  leisureB: number | null;
-}
-
-// 여가거점 가산 (Figma 비전 — single 모드, 0~5점/거점)
-function leisureBonus(minutes: number | null): number {
-  if (minutes == null) return 0;
-  // 0분 → +5, 30분 → 0, 그 이상 → 0
-  return Math.max(0, 5 - minutes / 6);
-}
-
-function scoreCandidate({
-  neighborhood,
-  commuteA,
-  commuteB,
-  leisureA,
-  leisureB,
-}: ScoreInput): number {
-  let score = 100;
-
-  // 통근 패널티 (가장 큰 요인)
-  const avgCommute = commuteB != null ? (commuteA + commuteB) / 2 : commuteA;
-  score -= Math.min(40, avgCommute * 0.8);
-
-  // Issue #123 — 예산 범위 외 제외는 computeOneCandidate 영역 박힘 (★ maxCommuteTime 답습 정합).
-  //   score 영역 페널티 폐기 = ★ 범위 외 카드 score X = 결과 카드 X 자연.
-
-  // 안전등급 가산
-  const safetyBonus: Record<string, number> = { A: 10, B: 5, C: 0, D: -10 };
-  score += safetyBonus[neighborhood.safetyGrade] ?? 0;
-
-  // 편의시설 가산
-  const facilityScore =
-    (neighborhood.facilities.convenience + neighborhood.facilities.cafes) / 10;
-  score += Math.min(10, facilityScore);
-
-  // 여가거점 가산 (single 모드 — Figma 비전)
-  score += leisureBonus(leisureA) + leisureBonus(leisureB);
-
-  return Math.max(0, Math.min(100, Math.round(score)));
-}
+// ScoringEngine (#27) — 점수 로직은 공용 모듈로 추출. client(실 ODsay) + server(mock) 공유.
+import { scoreCandidate } from "@/lib/diagnosis/scoring";
 
 interface ComputeResult {
   status: "fulfilled";
