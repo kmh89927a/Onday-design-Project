@@ -9,6 +9,27 @@ import type {
 import { haversineDistance } from "@/lib/haversine";
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
+import { KakaoCarClient } from "@/lib/external/kakao-car";
+
+// ★ W2B 자차 — 카카오 모빌리티 브라우저 직접 (NEXT_PUBLIC, 도메인 제한). ODsay 프록시와 병렬.
+const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY ?? "";
+const kakaoCar = KAKAO_KEY ? new KakaoCarClient({ apiKey: KAKAO_KEY }) : null;
+
+/** 자차 통근 — best-effort. 실패/키없음 → null (차량 행만 생략, 후보·점수 무영향). */
+async function fetchCarCommute(
+  origin: Coordinate,
+  destination: Coordinate,
+): Promise<CommuteInfo | null> {
+  if (!kakaoCar) return null;
+  try {
+    return await kakaoCar.getCarCommute(
+      { x: origin.lng, y: origin.lat },
+      { x: destination.lng, y: destination.lat },
+    );
+  } catch {
+    return null;
+  }
+}
 
 // ★ B2 클라 오케스트레이션 (production 모드 = USE_MOCK=false).
 //   1) Haversine 사전필터 top N (가까운 동네만) → ODsay 호출 수 감축 (10~12)
@@ -18,6 +39,23 @@ import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 
 const PREFILTER_TOP_N = 12;
 const RESULT_TOP_N = 8;
+
+// ★ ODsay 초당 호출 제한(미공개) 회피 — 동네를 배치로 처리(동시 ODsay 호출 cap).
+//   Promise.all 전량 동시(~20+)는 429(Too Many Requests) 유발 → 배치 N개씩.
+const ODSAY_CONCURRENCY = 4;
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = [];
+  for (let i = 0; i < items.length; i += limit) {
+    const batch = items.slice(i, i + limit);
+    results.push(...(await Promise.all(batch.map(fn))));
+  }
+  return results;
+}
 
 /** /api/commute 1회 — 경로 없음/에러면 null (해당 동네 제외). */
 async function fetchCommute(
@@ -55,23 +93,26 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
     .sort((a, b) => a.combined - b.combined)
     .slice(0, PREFILTER_TOP_N);
 
-  // 2) 동네별 ODsay 통근시간 (병렬). 동네 내부 경로는 순차(동시 호출 부하 완화).
-  const settled = await Promise.all(
-    prefiltered.map(async ({ n }): Promise<CandidateArea | null> => {
-      const commuteA = await fetchCommute(coordinateA, n.coordinate);
+  // 2) 동네별 통근시간 (병렬). ★ 방향 = 동네(집) → 직장 (출퇴근 의미론, #3 정정).
+  //    동네 내부 경로는 순차(동시 호출 부하 완화).
+  const settled = await mapWithConcurrency(
+    prefiltered,
+    ODSAY_CONCURRENCY,
+    async ({ n }): Promise<CandidateArea | null> => {
+      const commuteA = await fetchCommute(n.coordinate, coordinateA);
       if (!commuteA) return null; // 직장 A 경로 없으면 후보 제외
 
       let commuteB: CommuteInfo | null = null;
       if (coordinateB) {
-        commuteB = await fetchCommute(coordinateB, n.coordinate);
+        commuteB = await fetchCommute(n.coordinate, coordinateB);
         if (!commuteB) return null; // couple 인데 배우자 경로 없으면 제외
       }
 
-      // single 모드 여가거점 (선택)
+      // single 모드 여가거점 (선택) — 동네 → 여가거점
       let leisureA: CommuteInfo | null = null;
-      if (leisureCoordA) leisureA = await fetchCommute(leisureCoordA, n.coordinate);
+      if (leisureCoordA) leisureA = await fetchCommute(n.coordinate, leisureCoordA);
       let leisureB: CommuteInfo | null = null;
-      if (leisureCoordB) leisureB = await fetchCommute(leisureCoordB, n.coordinate);
+      if (leisureCoordB) leisureB = await fetchCommute(n.coordinate, leisureCoordB);
 
       // 필터 — 통근 상한
       if (filters.maxCommuteTime) {
@@ -84,6 +125,15 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
           return null;
         }
       }
+
+      // ★ W2B 자차(카카오) — 필터 통과한 후보의 직장 경로만. best-effort 병렬.
+      //   대중교통이 주(필수)이므로 여기서 실패해도 후보·점수 불변.
+      const [commuteACar, commuteBCar] = await Promise.all([
+        fetchCarCommute(n.coordinate, coordinateA),
+        coordinateB
+          ? fetchCarCommute(n.coordinate, coordinateB)
+          : Promise.resolve(null),
+      ]);
 
       const score = scoreCandidate({
         neighborhood: n,
@@ -100,6 +150,8 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         coordinate: n.coordinate,
         commuteA,
         commuteB: commuteB ?? undefined,
+        commuteACar: commuteACar ?? undefined,
+        commuteBCar: commuteBCar ?? undefined,
         leisureA: leisureA ?? undefined,
         leisureB: leisureB ?? undefined,
         score,
@@ -113,7 +165,7 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         listingsCount: n.listingsCount,
         avgArea: n.avgArea,
       };
-    }),
+    },
   );
 
   const candidates = settled

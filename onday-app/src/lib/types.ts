@@ -20,9 +20,13 @@ export interface CandidateArea {
   dong: string;
   gu: string;
   coordinate: Coordinate;
-  commuteA: CommuteInfo;
+  commuteA: CommuteInfo; // 대중교통(ODsay) — 주 지표·점수 기준 (mock=Haversine 추정)
   commuteB?: CommuteInfo; // nullable for single mode
-  // single 모드 여가거점까지의 통근 정보 (Figma 비전)
+  // ★ W2B 자차(카카오) — 직장 경로 보조(mode='driving', 옵셔널 best-effort).
+  //   대중교통이 주, 자차는 DetailSheet 표시 보조. 실패/mock 시 undefined → 차량 행 생략.
+  commuteACar?: CommuteInfo;
+  commuteBCar?: CommuteInfo;
+  // single 모드 여가거점까지의 통근 정보 (Figma 비전) — 자차 미적용(REQ-FUNC-004 밖)
   leisureA?: CommuteInfo;
   leisureB?: CommuteInfo;
   score: number; // 0-100

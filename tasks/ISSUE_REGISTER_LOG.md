@@ -1902,3 +1902,68 @@ _본 § 신설: 2026-05-30 (fix/mock-dup-neighborhood — neighborhoods.ts 중�
 | 34 | **REAL-API-W2-ODSAY-TRANSIT** | **#27+#30+#33** | **(커밋 대기)** | **코드+(b) 완료** | **★ ㊧ Mismatch 16번째 (SRS "카카오=대중교통" 사실오류) + B2 아키텍처(ODsay CORS→클라 오케스트레이션) + odsay 신규 모듈 + ScoringEngine 추출(#27) + geocode 잠복버그 수정(keyword.json) + 배지 mode-aware + (b) 실 ODsay 검증(왕십리 22분 transit) + Tier 0 IP 유료 정직 + what-if 후속 분리 + 사전박힘 ~50% 실측** |
 
 _본 § 신설: 2026-05-30 (REAL-API-W2-ODSAY-TRANSIT — 대중교통 실 통근시간). ★ ㊧ Mismatch 16번째 = SRS EXT-01 "카카오 모빌리티=대중교통" 사실오류(실제 car 전용) → 대중교통=ODsay 신규 모듈 + SSoT 역방향 갱신 + ★ B2 아키텍처(ODsay CORS 차단→클라 Haversine 사전필터 + /api/commute 프록시 Promise.all, 함수당 1호출=10초 무관) + ★ odsay-transit 신규(types/client/mapper/index) + ScoringEngine 추출(scoring.ts, #27) + ★ geocode 이중 잠복버그 수정(address.json→keyword.json + camelCase→snake_case, production 첫 실행에서 드러남) + ★ 출처 배지 mode-aware(개인/공유 ODsay 대중교통) + ★ (b) 실 검증 통과(geocode→ODsay 35분 transit→실유저 귀속 저장) + ★ Tier 0 ODsay Server IP 화이트리스트 = Vercel 유동IP 유료 정직 플래그 + ★ what-if 불일치 후속 분리(REAL-API-W2-WHATIF-ODSAY) + ★ 자차 후속(REAL-API-W2B-CAR-COMMUTE, REQ-FUNC-004 나머지) + ★ 사전박힘 ~50% 실측(마스터플랜 70/60% 과대). 자동 머지 X, ISSUE Close X, 프로덕션 flip X._
+
+---
+
+## 35. REAL-API-W2B-CAR-COMMUTE — 자차(카카오) 통근 추가 + 통근 UI 마무리 (2026-05-30 신설 NEW)
+
+**ISSUE:** CMD-DIAG-001(카카오 모빌리티 client API-007) + REQ-FUNC-004(대중교통·자차)
+**브랜치:** `feat/REAL-API-W2B-CAR-COMMUTE`
+**선행 §:** §34 W2 (대중교통 ODsay). REQ-FUNC-004 "양쪽 직장 대중교통·자차" 나머지 절반 완성.
+**grill-me:** R1(commuteACar 필드) / R2(DetailSheet 4행, 카드 컴팩트) / R3(직장만·best-effort·브라우저직접) 합의
+
+### 본 § = 정직 § 9건 누적
+
+**1. ★ 신규 모듈 kakao-car (계획 "kakao-transport 재작성" 조정):**
+- 계획은 kakao-transport 재작성이었으나, 그 types를 **dead 스캐폴딩(intersection.ts + mocks, 앱 미배선)이 OLD transit 형태로 사용** → 재작성 시 tsc 깨짐.
+- → **신규 `lib/external/kakao-car/`(types/client/mapper/index)** 분리(ODsay 답습). kakao-transport는 dead 보존. 계획 의도(실 car 클라) 동일 달성.
+- **★ "계획 means 조정(재작성→신규) 정직" = dead 소비자 회피 정수 NEW**
+
+**2. ㊧ Mismatch (3회째) — kakao-transport types 가상 transit vs 실 car 응답:**
+- 실 car = `routes[].result_code`/`summary.{duration,distance,fare}`(snake_case, 환승 없음). mapper: duration→time, mode='driving'.
+
+**3. ★ 아키텍처 비대칭 — 자차=브라우저 직접 (ODsay=서버 프록시 대비):**
+- 카카오 모빌리티 CORS 허용(localhost echo 확인) + 일 50만급 → runRealDiagnosis 브라우저 직접 호출. ODsay(/api/commute 프록시, CORS 차단)와 대조. 각 API 특성에 맞춤.
+
+**4. 모델 = commuteACar?/commuteBCar? 옵셔널 (R1):**
+- commuteA=transit 유지(점수 기준·기존 읽기 무변경) + car 옵셔널 신규. mock=car 안 만듦→undefined→회귀 0.
+
+**5. UI = DetailSheet 수단별 그룹 (R2 + PM 피드백):**
+- [🚆 대중교통] A/B / [🚗 차량] A/B (TrainFront/Car 아이콘) + "동네→직장" 방향 라벨. 행 카드 토큰 보존. 카드 리스트 컴팩트 유지(REQ-FUNC-004 "탭했을 때"). key tag→tag-mode 가드.
+
+**6. ★ 방향 swap (#3 PM 발견) — 직장→동네 → 동네→직장:**
+- 기존(W2부터) origin=직장이라 의미 거꾸로 → origin=동네(집)로 swap (출퇴근 의미론). 값은 대칭이라 비슷하나 라벨·의미 정정.
+
+**7. ★ 자차 best-effort — 회귀 격리:**
+- 대중교통 필수(없으면 후보 제외), 자차 보조(실패→commuteACar undefined→차량 그룹 생략, 후보·점수 무영향). 점수=transit 고정.
+
+**8. ★ ODsay 초당 throttle 발견 → 동시호출 cap (실 검증 중):**
+- Promise.all 버스트(~20+)가 ODsay 초당 제한 초과 → 429(Too Many Requests). 단일 호출은 성공(일 한도 아님) 판별.
+- → `mapWithConcurrency`(배치 4) 추가 = 동시 ODsay 최대 4 → 429 해소(48ca44a9 후보7 정상). **★ B2 timeout 회피와 별개의 throttle 정수 NEW**
+
+**9. (b) 실 검증 통과:**
+- geocode→ODsay+카카오 car→실유저(33deaf63) 귀속 저장. car보유 진단 확인(정자동 대중22/차량35, 서현동 27/43 = 강남 체증 현실 반영). DetailSheet 그룹/아이콘/방향 라벨 확인. mock 무변경.
+
+**what-if(시간대 변경) 차량 사라짐 = REAL-API-W2-WHATIF-ODSAY 후속** (result what-if = runMockDiagnosis Haversine, car 미호출). W2B 새 버그 아님 — 초기 진단(ODsay+car)은 완성. 후속에서 what-if를 ODsay+kakao 재호출로.
+
+### Phase B 한계 § 22번째 (14단계 답습)
+
+체인: … → MASTER-PLAN → W1-DB → W1-AUTH → W2-ODSAY → **W2B-CAR**
+
+### 차후 ISSUE 후보 영역 누적 표 갱신 (2026-05-30 기준)
+
+| 후보 ISSUE | 트리거 | 영역 | 상태 |
+|---|---|---|---|
+| **REAL-API-W2B-CAR-COMMUTE** | (본 §) | 자차 통근 + 통근 UI | **코드+(b) 완료 / 르르 머지·Close 대기** |
+| **REAL-API-W2-WHATIF-ODSAY** | what-if 재계산 | result 필터/시간대 변경 = ODsay+kakao 재호출 (현 Haversine + car 미호출) | 후속 |
+| **REAL-API-COMMUTE-DEPARTURE-TIME** (NEW) | 출퇴근 정확도 | 08:00 출발시간을 ODsay/카카오 호출에 연결 (현 현재시각) | 후속 (API 제약) |
+| ODsay 프로덕션 고정 IP / 후보 수 튜닝 | (기존) | (기존) | flip / 후속 |
+
+### 본 세션 누적 35건 § 박힘 표 (★ Phase B 한계 § 22번째)
+
+| § | 영역 | ISSUE | PR | 상태 | 답습 정수 |
+|---|---|---|---|---|---|
+| 34 | REAL-API-W2-ODSAY-TRANSIT | #27+#30+#33 | #142 머지 | 완료 | (기존) |
+| 35 | **REAL-API-W2B-CAR-COMMUTE** | **CMD-DIAG-001/REQ-FUNC-004** | **(커밋 대기)** | **코드+(b) 완료** | **★ kakao-car 신규(재작성 조정) + ㊧ Mismatch 3회째 + 자차 브라우저직접(ODsay 프록시 비대칭) + commuteACar 옵셔널 + DetailSheet 수단별 그룹+아이콘 + 방향 swap(동네→직장, #3) + best-effort 회귀격리 + ODsay 초당 throttle cap(배치4) + (b) car 저장 검증 + what-if/departureTime 후속 분리** |
+
+_본 § 신설: 2026-05-30 (REAL-API-W2B-CAR-COMMUTE — 자차 카카오 + 통근 UI 마무리). ★ Phase B 한계 § 22번째(14단계) + 신규 kakao-car 모듈(계획 재작성→신규 조정, dead 소비자 회피) + ㊧ Mismatch 3회째(가상 transit vs 실 car) + ★ 자차=브라우저 직접(ODsay 서버프록시 비대칭, 각 API 특성) + commuteACar?/BCar? 옵셔널(회귀0) + DetailSheet 수단별 그룹(🚆/🚗 + 동네→직장 라벨, 카드 컴팩트 유지) + ★ 방향 swap(#3 PM 발견, 직장→동네 의미 정정) + 자차 best-effort 격리(점수=transit) + ★ ODsay 초당 throttle → mapWithConcurrency 배치4 cap(429 해소) + (b) 실 car 저장 검증(정자동 대중22/차량35) + what-if(REAL-API-W2-WHATIF-ODSAY)·출발시간(REAL-API-COMMUTE-DEPARTURE-TIME) 후속 분리. 자동 머지 X, ISSUE Close X, 프로덕션 flip X._
