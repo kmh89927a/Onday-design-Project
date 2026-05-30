@@ -223,8 +223,14 @@ export async function runMockDiagnosis(
     // rejected는 production에서 Sentry로
   }
 
+  // 방어적 dedup — 같은 id 후보가 들어와도 result/지도의 React key(=candidate.id)
+  //   충돌을 막는다 (mock 데이터에 중복이 또 생겨도 안전). 첫 항목 우선.
+  const deduped = Array.from(
+    new Map(candidates.map((c) => [c.id, c])).values(),
+  );
+
   // Issue #106 ㊓ — 진단 페이지 약속 (후보 6~8개) 정합 (★ top 8개).
-  return candidates.sort((a, b) => b.score - a.score).slice(0, 8);
+  return deduped.sort((a, b) => b.score - a.score).slice(0, 8);
 }
 
 /**
