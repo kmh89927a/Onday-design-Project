@@ -5,6 +5,35 @@ labels: ['feature', 'priority:H', 'epic:Auth', 'wave:3']
 assignees: []
 ---
 
+## 0. ⚠️ Rev 1.1 — 실제 구현 정합 (2026-05-30, 역방향 갱신 / W1-2 카카오 슬라이스)
+
+> 본 명세는 **"선행 DB-007 이 supabase client 3종 + user-sync 제공"** 을 전제하나, 실제로 DB-007 은 이를 만들지 않았다(`src/lib/supabase/`=`.gitkeep`, `services/user-sync.ts` 부재). 또 `@supabase/ssr` 가 `^0.5.0`→`0.10.3`(쿠키 API 변경)이다. REAL-API-W1-SUPABASE-AUTH 카카오 vertical slice(#21+#23) 실행 결과로 역방향 갱신한다. 원본 §1~§9 는 이력 보존, 충돌 시 **본 Rev 1.1 우선**. (LOG §32 / ㊧ Mismatch 15번째)
+
+**실제 구현 (브랜치 `feat/REAL-API-W1-SUPABASE-AUTH`):**
+- **supabase client 3종 신규 구축** (DB-007 미제공): `lib/supabase/client.ts`(createBrowserClient) · `server.ts`(createServerClient, **쿠키 getAll/setAll** — R5) · `middleware.ts`(createMiddlewareClient).
+- **콜백** `app/auth/callback/route.ts`: exchangeCodeForSession + `syncUserFromAuth` + redirect. (`.gitkeep` 대체)
+- **user-sync** `lib/services/user-sync.ts`: Supabase user → Prisma `users` UPSERT (id=auth uuid). RLS off 라 service_role 불필요.
+- **세션 읽기** `lib/auth/session.ts`: `getServerUser`/`getEffectiveUserId`. **R2 — 진단/저장 라우트 3곳**(diagnosis:36, save POST/GET)이 하드코딩 `mock-user-001` 대신 effective userId(실 세션 id ?? 게스트 fallback) 사용.
+- **R1 토글** `lib/auth/flags.ts` `IS_MOCK_AUTH`(`NEXT_PUBLIC_USE_MOCK_AUTH ?? NEXT_PUBLIC_USE_MOCK`): auth 만 실 전환, 진단/주소는 mock 유지. mock-auth 모드면 `getServerUser`·middleware·SessionBridge 모두 supabase 스킵(키 없는 환경 안전).
+- **로그인** `login-form.tsx`: IS_MOCK_AUTH=false 시 카카오 = 실 `signInWithOAuth`. **네이버 = "준비 중" 토스트(#22 이연)**.
+- **로그아웃** `lib/auth/actions.ts` signOut Server Action (#23).
+- **미들웨어** 세션 쿠키 refresh + 기존 `/dev` 차단 보존. **라우트 보호(미인증 redirect)는 게스트 보존 위해 #24 이연**.
+- **세션 브리지** `providers/session-bridge.tsx`: onAuthStateChange → Zustand setUser/signOut. INITIAL_SESSION(null)엔 no-op(게스트 isGuest 보존).
+
+**Superseded / 갱신:**
+| 원본 | 상태 | 대체 |
+|---|---|---|
+| §3.5 `@supabase/ssr@^0.5.0` | 갱신 | `0.10.3`, 쿠키 `getAll/setAll` |
+| §3.6 콜백 `createSupabaseServerClient` (DB-007 import) | 갱신 | DB-007 미제공 → 본 슬라이스 신규. Sentry → console(MON-001 이연) |
+| §3.8 middleware PROTECTED_ROUTES redirect | **이연(#24)** | 세션 갱신만 (게스트 흐름 보존) |
+| §3.10~3.12 docs/테스트 | **이연** | 테스트 인프라 0 → #135 흡수 |
+
+**DEFER:** 네이버(#22) · 게스트 풀구현/guest-guard(#24) · 라우트 보호(#24) · auth-mapper(YAGNI) · 테스트(#135) · docs(후순위) · Sentry(MON-001).
+
+**검증:** `tsc` 0 + ESLint 0 error + mock 모드 무변경 입증(POST 200/userId=mock-user-001/login 200) + 라우트 3곳 외 무변경. 실 OAuth 검증은 Tier 0(르르) 후 (b).
+
+---
+
 ## 1. 🎯 Summary
 
 - **기능명:** [CMD-AUTH-001] Supabase Auth 카카오 OAuth Provider 설정 (Supabase 대시보드 External OAuth 구성 + @supabase/ssr 클라이언트 연동)

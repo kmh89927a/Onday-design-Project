@@ -5,6 +5,12 @@ labels: ['feature', 'priority:M', 'epic:Auth', 'wave:3']
 assignees: []
 ---
 
+## 0. ⚠️ Rev 1.1 — W1-2 카카오 슬라이스 부분 구현 (2026-05-30)
+
+> CMD-AUTH-001 Rev 1.1 과 한 슬라이스로 진행. **본 ISSUE 중 구현:** 미들웨어 세션 쿠키 refresh(`lib/supabase/middleware.ts` + `middleware.ts`), 서버 세션 읽기(`lib/auth/session.ts` getServerUser), 로그아웃 Server Action(`lib/auth/actions.ts`), 세션 브리지(`providers/session-bridge.tsx`). **이연:** requireAuth/라우트 보호(#24), 세션 만료 redirect(#24), 테스트(#135). `@supabase/ssr`=0.10.3(쿠키 getAll/setAll). 충돌 시 본 Rev 우선. (LOG §32)
+
+---
+
 ## 1. 🎯 Summary
 
 - **기능명:** [CMD-AUTH-003] Supabase Auth 세션 전략 구현 — @supabase/ssr httpOnly cookie, sameSite strict

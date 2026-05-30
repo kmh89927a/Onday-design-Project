@@ -1,0 +1,50 @@
+"use client";
+
+import * as React from "react";
+import type { User } from "@supabase/supabase-js";
+
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { IS_MOCK_AUTH } from "@/lib/auth/flags";
+import { useSessionStore, type SessionUser } from "@/stores/session";
+
+function toSessionUser(user: User): SessionUser {
+  const meta = user.user_metadata ?? {};
+  const provider = user.app_metadata?.provider === "naver" ? "naver" : "kakao";
+  const nickname =
+    meta.name ?? meta.nickname ?? meta.full_name ?? user.email?.split("@")[0] ?? "사용자";
+  return {
+    id: user.id,
+    nickname,
+    provider,
+    avatarUrl: meta.avatar_url ?? meta.picture,
+  };
+}
+
+// 실 auth 모드에서 Supabase 세션(httpOnly 쿠키) ↔ Zustand(client UI) 동기화.
+// 로그인/토큰갱신 → setUser, 명시적 로그아웃 → signOut.
+// ★ INITIAL_SESSION(null) 에선 아무것도 안 함 — 게스트(isGuest)·미인증 상태를 보존
+//   (signOut 은 isGuest 까지 리셋하므로 게스트 흐름이 깨지는 것을 방지).
+// mock-auth 모드면 no-op (login-form 이 직접 Zustand 갱신).
+export function SessionBridge() {
+  const setUser = useSessionStore((s) => s.setUser);
+  const signOut = useSessionStore((s) => s.signOut);
+
+  React.useEffect(() => {
+    if (IS_MOCK_AUTH) return;
+
+    const supabase = createSupabaseBrowserClient();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(toSessionUser(session.user));
+      } else if (event === "SIGNED_OUT") {
+        signOut();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setUser, signOut]);
+
+  return null;
+}
