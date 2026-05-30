@@ -5,6 +5,39 @@ labels: ['feature', 'priority:H', 'epic:Infra', 'wave:1']
 assignees: []
 ---
 
+## 0. ⚠️ Rev 1.1 — 실제 구현 정합 (2026-05-30, 역방향 갱신)
+
+> 본 명세는 작성 시점 **Prisma 5/6 + env-switchable datasource** 를 전제했으나, 실제 스택은 **Prisma 7.8.0 + 신형 `prisma-client` generator + 드라이버 어댑터**다. REAL-API-W1-SUPABASE-DB(#2) 실행 결과에 맞춰 아래를 역방향 갱신한다. 원본 §1~§9 는 이력 보존용으로 남기되, 충돌 시 **본 Rev 1.1 이 우선**한다. (LOG §31 / ㊧ Mismatch 14번째)
+
+**실제 구현 (브랜치 `feat/REAL-API-W1-SUPABASE-DB`):**
+- **DB 단일화:** sqlite 이원화 폐지 → **Supabase Postgres 단일** (로컬·프로덕션 동일). 기존 `db.ts` 는 in-memory 가짜였어 sqlite 가 실서비스 경로가 아니었음 → 폐기 손실 0.
+- **런타임 = 드라이버 어댑터 (Prisma 7 필수):** `src/lib/db.ts` 가 `new PrismaClient({ adapter: new PrismaPg({ connectionString: DATABASE_URL }) })`. Rust 쿼리 엔진이 제거된 Prisma 7 에선 어댑터가 유일 경로. **`prisma.<model>.<method>` 표면 동일 → 호출자 6곳 0 변경** (tsc exit 0 + diff 0 입증).
+- **연결 분리:** `DATABASE_URL` = Transaction pooler(6543, 런타임) / `DIRECT_URL` = Session pooler(5432, migrate). **Direct(`db.*.supabase.co`)는 IPv6 전용이라 회피.**
+- **CLI 설정 = `prisma.config.ts`:** `datasource.url = DIRECT_URL ?? DATABASE_URL` + `migrations.seed = "npx tsx prisma/seed.ts"` + `.env.local` 우선 로드. (Prisma 7 은 `package.json#prisma.seed` 폐지.)
+- **filters/candidates = String 유지** (Json 전환 X). JSONB 는 차후 별도 ISSUE.
+- **seed:** `mock-user-001` 멱등 upsert (FK 충족). `PrismaBetterSqlite3` → `PrismaPg`.
+- **deps:** `+@prisma/adapter-pg +pg +tsx(dev)`, `-@prisma/adapter-better-sqlite3 -better-sqlite3`.
+
+**Superseded (원본 → Rev 1.1):**
+| 원본 | 상태 | 대체 |
+|---|---|---|
+| §3.3 `datasource { provider = env("DATABASE_PROVIDER"); directUrl }` | **폐기** | provider 정적 `postgresql`. Prisma 7 `Datasource` 타입엔 `directUrl` 필드 없음 → CLI `datasource.url` 을 direct 로 둠 (`prisma.config.ts`) |
+| §3.8 `new PrismaClient({ datasources: { db: { url }}})` (비어댑터) | **폐기 (Prisma 7 불가)** | `PrismaClient({ adapter: PrismaPg })` 드라이버 어댑터 |
+| §3.7 `vercel.json` buildCommand 에 `migrate deploy` | **미채택** | buildCommand = `generate + next build` 유지. migrate 는 수동 `db:migrate:deploy` (매 배포 프로덕션 migrate 위험 회피) |
+
+**DEFER (본 ISSUE 범위 외 — 신규 ISSUE 0, LOG §31 흡수):**
+- §3.6 `scripts/migrate-prod.sh` = **SKIP** (`db:migrate:deploy` npm script 중복)
+- §3.11 `prod-connection.spec.ts` = **#135 INFRA-TEST-001 흡수** (테스트 인프라 0)
+- §3.10 RLS 검증(AC-5) = **W1-2/DB-007 이연** (Supabase Auth 선행 필요)
+- §3.9 `db-backup-policy.md` = **후순위** (Supabase 무료 티어 자동 백업 존재)
+- §3.12 Sentry DB 에러 = **MON 선행 후속**
+
+**검증 결과:** AC-1(연결) ✅ / AC-6(generate·validate) ✅ + 마스터플랜 목표 `in-memory → 영구 저장 (cold start 생존)` ✅ — POST 진단 생성 → 별도 pg 연결로 Supabase 행 실재 확인 → 서버 재기동 후 GET 200.
+
+> ⚠️ **마이그레이션은 provider 별 SQL 이라 sqlite↔postgres 단일 폴더 공유 불가.** 기존 sqlite `init` 폐기 → postgres `20260530024119_init` 신규 생성. (env 만 바꾸면 전환된다는 원본 §6.2.0 전제는 migrate 레이어에서 성립 안 함.)
+
+---
+
 ## 1. 🎯 Summary
 
 - **기능명:** [INFRA-002] Supabase PostgreSQL 프로덕션 DB 프로비저닝 + DATABASE_URL 환경변수 설정
@@ -76,6 +109,7 @@ DataStore["💾 Data Store (C-TEC-003)"]
   ```
 
 - [ ] **3.3** `prisma/schema.prisma`에 `directUrl` 추가 (Connection Pooling 호환)
+  > ⚠️ **SUPERSEDED (Rev 1.1, §0 참조):** Prisma 7 `schema.prisma` datasource 는 `provider = "postgresql"` 정적 + `directUrl` 필드 없음. 연결 분리는 **`prisma.config.ts`** 에서 `datasource.url = DIRECT_URL ?? DATABASE_URL` 로 처리 (런타임 어댑터는 DATABASE_URL).
   ```prisma
   // prisma/schema.prisma — DB-001에서 정의한 datasource 확장
   datasource db {
@@ -138,6 +172,7 @@ DataStore["💾 Data Store (C-TEC-003)"]
   ```
 
 - [ ] **3.8** Connection Pooling 설정 검증 — PgBouncer 호환
+  > ⚠️ **SUPERSEDED (Rev 1.1, §0 참조):** 아래 `datasources:{db:{url}}` 비어댑터 방식은 **Prisma 7 에서 불가** (Rust 엔진 제거). 실제 구현 = `new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) })`. pooling 은 pooler(6543) URL 자체로 처리.
   ```typescript
   // lib/db.ts — DB-001 싱글톤 확장 (Connection Limit 설정)
   export const prisma = global.prismaGlobal ?? new PrismaClient({

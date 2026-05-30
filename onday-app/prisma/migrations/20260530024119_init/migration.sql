@@ -1,16 +1,18 @@
 -- CreateTable
 CREATE TABLE "users" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "auth_provider" TEXT NOT NULL,
     "mode" TEXT NOT NULL DEFAULT 'couple',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "diagnoses" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "address_a" TEXT NOT NULL,
     "address_b" TEXT,
@@ -18,32 +20,35 @@ CREATE TABLE "diagnoses" (
     "candidates" TEXT NOT NULL DEFAULT '[]',
     "mode" TEXT NOT NULL DEFAULT 'couple',
     "deadline_mode" BOOLEAN NOT NULL DEFAULT false,
-    "deadline" DATETIME,
+    "deadline" TIMESTAMP(3),
     "status" TEXT NOT NULL DEFAULT 'completed',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "diagnoses_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "diagnoses_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "share_links" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "diagnosis_id" TEXT NOT NULL,
     "unique_url" TEXT NOT NULL,
     "password_hash" TEXT,
     "view_count" INTEGER NOT NULL DEFAULT 0,
     "free_preview_used" BOOLEAN NOT NULL DEFAULT false,
-    "expires_at" DATETIME NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "share_links_diagnosis_id_fkey" FOREIGN KEY ("diagnosis_id") REFERENCES "diagnoses" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "expires_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "share_links_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "saved_searches" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "search_params" TEXT NOT NULL,
-    "saved_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "saved_searches_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "saved_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "saved_searches_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -60,3 +65,12 @@ CREATE UNIQUE INDEX "share_links_unique_url_key" ON "share_links"("unique_url");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "saved_searches_user_id_key" ON "saved_searches"("user_id");
+
+-- AddForeignKey
+ALTER TABLE "diagnoses" ADD CONSTRAINT "diagnoses_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "share_links" ADD CONSTRAINT "share_links_diagnosis_id_fkey" FOREIGN KEY ("diagnosis_id") REFERENCES "diagnoses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "saved_searches" ADD CONSTRAINT "saved_searches_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

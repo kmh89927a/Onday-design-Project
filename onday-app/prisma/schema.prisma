@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -26,8 +26,8 @@ model Diagnosis {
   userId       String   @map("user_id")
   addressA     String   @map("address_a")
   addressB     String?  @map("address_b") // nullable for single mode
-  filters      String   @default("{}") // JSON string (SQLite has no JSONB)
-  candidates   String   @default("[]") // JSON string array of CandidateArea
+  filters      String   @default("{}") // JSON string — app-layer parse, JSONB는 차후 ISSUE
+  candidates   String   @default("[]") // JSON string array of CandidateArea — app-layer parse, JSONB는 차후 ISSUE
   mode         String   @default("couple") // couple | single
   deadlineMode Boolean  @default(false) @map("deadline_mode")
   deadline     DateTime? // nullable, for deadline mode
