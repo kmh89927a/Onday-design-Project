@@ -1,7 +1,7 @@
 import { MODE_LABELS, type CommuteMode as ChipMode } from "@/components/data/commute-chip";
 import type { BadgeProps } from "@/components/ui/badge";
 import { toChipMode } from "@/features/diagnosis/result-utils";
-import type { CandidateArea } from "@/lib/types";
+import type { CandidateArea, CommuteInfo } from "@/lib/types";
 
 interface PillItem {
   variant: BadgeProps["variant"];
@@ -35,36 +35,36 @@ export function buildLines(c: CandidateArea): string {
   return c.lines ?? "노선 정보 곧 추가";
 }
 
+function toCommuteRow(
+  tag: "A" | "B",
+  dest: string,
+  info: CommuteInfo,
+): CommuteRowItem {
+  const mode = toChipMode(info.mode);
+  return {
+    tag,
+    dest,
+    mode,
+    modeLabel: MODE_LABELS[mode],
+    detail: info.transfers != null ? `환승 ${info.transfers}회` : undefined,
+    minutes: info.time,
+  };
+}
+
+// ★ W2B: 직장 경로마다 대중교통 + 자차(있으면) 행 — REQ-FUNC-004 "탭했을 때 대중교통·자차".
+//   순서: A 대중교통 / A 차량 / B 대중교통 / B 차량 (자차는 옵셔널 best-effort).
 export function buildCommuteRows(
   c: CandidateArea,
   destA: string,
   destB?: string,
 ): CommuteRowItem[] {
-  const rows: CommuteRowItem[] = [
-    {
-      tag: "A",
-      dest: destA || "직장 A",
-      mode: toChipMode(c.commuteA.mode),
-      modeLabel: MODE_LABELS[toChipMode(c.commuteA.mode)],
-      detail:
-        c.commuteA.transfers != null
-          ? `환승 ${c.commuteA.transfers}회`
-          : undefined,
-      minutes: c.commuteA.time,
-    },
-  ];
+  const da = destA || "직장 A";
+  const db = destB || "직장 B";
+  const rows: CommuteRowItem[] = [toCommuteRow("A", da, c.commuteA)];
+  if (c.commuteACar) rows.push(toCommuteRow("A", da, c.commuteACar));
   if (c.commuteB) {
-    rows.push({
-      tag: "B",
-      dest: destB || "직장 B",
-      mode: toChipMode(c.commuteB.mode),
-      modeLabel: MODE_LABELS[toChipMode(c.commuteB.mode)],
-      detail:
-        c.commuteB.transfers != null
-          ? `환승 ${c.commuteB.transfers}회`
-          : undefined,
-      minutes: c.commuteB.time,
-    });
+    rows.push(toCommuteRow("B", db, c.commuteB));
+    if (c.commuteBCar) rows.push(toCommuteRow("B", db, c.commuteBCar));
   }
   return rows;
 }

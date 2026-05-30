@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Heart, Share2 } from "lucide-react";
+import { Heart, Share2, TrainFront, Car } from "lucide-react";
 
 import { type CommuteMode } from "@/components/data/commute-chip";
 import { Stat } from "@/components/data/stat";
@@ -115,42 +115,72 @@ export function DetailSheet({
           <p className="text-caption text-ink-3">{candidate.lines}</p>
         </header>
 
-        <section aria-label="통근 정보" className="space-y-s-2">
-          {candidate.commutes.map((c) => (
-            <div
-              key={c.tag}
-              role="group"
-              aria-label={`${c.tag} 직장까지 ${c.modeLabel} ${c.minutes}분${
-                c.detail ? `, ${c.detail}` : ""
-              }`}
-              className="flex items-center gap-s-3 rounded-lg border border-card-border bg-surface px-s-4 py-s-3 shadow-card"
-            >
-              <span
-                aria-hidden
-                className={cn(
-                  "inline-flex size-6 items-center justify-center rounded-sm text-caption-xs font-extrabold text-white",
-                  c.tag === "A" ? "bg-primary" : "bg-secondary",
-                )}
-              >
-                {c.tag}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-body-sm font-bold text-ink">
-                  {c.dest}
+        {/* ★ W2B: 수단별 그룹 ([대중교통] A/B / [차량] A/B) + 방향 '동네→직장'.
+            행 카드 디자인은 보존, 수단은 그룹 헤더 아이콘+라벨로 이동. */}
+        <section aria-label="통근 정보" className="space-y-s-3">
+          <div className="flex items-center justify-between">
+            <p className="text-caption font-bold text-ink-2">통근 정보</p>
+            <p className="text-caption-xs text-ink-3">동네 → 직장 기준</p>
+          </div>
+          {(
+            [
+              {
+                key: "transit",
+                icon: <TrainFront aria-hidden className="size-4 text-ink-3" />,
+                label: "대중교통",
+                rows: candidate.commutes.filter((c) => c.mode !== "car"),
+              },
+              {
+                key: "car",
+                icon: <Car aria-hidden className="size-4 text-ink-3" />,
+                label: "차량",
+                rows: candidate.commutes.filter((c) => c.mode === "car"),
+              },
+            ] as const
+          ).map((group) =>
+            group.rows.length === 0 ? null : (
+              <div key={group.key} className="space-y-s-2">
+                <p className="flex items-center gap-s-1 text-caption font-bold text-ink-2">
+                  {group.icon}
+                  {group.label}
                 </p>
-                <p className="text-caption text-ink-3">
-                  {c.modeLabel}
-                  {c.detail ? ` · ${c.detail}` : ""}
-                </p>
+                {group.rows.map((c) => (
+                  <div
+                    key={`${c.tag}-${c.mode}`}
+                    role="group"
+                    aria-label={`${c.tag} 직장까지 ${group.label} ${c.minutes}분${
+                      c.detail ? `, ${c.detail}` : ""
+                    }`}
+                    className="flex items-center gap-s-3 rounded-lg border border-card-border bg-surface px-s-4 py-s-3 shadow-card"
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "inline-flex size-6 items-center justify-center rounded-sm text-caption-xs font-extrabold text-white",
+                        c.tag === "A" ? "bg-primary" : "bg-secondary",
+                      )}
+                    >
+                      {c.tag}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-body-sm font-bold text-ink">
+                        {c.dest}
+                      </p>
+                      {c.detail && (
+                        <p className="text-caption text-ink-3">{c.detail}</p>
+                      )}
+                    </div>
+                    <span className="tabular text-title font-extrabold text-ink">
+                      {c.minutes}
+                      <span className="ml-0.5 text-caption font-normal text-ink-3">
+                        분
+                      </span>
+                    </span>
+                  </div>
+                ))}
               </div>
-              <span className="tabular text-title font-extrabold text-ink">
-                {c.minutes}
-                <span className="ml-0.5 text-caption font-normal text-ink-3">
-                  분
-                </span>
-              </span>
-            </div>
-          ))}
+            ),
+          )}
         </section>
 
         {commuteExtra}
