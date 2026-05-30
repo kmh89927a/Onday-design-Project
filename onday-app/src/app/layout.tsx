@@ -3,6 +3,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { Toaster } from "@/components/layout/toaster";
 import { QueryProvider } from "@/providers/query-provider";
+import { SessionBridge } from "@/providers/session-bridge";
 
 import "./globals.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <SessionBridge />
         <QueryProvider>{children}</QueryProvider>
         <Toaster />
         <SpeedInsights />

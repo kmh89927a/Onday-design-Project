@@ -12,6 +12,7 @@ import type { CommuteSchedule, DiagnosisFilters } from "@/lib/types";
 import { AppHeader } from "@/components/layout/app-header";
 import { StickyCTABar } from "@/components/layout/sticky-cta-bar";
 import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { useCreateDiagnosis } from "@/features/diagnosis/use-diagnosis";
 // ★ UI-002: 사전 작업 444 lines ↔ CMD-DIAG-001 useGeocode 통합 (★ adapter Hook 패턴 § NEW).
 // ★ Mismatch ⑪/⑫/⑭ 정정: useDebounce + MOCK_NEIGHBORHOODS filter → useAddressSuggest adapter (★ adapter 내부 처리).
@@ -218,14 +219,17 @@ export default function DiagnosisPage() {
       <AppHeader
         backHref="/login"
         trailing={
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleLoadLast}
-          >
-            <RefreshCw className="size-3.5" />
-            이전 조건 불러오기
-          </Button>
+          <>
+            <LogoutButton />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleLoadLast}
+            >
+              <RefreshCw className="size-3.5" />
+              이전 조건 불러오기
+            </Button>
+          </>
         }
       />
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getEffectiveUserId } from "@/lib/auth/session";
 import { z } from "zod";
 
 const saveSearchSchema = z.object({
@@ -16,8 +17,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "입력값이 올바르지 않습니다" }, { status: 400 });
     }
 
-    // Mock: use fixed user ID
-    const userId = "mock-user-001";
+    // ★ R2 — 로그인 유저면 실 id, 게스트·mock-auth 면 공용 fallback.
+    const userId = await getEffectiveUserId();
 
     const saved = await prisma.savedSearch.upsert({
       where: { userId },
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
 // GET /api/save — Get saved search
 export async function GET() {
   try {
-    const userId = "mock-user-001";
+    const userId = await getEffectiveUserId();
 
     const saved = await prisma.savedSearch.findUnique({ where: { userId } });
 

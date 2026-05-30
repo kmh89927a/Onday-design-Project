@@ -6,15 +6,17 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { OAuthButton } from "@/components/ui/oauth-button";
 import { MOCK_USER } from "@/mocks/users";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { IS_MOCK_AUTH } from "@/lib/auth/flags";
 import { useSessionStore } from "@/stores/session";
 import { useUIStore } from "@/stores/ui";
 
 // 패턴 A — controlled props 유지
 //   OAuthButton / Button은 props만 받고, store 연결은 본 LoginForm에서만
-//   Mock 분기: NEXT_PUBLIC_USE_MOCK === "true" 시 즉시 setUser + 라우팅
-//   실 OAuth: Step 12 Postgres 마이그 후 supabase.auth.signInWithOAuth 활성
+//   ★ W1-2: IS_MOCK_AUTH(=false) 시 카카오 = 실 supabase.auth.signInWithOAuth →
+//     카카오 redirect → /auth/callback 복귀. 네이버는 #22 이연("준비 중" 토스트).
+//     mock-auth 모드는 기존 즉시 setUser + 라우팅 유지.
 
-const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 const MOCK_LATENCY_MS = 400;
 
 type AuthInFlight = "kakao" | "naver" | "guest" | null;
@@ -29,7 +31,7 @@ export function LoginForm() {
   const handleOAuth = async (provider: "kakao" | "naver") => {
     setInFlight(provider);
     try {
-      if (IS_MOCK) {
+      if (IS_MOCK_AUTH) {
         await new Promise((resolve) => setTimeout(resolve, MOCK_LATENCY_MS));
         setUser({
           id: MOCK_USER.id,
@@ -39,13 +41,37 @@ export function LoginForm() {
         router.push("/diagnosis");
         return;
       }
-      // TODO: Supabase Auth 활성 (Step 12 Postgres 마이그레이션 후)
-      throw new Error("OAuth Provider 미구성 — Mock 모드를 켜주세요");
+
+      // 네이버는 #22 이연 — 카카오 패턴 복제 예정. 크래시 대신 안내.
+      if (provider === "naver") {
+        pushToast({
+          variant: "default",
+          message: "네이버 로그인은 준비 중이에요. 카카오로 시작해 주세요.",
+        });
+        setInFlight(null);
+        return;
+      }
+
+      // 실 카카오 OAuth — Supabase 가 카카오로 redirect → /auth/callback 복귀.
+      // 성공 시 페이지가 카카오로 이동하므로 이후 로직 없음. 세션 반영은 SessionBridge.
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "kakao",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          // ★ KOE205 회피 — Supabase 의 kakao 기본 scope 엔 account_email 이 박혀 있고
+          //   (gotrue 내장, config 로 제거 불가), 카카오 앱은 이메일 권한이 없어 KOE205.
+          //   options.scopes 는 기본값에 "추가"만 되지만, authorize 의 `scope`(단수)
+          //   쿼리 파라미터는 기본값을 "교체"한다 → queryParams 로 직접 주입해 account_email 제거.
+          //   (실제 사용 동의항목: profile_nickname 필수 + profile_image 선택)
+          queryParams: { scope: "profile_nickname profile_image" },
+        },
+      });
+      if (error) throw new Error(error.message);
     } catch (err) {
       pushToast({
         variant: "danger",
-        message:
-          err instanceof Error ? err.message : "로그인에 실패했어요",
+        message: err instanceof Error ? err.message : "로그인에 실패했어요",
       });
       setInFlight(null);
     }

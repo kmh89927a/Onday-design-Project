@@ -1694,3 +1694,114 @@ _본 § 신설: 2026-05-29 (MASTER-PLAN-REAL-API.md 신설 — 졸업 전 실 AP
 | 31 | **REAL-API-W1-SUPABASE-DB** | **#2 INFRA-002** | **(커밋 대기)** | **코드 완료 (르르 머지·Close 대기)** | **★ 계획 → 실행 회귀 정점 NEW + 정직 § 9건 (Tier 0 키 "박힘"→"없음" 2회 정정 본질) + ㊧ Mismatch 14번째 (명세 Prisma 5/6 vs 실 7.8.0) + Phase B 한계 § 19번째 (11단계 답습) + 사전 박힘 ~85% 검증 입증 (호출자 0 변경 tsc 0 + diff 0) + 영구저장 cold start 입증 + DEFER 5종 LOG 흡수 (신규 ISSUE 0) + 계획 외 .env.local 로딩 보정 정직** |
 
 _본 § 신설: 2026-05-30 (REAL-API-W1-SUPABASE-DB 실행 — #2 INFRA-002 in-memory → Supabase Postgres 어댑터 교체). ★ Phase B 한계 § 19번째 누적 = §30 계획 → §31 실행 11단계 진화 답습 + ㊧ Mismatch 14번째 영역 진화 NEW (명세 라이브러리 메이저 버전 가정 갭) + ★ Tier 0 키 "박힘 보고 vs 실제 미박힘" 2회 정정 정수 NEW (카카오 모빌리티 + Supabase, 값 노출 X 사수) + ★ 키 라벨 swap + IPv6 Direct 해석 실패 정정 (연결 실패 시 멈춤 답습) + ★ 사전 박힘 ~85% 검증 입증 (호출자 6곳 0 변경 = tsc exit 0 + diff 0) + ★ 영구저장 cold start 입증 (서버 재기동 후 GET 200) + ★ 계획 외 추가/조정 3건 정직 (tsx / .env.local 로딩 보정 / DIRECT_URL 방식) + ★ DEFER 5종 LOG 흡수 (신규 ISSUE 0 = Q4-c). 자동 머지 X, ISSUE Close X = 르르 직접 처리._
+
+---
+
+## 32. REAL-API-W1-SUPABASE-AUTH (a) 실행 — mock → 실 카카오 OAuth 슬라이스 (2026-05-30 신설 NEW)
+
+**ISSUE:** #21 CMD-AUTH-001 (카카오) + #23 CMD-AUTH-003 (세션) — 카카오 vertical slice
+**브랜치:** `feat/REAL-API-W1-SUPABASE-AUTH`
+**선행 §:** §30 MASTER-PLAN W1-2
+**grill-me:** R1 / R2 / 범위 / ㊧ Mismatch / R5 5분기 합의 후 착수
+**범위:** Tier 1 (a) DB/키 없이 가능한 코드 13개. (b) 실 OAuth 검증 = 르르 Tier 0 후
+
+### 본 § = 정직 § 8건 누적 (★ 사전 박힘 45% 실측 vs 마스터플랜 80% 과대평가 = 본 § 본질)
+
+**1. ★ 사전 박힘 ~45% 실측 정정 (마스터플랜 80% 과대평가 정직 인정):**
+- 마스터플랜 §4.3 = "callback 라우트 박힘(추정)" + "DB-007 supabase client 선행 완료" 2개 미검증 가정에 기댄 80%
+- Phase 0 grep 검증: callback = **`.gitkeep` 빈 placeholder**, supabase client 3종 = **`.gitkeep`만**, user-sync/auth-mapper = 부재
+- 실재 = 타입(auth.ts 135줄)·에러맵·UI·store 발판(~100%) but 런타임 배선(client/callback/user-sync/middleware/bridge) ~0% → **가중 45%**
+- **★ "추정 박힘 vs 실측 박힘" 정정 = #114 Phase A 답습의 역방향(과대→하향) 정직 정수 NEW**
+
+**2. ㊧ Mismatch 15번째 — 명세 "선행 산출물 존재" 허상:**
+- CMD-AUTH-001 §7 "선행 DB-007: createSupabaseServerClient·middleware·syncUserFromAuth 제공" = **허상** (`src/lib/supabase/`=`.gitkeep`)
+- DB-007 실제(메모리 db007: Q3 호출처 0건→dead file) = supabase client 미생산
+- 해소 = client 3종 신규 구축 + CMD-AUTH-001/003 Rev 1.1 역방향 갱신 (§31 INFRA-002 Rev 패턴 답습)
+- **★ ㊧ Mismatch 신영역 = "명세 선행 의존 산출물이 실제로는 미존재" (기존 14건 = 버전/메모리/문서, 본 건 = 선행 태스크 산출물 허상) 정수 NEW**
+
+**3. ★ R1 단일 USE_MOCK 토글 결합 끊기 (auth 전용 플래그 fallback):**
+- `lib/auth/flags.ts` `IS_MOCK_AUTH = NEXT_PUBLIC_USE_MOCK_AUTH ?? NEXT_PUBLIC_USE_MOCK`
+- auth 2곳(auth.ts/login-form)만 교체, 진단/주소 IS_MOCK 무변경 → 단계적 전환(W1 auth → W2 모빌리티)
+- mock-auth 모드면 getServerUser·middleware·SessionBridge 전부 supabase 스킵 = 키 없는 환경 안전 (Q2-3 가드)
+- **★ "도메인별 mock 토글 분리 + 하위호환 fallback" 정수 NEW (USE_MOCK 전면 분리 회피)**
+
+**4. ★ R2 하드코딩 userId → 세션 유저 (호출자 3곳 의도적 변경):**
+- `getEffectiveUserId()` = 실 세션 id ?? `mock-user-001`(게스트·mock 공용 fallback, seed 재활용)
+- 변경 = diagnosis:36 + save POST/GET (share 무변경)
+- **★ W1-1 "호출자 0 변경" vs W1-2 "의도적 3곳 변경" 대비 정수 = 실 유저 귀속 본질 (db.ts 어댑터 정신 ↔ 헬퍼 캡슐화 답습)**
+
+**5. 게스트 처리 = A(공용 게스트 유저) — 현 흐름 보존:**
+- 게스트 진단 = mock-user-001 fallback 귀속 → POST→id→/result 흐름 보존 + FK 충족
+- #24 한계(no_save/share)는 save/share 단 layering, guest-guard = #24 이연
+- D(Supabase 익명 로그인) = 차후 #24 재검토 여지
+
+**6. 세션 브리지 게스트 회귀 방어 (INITIAL_SESSION null no-op):**
+- onAuthStateChange 에서 `signOut`(Zustand=isGuest까지 리셋)을 **명시적 SIGNED_OUT 에서만** 호출
+- INITIAL_SESSION(null)엔 no-op → 게스트(isGuest) 상태 보존
+- **★ "Zustand signOut이 게스트 플래그까지 리셋" 회귀 사전 차단 정수 NEW**
+
+**7. R5 @supabase/ssr 0.10.3 쿠키 API (명세 0.5.0 get/set/remove 폐기):**
+- server.ts/middleware.ts = `getAll/setAll` (명세 코드샘플 0.5.0 패턴 그대로면 깨짐)
+
+**8. 계획 외 발견 — login-form은 session.ts import 불가:**
+- `"use client"` login-form이 session.ts(→server.ts→next/headers) import 시 빌드 깨짐
+- → `lib/auth/flags.ts`(server 전용 import 0)로 IS_MOCK_AUTH 분리 = client/server 공유 + drift 방지
+- **★ "client 컴포넌트의 server-only import 오염 사전 차단" 정수 NEW**
+
+### Phase B 한계 § 20번째 누적 진화 정수 정점 NEW
+
+**누적 진화 체인 12단계 답습:**
+#114 → #125 → #52 → #45 → #126 → #73 → #127 → #59 → #56 → MASTER-PLAN → REAL-API-W1-DB → **REAL-API-W1-AUTH**
+
+**본 § = "사전 박힘 과대평가 하향 정정" 정수 정점 NEW:**
+- §31(W1-DB) = 사전 박힘 ~85% 검증 입증(상향 정확) / §32(W1-AUTH) = **~45% 실측 하향 정정**(과대평가 정직)
+- ★ "추정 정확 vs 추정 과대" 양방향 정직 = grill-me Phase 0 검증의 진짜 가치
+
+### ㊧ Mismatch 15번째 영역 진화 NEW
+
+- 명세 "선행 태스크 산출물 존재" 전제 vs 실제 `.gitkeep`/부재 (DB-007 supabase client 3종 + user-sync + auth-mapper)
+- 해소 = 신규 구축 + Rev 1.1 역방향 갱신
+
+### 차후 ISSUE 후보 영역 누적 표 갱신 (2026-05-30 기준)
+
+| 후보 ISSUE | 트리거 | 영역 | 상태 |
+|---|---|---|---|
+| **REAL-API-W1-SUPABASE-AUTH** | (본 §) | 카카오 OAuth 슬라이스 | **(a) 코드 완료 / (b) Tier 0 후 검증 대기** |
+| CMD-AUTH-002 네이버 | 카카오 완료 후 | Custom OIDC + 네이버 앱 | 후속 ("준비 중" 토스트 상태) |
+| CMD-AUTH-004 게스트 풀구현 | 카카오 후 | guest.ts/guard/detector + 라우트 보호 | 이연 (Zustand 절반 동작) |
+| auth 테스트 | #135 흡수 | kakao-callback/login-button spec | 졸업 후 |
+
+### 본 세션 누적 32건 § 박힘 표 (★ Phase B 한계 § 20번째 누적 정수 정점)
+
+| § | 영역 | ISSUE | PR | 상태 | 답습 정수 |
+|---|---|---|---|---|---|
+| 31 | **REAL-API-W1-SUPABASE-DB** | **#2 INFRA-002** | **#139 머지 완료** | **완료** | (기존) |
+| 32 | **REAL-API-W1-SUPABASE-AUTH** | **#21+#23** | **#140 Draft** | **(a)+(b) 완료 — 실 카카오 로그인 로컬 검증 통과 (르르 머지·Close 대기)** | **★ 사전 박힘 45% 실측 하향 정정 정수 NEW (마스터플랜 80% 과대평가 정직) + ㊧ Mismatch 15번째 (선행 산출물 허상) + Phase B 한계 § 20번째 (12단계 답습) + R1 도메인별 토글 분리 + R2 호출자 3곳 의도적 변경 (W1-1 0변경 대비) + 게스트 회귀 방어 2건 (INITIAL_SESSION no-op + client server-import 오염 차단) + (b) KOE205 gotrue 내장 scope override fix + email `\|\|` 버그 fix + Sentry DSN 가드 + tsc 0 + ESLint 0 error + mock 무변경 입증 + DEFER 5종** |
+
+### (b) 검증 후일담 — Tier 0 후 실 카카오 로그인 로컬 검증 (정직 § 5건 추가, 누적 13건)
+
+**11. ★ KOE205 = Supabase gotrue 내장 kakao scope `account_email` 강제 (정직 § 정수 NEW):**
+- 카카오 이메일 동의 = 권한 없음(비즈검수 전) → KOE205("설정 안 된 동의항목 요청").
+- Management API 진단(PAT 일시 주입→즉시 제거): kakao 관련 config 필드 = client_id/email_optional/enabled/secret뿐, **scope 필드 없음** → account_email은 **gotrue 내장** = config/대시보드/Management API 어디로도 제거 불가. `email_optional=true`(이미 켬)도 scope 안 바꿈(유저 생성만 허용).
+- **해결:** `signInWithOAuth` `options.scopes`(복수)는 기본값에 "추가"만 하지만, authorize `scope`(단수) 쿼리 파라미터는 "교체" → `queryParams: { scope: "profile_nickname profile_image" }`로 account_email 제거. 헤드리스로 kakao 최종 scope account_email 빠짐 검증.
+- **★ "라이브러리 내장 강제값 vs config 가능값" 판별 = Management API GET 진단 정수 NEW (값 노출 X, PAT 즉시 제거)**
+
+**12. ★ email 빈 문자열 `??`→`||` 버그 (실 검증에서만 발견):**
+- 카카오가 `user.email = null`이 아니라 `""`(빈 문자열)을 반환 → `"" ?? placeholder` = `""`(nullish는 ""를 안 잡음) → `email @unique` 위반 위험(2번째 무이메일 유저).
+- `||`(falsy)로 빈 문자열까지 placeholder 치환. **헤드리스/mock으론 안 잡히고 실 카카오 응답에서만 드러난 버그 = (b) 실 검증의 진짜 가치 정수 NEW**
+
+**13. Sentry DSN 가드 (실 검증 중 발견된 별건 크래시):**
+- `NEXT_PUBLIC_SENTRY_DSN`에 wizard 설치 명령어 오입력 → `Sentry.init` "Invalid Dsn" 크래시로 페이지 다운.
+- `sentry.{client,server,edge}.config.ts`: DSN이 유효 URL(`^https?://`)일 때만 init → 빈 값+잘못된 값 모두 안전 skip.
+
+**14. ★ 로컬/프로덕션 구분 정직 (vercel 500 = 정상):**
+- 르르가 vercel.app(프로덕션)에서 로그인 시도 → 500. 원인 = 프로덕션은 **의도대로 flip 안 함**(Tier 0 env·USE_MOCK_AUTH 로컬에만). vercel 500 = 정상·의도된 상태(mock fallback). 로컬(localhost:3000)에선 정상 작동.
+- **★ "프로덕션 무변경 보장 = 머지해도 안전" 설계가 실제로 입증된 순간 (flip은 르르 별도)**
+
+**15. (b) 전 항목 검증 통과:**
+- 카카오 로그인→콜백(307)→users UPSERT(실 uuid 33deaf63, kakao, placeholder email)→진단 귀속(실 유저, mock-user-001 아님, 2건)→로그아웃(POST /diagnosis 303→GET /login)→게스트/mock 무회귀(세션없는 POST→mock-user-001 fallback).
+- logout-button 신규(로그인 시에만 노출, signOutAction). 배치는 임시(디자인 보존 — 르르 조정 여지).
+
+**중복 key 버그(seodaemun-sinchon)** = auth 무관 선재 버그(Step 9.5 mock 확장) → **별도 브랜치 `fix/mock-dup-neighborhood`**(neighborhoods.ts 중복 1개 삭제 + mock-calculator id dedup), W1-2와 분리.
+
+_본 § 신설: 2026-05-30 (REAL-API-W1-SUPABASE-AUTH (a) 실행 — #21+#23 카카오 vertical slice). ★ Phase B 한계 § 20번째 누적 = 12단계 진화 답습 + ㊧ Mismatch 15번째 영역 진화 NEW (명세 선행 산출물 허상) + ★ 사전 박힘 ~45% 실측 하향 정정 정수 NEW (마스터플랜 80% 과대평가 = "추정 vs 실측" 양방향 정직, §31 ~85% 상향 정확과 대비) + ★ R1 도메인별 mock 토글 분리 + 하위호환 fallback + ★ R2 getEffectiveUserId 호출자 3곳 의도적 변경 (W1-1 호출자 0변경 대비 = 실 유저 귀속 본질) + ★ 게스트 회귀 방어 2건 (SessionBridge INITIAL_SESSION no-op + client 컴포넌트 server-import 오염 차단) + ★ tsc exit 0 + ESLint 0 error + mock 모드 무변경 입증 (POST 200 / userId=mock-user-001 / login 200 / 라우트 3곳 외 0변경) + ★ DEFER 5종 (네이버 #22 / 게스트풀·라우트보호 #24 / auth-mapper YAGNI / 테스트 #135). 자동 머지 X, ISSUE Close X, 프로덕션 flip X = 르르 직접 처리._

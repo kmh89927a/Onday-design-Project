@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { diagnosisInputSchema } from "@/lib/validators/diagnosis";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { prisma } from "@/lib/db";
+import { getEffectiveUserId } from "@/lib/auth/session";
 
 const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
@@ -31,9 +32,12 @@ export async function POST(request: Request) {
         input.leisureCoordB ?? null,
       );
 
+      // ★ R2 — 로그인 유저면 실 Supabase id, 게스트·mock-auth 면 공용 fallback.
+      const userId = await getEffectiveUserId();
+
       const diagnosis = await prisma.diagnosis.create({
         data: {
-          userId: "mock-user-001",
+          userId,
           addressA: input.addressA,
           addressB: input.addressB ?? null,
           filters: JSON.stringify(input.filters),
