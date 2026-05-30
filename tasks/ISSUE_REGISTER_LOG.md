@@ -1805,3 +1805,18 @@ _본 § 신설: 2026-05-30 (REAL-API-W1-SUPABASE-DB 실행 — #2 INFRA-002 in-m
 **중복 key 버그(seodaemun-sinchon)** = auth 무관 선재 버그(Step 9.5 mock 확장) → **별도 브랜치 `fix/mock-dup-neighborhood`**(neighborhoods.ts 중복 1개 삭제 + mock-calculator id dedup), W1-2와 분리.
 
 _본 § 신설: 2026-05-30 (REAL-API-W1-SUPABASE-AUTH (a) 실행 — #21+#23 카카오 vertical slice). ★ Phase B 한계 § 20번째 누적 = 12단계 진화 답습 + ㊧ Mismatch 15번째 영역 진화 NEW (명세 선행 산출물 허상) + ★ 사전 박힘 ~45% 실측 하향 정정 정수 NEW (마스터플랜 80% 과대평가 = "추정 vs 실측" 양방향 정직, §31 ~85% 상향 정확과 대비) + ★ R1 도메인별 mock 토글 분리 + 하위호환 fallback + ★ R2 getEffectiveUserId 호출자 3곳 의도적 변경 (W1-1 호출자 0변경 대비 = 실 유저 귀속 본질) + ★ 게스트 회귀 방어 2건 (SessionBridge INITIAL_SESSION no-op + client 컴포넌트 server-import 오염 차단) + ★ tsc exit 0 + ESLint 0 error + mock 모드 무변경 입증 (POST 200 / userId=mock-user-001 / login 200 / 라우트 3곳 외 0변경) + ★ DEFER 5종 (네이버 #22 / 게스트풀·라우트보호 #24 / auth-mapper YAGNI / 테스트 #135). 자동 머지 X, ISSUE Close X, 프로덕션 flip X = 르르 직접 처리._
+
+---
+
+## 33. fix/mock-dup-neighborhood — 중복 동네 id 제거 + dedup 가드 (2026-05-30 신설 NEW)
+
+**브랜치:** `fix/mock-dup-neighborhood` (auth 무관 선재 버그, W1-2와 분리)
+**발견:** §32 W1-2 (b) 실 검증 중 결과 페이지에서 React 중복 key 경고 (`seodaemun-sinchon`).
+
+- **원인:** `src/mocks/neighborhoods.ts` 에 `id: "seodaemun-sinchon"`(신촌동/서대문구) 항목이 2개 — Step 9.5 서울 동네 12→22 확장 때 가격만 다르게 중복 삽입. mock-calculator 가 dedup 없이 top 8 slice → 중복 id 가 후보/지도 마커 key 충돌.
+- **(A) 데이터:** 중복 항목 1개 삭제(avgPrice 75000짜리, 배열 마지막). 전체 중복 id 0 확인.
+- **(B) 방어:** `mock-calculator.ts` 에 id 기준 dedup 가드(`new Map(c.id→c)`) 추가 → 데이터에 또 중복 생겨도 안전.
+- **검증:** tsc 0 / 인코딩 0 / 실 API 진단 후보 8개 중복 id 0.
+- **★ "auth 무관 선재 버그 분리 처리" 정수 = W1-2 검증이 부수적으로 잡아낸 데이터 버그 (스코프 분리 정직)** — auth PR 에 안 섞고 별도 브랜치.
+
+_본 § 신설: 2026-05-30 (fix/mock-dup-neighborhood — neighborhoods.ts 중복 동네 1개 삭제 + mock-calculator id dedup 가드. §32 W1-2 (b) 실 검증 중 발견된 auth 무관 선재 버그(Step 9.5 mock 확장 잔재) → 스코프 분리 별도 브랜치. tsc 0 / 후보 중복 id 0. 자동 머지 X._

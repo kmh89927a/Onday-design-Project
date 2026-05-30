@@ -541,18 +541,6 @@ export const MOCK_NEIGHBORHOODS: Neighborhood[] = [
     listingsCount: 152,
     avgArea: 24,
   },
-  {
-    id: "seodaemun-sinchon",
-    dong: "신촌동",
-    gu: "서대문구",
-    coordinate: { lat: 37.5598, lng: 126.9425 },
-    avgPrice: 75000,
-    safetyGrade: "B",
-    facilities: { convenience: 26, cafes: 52, schools: 5 },
-    lines: "2호선 신촌역 · 경의중앙선",
-    listingsCount: 168,
-    avgArea: 23,
-  },
 ];
 
 export const MOCK_ADDRESSES = [
