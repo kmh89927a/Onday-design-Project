@@ -37,6 +37,10 @@ import { SortControl } from "./sort-control";
 import { TimeChipOptions } from "./time-chip-options";
 import { TimeSlotSelector } from "./time-slot-selector";
 
+// ★ W2: production(USE_MOCK=false) = 통근 실 데이터 ODsay 대중교통.
+//   mock = Haversine 추정. 출처 배지를 모드에 맞춰 정직 표기.
+const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
+
 interface ResultContentProps {
   candidates: CandidateArea[];
   filters: DiagnosisFilters;
@@ -271,24 +275,38 @@ export function ResultContent({
         aria-label="진단 결과 데이터 출처"
         className="flex flex-wrap gap-s-2"
       >
+        {/* 안전 — 실 데이터(공공데이터)는 W3 야간안전. 현재는 mock. */}
         <DataSourceBadge
           kind="official"
           source="공공데이터포털"
           updatedAt="2026.04"
           tone="on-light"
         />
-        <DataSourceBadge
-          kind="aggregated"
-          source="카카오 모빌리티"
-          updatedAt="2026.04.01"
-          tone="on-light"
-        />
-        <DataSourceBadge
-          kind="estimate"
-          source="통근 추정"
-          updatedAt="—"
-          tone="on-light"
-        />
+        {IS_MOCK ? (
+          <>
+            {/* mock = Haversine 추정 (실 통근 데이터 미연동) */}
+            <DataSourceBadge
+              kind="aggregated"
+              source="카카오 모빌리티"
+              updatedAt="2026.04.01"
+              tone="on-light"
+            />
+            <DataSourceBadge
+              kind="estimate"
+              source="통근 추정"
+              updatedAt="—"
+              tone="on-light"
+            />
+          </>
+        ) : (
+          /* production = 실 ODsay 대중교통 (자차=카카오는 후속) */
+          <DataSourceBadge
+            kind="aggregated"
+            source="ODsay 대중교통"
+            updatedAt="실시간"
+            tone="on-light"
+          />
+        )}
       </section>
 
       <MapCanvas markers={markers} onMarkerClick={open} height={320} />

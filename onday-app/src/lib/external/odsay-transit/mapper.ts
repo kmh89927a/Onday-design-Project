@@ -1,0 +1,35 @@
+import type { CommuteInfo } from "@/lib/types";
+import type { OdsayTransitResponse } from "./types";
+import { OdsayTransitError } from "./types";
+
+/**
+ * ODsay 대중교통 길찾기 응답 → CommuteInfo (앱 모델 무변경 — R2 transit-only).
+ * - 추천 경로 result.path[0] 사용 (ODsay 정렬 = 최단/추천 우선).
+ * - transfers = (지하철+버스 탑승 횟수) − 1 (첫 탑승은 환승 아님).
+ * @throws OdsayTransitError 경로 없음 / 에러 응답.
+ */
+export function mapOdsayResponseToCommuteInfo(
+  res: OdsayTransitResponse,
+): CommuteInfo {
+  if (res.error) {
+    throw new OdsayTransitError(
+      `ODsay error: ${res.error.message ?? res.error.msg ?? "unknown"}`,
+      res.error.code,
+    );
+  }
+
+  const path = res.result?.path?.[0];
+  if (!path) {
+    throw new OdsayTransitError("ODsay: 대중교통 경로 없음");
+  }
+
+  const { totalTime, subwayTransitCount, busTransitCount } = path.info;
+  const transfers = Math.max(0, subwayTransitCount + busTransitCount - 1);
+
+  return {
+    time: totalTime,
+    mode: "transit",
+    transfers,
+    // totalWalk / payment 는 현재 CommuteInfo 미보유 — 정보 손실 수용 (차후 모델 확장 시).
+  } satisfies CommuteInfo;
+}

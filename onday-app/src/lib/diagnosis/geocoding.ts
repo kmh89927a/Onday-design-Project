@@ -14,7 +14,9 @@ import * as Sentry from "@sentry/nextjs";
 import type { Coordinate } from "@/lib/types";
 import type { GeocodeResult, GeocodedAddress } from "./geocoding-types";
 
-const KAKAO_LOCAL_API_URL = "https://dapi.kakao.com/v2/local/search/address.json";
+// ★ W2 정정: address.json(주소) → keyword.json(장소). 사용자가 치는 역/장소 이름
+//   ("강남역")은 주소 검색으론 0건 → 키워드(장소) 검색이어야 매칭됨.
+const KAKAO_LOCAL_API_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
 const METRO_AREA_PREFIXES = ["서울", "경기", "인천"];
 
 export async function geocodeAddress(query: string, apiKey: string): Promise<GeocodedAddress[]> {
@@ -45,13 +47,16 @@ export async function geocodeAddress(query: string, apiKey: string): Promise<Geo
 }
 
 function mapToGeocodedAddress(doc: GeocodeResult): GeocodedAddress {
-  const isMetroArea = METRO_AREA_PREFIXES.some((prefix) => doc.region1DepthName.startsWith(prefix));
+  const addressName = doc.address_name ?? "";
+  const isMetroArea = METRO_AREA_PREFIXES.some((prefix) =>
+    addressName.startsWith(prefix),
+  );
   const coord: Coordinate = { lat: parseFloat(doc.y), lng: parseFloat(doc.x) };
   return {
-    address: doc.addressName,
-    roadAddress: doc.roadAddressName,
+    address: doc.place_name, // 장소명 (사용자 친화 — 강남역)
+    roadAddress: doc.road_address_name,
     coord,
-    region: `${doc.region1DepthName} ${doc.region2DepthName} ${doc.region3DepthName}`.trim(),
+    region: addressName, // 지번 주소 (서울 강남구 역삼동)
     isMetroArea,
   } satisfies GeocodedAddress;
 }
