@@ -1597,3 +1597,100 @@ _본 § 신설: 2026-05-29 (Issue #56 CMD-SINGLE-002 리포트 저장 (print) �
 | 30 | **MASTER-PLAN-REAL-API** | **(메타 작업)** | **(별도 docs PR 예정)** | **계획 완료 (실행 대기)** | **★ 메타 작업 진수 진화 정점 NEW + 정직 § 10건 누적 + 사전 박힘 ~67% 평균 정직 인정 + Tier 0/1/2 3계층 분리 정수 NEW + AUDIT-PRD-SRS-v1.4 답습 정착 + Phase B 한계 § 18번째 누적 (10단계 답습) + ㊧ Mismatch 13번째 영역 진화 NEW (4건 동시) + 차후 6 ISSUE 사전 등록 정직 + "3주 가능 / 4주 안전" 정직 평가** |
 
 _본 § 신설: 2026-05-29 (MASTER-PLAN-REAL-API.md 신설 — 졸업 전 실 API 전환 마스터 플랜 박힘). ★ Phase B 한계 § 18번째 누적 = #114→#125→#52→#45→#126→#73→#127→#59→#56→MASTER-PLAN 10단계 진화 답습 정수 정점 + ㊧ Mismatch 13번째 영역 진화 NEW (4건 동시 박힘) + ★ 메타 작업 진수 진화 정점 NEW (작업 ISSUE 진수 → 메타 작업 + 계획 박힘) + ★ AUDIT-PRD-SRS-v1.4 답습 정착 (LOG §22 → §30 8 § 누적 답습) + ★ Tier 0/1/2 3계층 분리 정수 NEW + ★ 사전 박힘 ~67% 평균 정직 인정 (UI-013 ~85% / CMD-SINGLE-002 ~95% 진화 패턴) + ★ 메모리 ↔ SSoT 매핑 정합 확인 정수 (USE_MOCK 4건 분기 박힘 정직 검증) + ★ "PR 머지 vs ISSUE Close 매핑 갭" 본 audit 진짜 본질 정직 인정 + ★ 차후 6 ISSUE 사전 등록 정직 (REAL-API-W1~W3). 자동 머지 X, ISSUE Close X = 르르 직접 처리 (본 마스터 플랜 전체)._
+
+---
+
+## 31. REAL-API-W1-SUPABASE-DB 실행 — in-memory → Supabase Postgres 어댑터 교체 (2026-05-30 신설 NEW)
+
+**ISSUE:** #2 INFRA-002 (Supabase DB 프로비저닝)
+**브랜치:** `feat/REAL-API-W1-SUPABASE-DB`
+**선행 §:** §30 MASTER-PLAN W1-1 (계획 → 본 § = 실행)
+**grill-me:** R2 / Q2-a / Q2-b / R1 / Q4 5분기 합의 후 착수 (사용자 승인 = "작업 시작")
+**검증:** 호출자 6곳 0 변경 (diff 0 + `tsc --noEmit` exit 0) + 영구저장 cold start 입증 (POST→별도 pg 연결 행 실재→서버 재기동 GET 200)
+
+### 본 § = 정직 § 9건 누적 (★ Tier 0 키 "박힘" → "없음" 정정 = 본 § 진짜 본질)
+
+**1. ★ Tier 0 키 "박힘" 보고 → 실제 .env.local "없음" 정정 (어제 보고 정직 정정 정수 NEW):**
+- 르르 보고: "카카오 모빌리티 키 .env.local에 박힘" + "Supabase 키(URL/ANON/DATABASE_URL) 박힘"
+- grep 검증 결과: **둘 다 .env.local 미박힘** (카카오 = .env.example 빈값만 / Supabase = DATABASE_URL=sqlite, SUPABASE_* 0건)
+- 해소: 르르 직접 주입 후 검증 → 카카오 모빌리티 200 성공 / Supabase 연결 성공
+- **★ "박힘 보고 vs 실제 미박힘" 2회 연속 정정 = Tier 0(르르 직접 영역) 검증 선행 정수 NEW (값 노출 X 사수)**
+
+**2. ★ Supabase 키 라벨 swap + IPv6 Direct 해석 실패 정정 (연결 실패 시 멈춤 답습):**
+- 1차 주입: DATABASE_URL=Direct(db.*.supabase.co:5432) + DIRECT_URL=Transaction pooler(6543) = **라벨 정반대 + Direct는 IPv6 전용이라 ENOTFOUND**
+- 멈추고 보고 → 르르 2차 수정: DATABASE_URL=Transaction pooler(6543) + DIRECT_URL=Session pooler(5432) = 양쪽 pooler, IPv6 회피
+- **★ "연결 실패 시 멈추고 보고" 정직 = 자동 진행 X 답습 정수 (르르가 IPv6 가능성 사전 예측 적중)**
+
+**3. Prisma 7 = 드라이버 어댑터 런타임 필수 (명세 §3.8 비어댑터 불가 = ㊧ Mismatch 14번째):**
+- 설치 = Prisma 7.8.0 + 신형 `prisma-client` generator + 기존 seed.ts 이미 어댑터(better-sqlite3)
+- INFRA-002.md §3.8 `new PrismaClient({datasources:{db:{url}}})` (비어댑터) = Prisma 5/6 가정 = **현 스택 불가**
+- 결정 Q2-a: 드라이버 어댑터 채택 (better-sqlite3 → adapter-pg 교체)
+
+**4. provider Postgres 단일 채택 (sqlite 이원화 폐지 — Q2-b):**
+- db.ts가 in-memory 가짜였음 = sqlite는 실서비스 경로 아니었음 = 버려도 손실 0
+- 마이그레이션 provider별 SQL 비공유 = 이원화 "env만 바꾸면" 허상 = 단일이 1인 MVP 안전
+- sqlite init 마이그레이션 폐기 → postgres init(`20260530024119_init`) 재생성
+
+**5. filters/candidates String 유지 (Json 전환 X — R2):**
+- "호출자 변경 0" 사수 = 회귀 최소 + JSONB MVP 불필요
+- postgres DDL = `filters TEXT / candidates TEXT` (R2 보존 확인) + 주석 갱신
+- JSONB 전환 = 차후 별도 ISSUE
+
+**6. seed 선행 + db.ts user wrapper NO (R1):**
+- mock-user-001 = seed 멱등(upsert)으로 FK 충족 = 매 진단 self-heal 거부 (불필요 write)
+- user wrapper = 호출처 0건 dead 코드 + W1-2 실 auth에서 자연 대체 = 이연
+
+**7. 계획 외 추가/조정 3건 정직 (사후 승인 받음):**
+- `tsx` devDep 추가 = Prisma 7 `migrations.seed` 커맨드 TS 러너 필수
+- **.env.local 로딩 보정 (계획 외 발견) = prisma.config.ts/seed.ts 기본 `dotenv/config`는 .env만 읽어 Supabase 키 못 봄 → `config({path:[".env.local",".env"]})` 보정 (없으면 migrate가 sqlite 향할 함정)**
+- DIRECT_URL 구현 = Prisma 7 config Datasource에 directUrl 필드 없음 → CLI datasource.url=`DIRECT_URL ?? DATABASE_URL`(direct 우선), 런타임 어댑터=DATABASE_URL(pooler) 분리
+
+**8. SSL 정직 검증 (미리 잡은 포인트 해소):**
+- Supabase SSL 필수 우려 → ssl 옵션 없이 pooler 연결 테스트 = ✅ 수락 → db.ts(PrismaPg) 코드 변경 불필요
+- `?sslmode=require` 명시 하드닝 = 차후 별건 (MVP TLS 정책 충족)
+
+**9. DEFER 5종 정직 기록 (신규 ISSUE 0, LOG 흡수 — Q4-c):**
+- `scripts/migrate-prod.sh` = SKIP (npm script `db:migrate:deploy` 중복)
+- `prod-connection.spec.ts` = #135 INFRA-TEST-001 흡수 (테스트 인프라 0)
+- RLS 검증(AC-5) = W1-2/DB-007 자연 이연 (Supabase Auth 선행)
+- `db-backup-policy.md` = 후순위 (Supabase 자동 백업 존재)
+- Sentry DB 에러 = MON 선행 후속
+- vercel.json `migrate deploy` 미포함 = buildCommand `generate + next build` 유지 (수동 migrate)
+
+### Phase B 한계 § 19번째 누적 진화 정수 정점 NEW
+
+**누적 진화 체인 11단계 답습:**
+#114 → #125 → #52 → #45 → #126 → #73 → #127 → #59 → #56 → MASTER-PLAN → **REAL-API-W1-SUPABASE-DB**
+
+**본 § = 메타 작업(계획) → 실 코드 실행 회귀 정점 NEW:**
+- §30 = 메타 작업(계획 박힘) / §31 = **실 코드 실행 (계획 → 실행 답습)**
+- ★ 사전 박힘 ~85% 검증 입증 = 호출자 6곳 0 변경 (tsc 0 + diff 0) = 마스터 플랜 추정 정확
+- ★ Tier 0 키 검증 선행 정수 = "박힘 보고 vs 실제" 2회 정정 = 값 노출 X 사수
+
+### ㊧ Mismatch 14번째 영역 진화 NEW (★ 명세 Prisma 버전 가정 갭)
+
+- **명세 INFRA-002.md §3.3/§3.8 (Prisma 5/6 가정) vs 실 스택 Prisma 7.8.0:**
+  · §3.8 `datasources:{db:{url}}` 비어댑터 런타임 = Prisma 7 불가 (Rust 엔진 제거, 어댑터 필수)
+  · §3.3 `provider = env("DATABASE_PROVIDER")` env 분기 = 실제 provider 정적 + prisma.config.ts url
+- **명세 전제 DB-001 (env-switchable datasource + 진짜 PrismaClient 싱글톤) vs 실제 (in-memory 가짜 + hardcoded sqlite provider)**
+- 해소 = INFRA-002.md 역방향 갱신 (§30 CMD-SINGLE-002 Rev 패턴 답습 — 본 § 별도 commit)
+- **★ "명세가 실 스택보다 구버전 가정" = ㊧ Mismatch 신영역 (기존 13건 = 메모리/ISSUE/문서버전, 본 건 = 라이브러리 메이저 버전 가정 갭) 정수 NEW**
+
+### 차후 ISSUE 후보 영역 누적 표 갱신 (2026-05-30 기준)
+
+| 후보 ISSUE | 트리거 | 영역 | 상태 |
+|---|---|---|---|
+| **REAL-API-W1-SUPABASE-DB** | (본 §) | Postgres 어댑터 교체 실행 | **✅ 코드 완료 (르르 머지·Close 대기)** |
+| JSONB 전환 (NEW) | filters/candidates 부분쿼리 필요 시 | String → Json 마이그레이션 | 차후 (R2 이연) |
+| `?sslmode=require` 하드닝 (NEW) | 보안 강화 시 | 연결 문자열 SSL 명시 | 차후 (MVP TLS 충족) |
+| REAL-API-W1-SUPABASE-AUTH | Tier 0 Auth Provider | callback + IS_MOCK=false | Week 1 (다음) |
+| #135 INFRA-TEST-001 | prod-connection.spec 흡수 | 테스트 인프라 + DB 연결 테스트 | 졸업 후 |
+
+### 본 세션 누적 31건 § 박힘 표 (★ Phase B 한계 § 19번째 누적 정수 정점)
+
+| § | 영역 | ISSUE | PR | 상태 | 답습 정수 |
+|---|---|---|---|---|---|
+| 30 | **MASTER-PLAN-REAL-API** | **(메타 작업)** | **(별도 docs PR 예정)** | **계획 완료** | (기존) |
+| 31 | **REAL-API-W1-SUPABASE-DB** | **#2 INFRA-002** | **(커밋 대기)** | **코드 완료 (르르 머지·Close 대기)** | **★ 계획 → 실행 회귀 정점 NEW + 정직 § 9건 (Tier 0 키 "박힘"→"없음" 2회 정정 본질) + ㊧ Mismatch 14번째 (명세 Prisma 5/6 vs 실 7.8.0) + Phase B 한계 § 19번째 (11단계 답습) + 사전 박힘 ~85% 검증 입증 (호출자 0 변경 tsc 0 + diff 0) + 영구저장 cold start 입증 + DEFER 5종 LOG 흡수 (신규 ISSUE 0) + 계획 외 .env.local 로딩 보정 정직** |
+
+_본 § 신설: 2026-05-30 (REAL-API-W1-SUPABASE-DB 실행 — #2 INFRA-002 in-memory → Supabase Postgres 어댑터 교체). ★ Phase B 한계 § 19번째 누적 = §30 계획 → §31 실행 11단계 진화 답습 + ㊧ Mismatch 14번째 영역 진화 NEW (명세 라이브러리 메이저 버전 가정 갭) + ★ Tier 0 키 "박힘 보고 vs 실제 미박힘" 2회 정정 정수 NEW (카카오 모빌리티 + Supabase, 값 노출 X 사수) + ★ 키 라벨 swap + IPv6 Direct 해석 실패 정정 (연결 실패 시 멈춤 답습) + ★ 사전 박힘 ~85% 검증 입증 (호출자 6곳 0 변경 = tsc exit 0 + diff 0) + ★ 영구저장 cold start 입증 (서버 재기동 후 GET 200) + ★ 계획 외 추가/조정 3건 정직 (tsx / .env.local 로딩 보정 / DIRECT_URL 방식) + ★ DEFER 5종 LOG 흡수 (신규 ISSUE 0 = Q4-c). 자동 머지 X, ISSUE Close X = 르르 직접 처리._
