@@ -12,6 +12,20 @@ import { splitForPreview } from "@/features/diagnosis/mock-calculator";
 import { buildReportStats } from "@/features/share/preview-stats";
 import type { CandidateArea } from "@/lib/types";
 
+// ★ W2: production = 통근 실 ODsay 대중교통 / mock = Haversine 추정.
+//   개인(result-content) ↔ 공유(본 뷰) 출처 배지 일관성 사수.
+const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
+const SOURCE_BADGES = IS_MOCK
+  ? [
+      { kind: "official" as const, source: "공공데이터포털", updatedAt: "2026.04" },
+      { kind: "aggregated" as const, source: "카카오 모빌리티", updatedAt: "2026.04.01" },
+      { kind: "estimate" as const, source: "통근 추정", updatedAt: "—" },
+    ]
+  : [
+      { kind: "official" as const, source: "공공데이터포털", updatedAt: "2026.04" },
+      { kind: "aggregated" as const, source: "ODsay 대중교통", updatedAt: "실시간" },
+    ];
+
 interface ShareData {
   uniqueUrl: string;
   diagnosisId: string;
@@ -72,23 +86,7 @@ export function ShareReportView({ data }: ShareReportViewProps) {
               후보 동네 {total}곳이 도착했어요
             </>
           }
-          badges={[
-            {
-              kind: "official",
-              source: "공공데이터포털",
-              updatedAt: "2026.04",
-            },
-            {
-              kind: "aggregated",
-              source: "카카오 모빌리티",
-              updatedAt: "2026.04.01",
-            },
-            {
-              kind: "estimate",
-              source: "통근 추정",
-              updatedAt: "—",
-            },
-          ]}
+          badges={SOURCE_BADGES}
         />
       </div>
 
