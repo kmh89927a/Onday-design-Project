@@ -1,0 +1,553 @@
+{
+  "_meta": {
+    "schema": "onday-safety-index@2",
+    "description": "수도권 종합 야간안전 지수 — 시군구 단위. 범죄(행안부 지역안전지수)×0.7 + CCTV(밀집도 정규화)×0.3.",
+    "sources": [
+      {
+        "key": "crime",
+        "name": "행정안전부 지역안전지수 (범죄 분야)",
+        "dataset": "data.go.kr/15069240",
+        "year": 2024
+      },
+      {
+        "key": "cctv",
+        "name": "자치구·시군 CCTV 설치현황",
+        "dataset": "서울 OA-2734(2025.12.31) / 인천 15104287 / 경기데이터드림 CCTV현황",
+        "year": 2025
+      }
+    ],
+    "crimeGrade": "행안부 지역안전지수 범죄 등급. 1=가장 안전 … 5=가장 위험 (정부 산출, 인구·면적 정규화 완료). null=미수집.",
+    "cctvPerKm2": "시군구 면적(km²)당 방범 CCTV 대수. 클수록 안전 가점. null=미수집.",
+    "completion": "한 시군구는 crimeGrade·cctvPerKm2 두 값이 모두 차야 '완성'(종합 등급 산출). 하나라도 null 이면 no_data.",
+    "regionCount": {
+      "seoul": 25,
+      "incheon": 10,
+      "gyeonggi": 31,
+      "total": 66
+    },
+    "progress": "2026-05-31: 수도권 65/66 완성 (서울25 OA-2734 / 인천10 15104287 / 경기30 경기데이터드림). 수원시는 표준데이터셋 미제출로 no_data.",
+    "note": "★ 르르가 채울 데이터. SAFETY_INDEX_DATA_GUIDE.md 참조. _cctvSource/_crimeSource 는 출처 추적(정직성)."
+  },
+  "entries": [
+    {
+      "sigungu": "종로구",
+      "region1": "서울특별시",
+      "crimeGrade": 5,
+      "cctvPerKm2": 131,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "중구",
+      "region1": "서울특별시",
+      "crimeGrade": 5,
+      "cctvPerKm2": 344,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "용산구",
+      "region1": "서울특별시",
+      "crimeGrade": 5,
+      "cctvPerKm2": 174,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "성동구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 284,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "광진구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 286,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "동대문구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 303,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "중랑구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 300,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "성북구",
+      "region1": "서울특별시",
+      "crimeGrade": 1,
+      "cctvPerKm2": 216,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "강북구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 195,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "도봉구",
+      "region1": "서울특별시",
+      "crimeGrade": 1,
+      "cctvPerKm2": 150,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "노원구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 120,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "은평구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 198,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "서대문구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 245,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "마포구",
+      "region1": "서울특별시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 170,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "양천구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 291,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "강서구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 111,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "구로구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 292,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "금천구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 307,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "영등포구",
+      "region1": "서울특별시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 222,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "동작구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 256,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "관악구",
+      "region1": "서울특별시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 244,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "서초구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 136,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "강남구",
+      "region1": "서울특별시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 218,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "송파구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 148,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "강동구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 200,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "인천 중구",
+      "region1": "인천광역시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 11,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 동구",
+      "region1": "인천광역시",
+      "crimeGrade": 1,
+      "cctvPerKm2": 142,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 미추홀구",
+      "region1": "인천광역시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 133,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 연수구",
+      "region1": "인천광역시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 39,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 남동구",
+      "region1": "인천광역시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 57,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 부평구",
+      "region1": "인천광역시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 96,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 계양구",
+      "region1": "인천광역시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 61,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 서구",
+      "region1": "인천광역시",
+      "crimeGrade": 1,
+      "cctvPerKm2": 35,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 강화군",
+      "region1": "인천광역시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 5,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "인천 옹진군",
+      "region1": "인천광역시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 3,
+      "_crimeSource": "행안부2025지역안전지수:인천 □구/□군 범죄분야",
+      "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
+    },
+    {
+      "sigungu": "성남시",
+      "region1": "경기도",
+      "crimeGrade": 4,
+      "cctvPerKm2": 21,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "의정부시",
+      "region1": "경기도",
+      "crimeGrade": 4,
+      "cctvPerKm2": 20,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "안양시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 28,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "부천시",
+      "region1": "경기도",
+      "crimeGrade": 5,
+      "cctvPerKm2": 40,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "광명시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 21,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "평택시",
+      "region1": "경기도",
+      "crimeGrade": 5,
+      "cctvPerKm2": 13,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "동두천시",
+      "region1": "경기도",
+      "crimeGrade": 5,
+      "cctvPerKm2": 6,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "안산시",
+      "region1": "경기도",
+      "crimeGrade": 5,
+      "cctvPerKm2": 19,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "고양시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 8,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "과천시",
+      "region1": "경기도",
+      "crimeGrade": 2,
+      "cctvPerKm2": 23,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "구리시",
+      "region1": "경기도",
+      "crimeGrade": 4,
+      "cctvPerKm2": 40,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "남양주시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 5,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "오산시",
+      "region1": "경기도",
+      "crimeGrade": 4,
+      "cctvPerKm2": 15,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "시흥시",
+      "region1": "경기도",
+      "crimeGrade": 4,
+      "cctvPerKm2": 14,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "군포시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 47,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "의왕시",
+      "region1": "경기도",
+      "crimeGrade": 2,
+      "cctvPerKm2": 31,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "하남시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 11,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "용인시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 5,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "파주시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 6,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "이천시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 9,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "안성시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 6,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "김포시",
+      "region1": "경기도",
+      "crimeGrade": 4,
+      "cctvPerKm2": 1,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "화성시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 36,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "광주시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 4,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "양주시",
+      "region1": "경기도",
+      "crimeGrade": 2,
+      "cctvPerKm2": 5,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "포천시",
+      "region1": "경기도",
+      "crimeGrade": 3,
+      "cctvPerKm2": 2,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "여주시",
+      "region1": "경기도",
+      "crimeGrade": 2,
+      "cctvPerKm2": 1,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "연천군",
+      "region1": "경기도",
+      "crimeGrade": 5,
+      "cctvPerKm2": 1,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "가평군",
+      "region1": "경기도",
+      "crimeGrade": 5,
+      "cctvPerKm2": 1,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    },
+    {
+      "sigungu": "양평군",
+      "region1": "경기도",
+      "crimeGrade": 4,
+      "cctvPerKm2": 3,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "경기데이터드림 CCTV현황(제공표준) 시군별 행집계 ÷ 표준면적"
+    }
+  ]
+}

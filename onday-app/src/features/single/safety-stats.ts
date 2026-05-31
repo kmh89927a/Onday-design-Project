@@ -1,7 +1,9 @@
 import type { SafetyGrade } from "@/lib/types";
 
-// wiki/concepts/single-mode.md 야간 안전 등급 (정적 JSON 미수집 → grade 기반 deterministic)
-// single.html 시각 truth와 동일 값
+// 야간 안전 "표시값" 매핑 — 등급(A~D) → 화면용 수치/문구 (grade-key 보존, D-2 합의).
+//   ★ 등급 소스는 #57 getSafetyByGu(safety-index.json 종합지수)로 이관됨.
+//   본 함수들은 그 등급을 받아 표시값으로 변환하는 역할만 담당 (single-result-view 에서 연결).
+//   범죄율·bar% 수치는 single.html 시각 truth 기준 deterministic (실 건수 표기는 #59 UI에서 확장 가능).
 const NIGHT_CRIME_RATE: Record<SafetyGrade, number> = {
   A: 0.84,
   B: 1.32,
