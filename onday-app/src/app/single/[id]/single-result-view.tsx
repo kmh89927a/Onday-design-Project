@@ -19,6 +19,7 @@ import {
   getNightGradeLabel,
   getRadiusSub,
 } from "@/features/single/safety-stats";
+import { getSafetyByGu } from "@/features/single/safety-index";
 import type { CandidateArea, SafetyGrade } from "@/lib/types";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
@@ -29,10 +30,14 @@ interface SingleResultViewProps {
   id: string;
 }
 
-function fallbackGrade(c: CandidateArea): SafetyGrade {
-  if (c.safetyGrade) return c.safetyGrade;
-  const sum = c.id.split("").reduce((a, ch) => a + ch.charCodeAt(0), 0);
-  return (["A", "B", "C", "D"] as const)[sum % 4];
+// #57 — 종합 야간안전 지수(getSafetyByGu)가 등급 소스.
+//   ★ 랜덤 id-해시 날조 제거 (실 데이터 전환 의미 정면 위배 방지).
+//   no_data(비수도권 or 미수집 시군구)는 등급 날조 대신 전환 브리지(기존 mock grade, 랜덤 아님).
+//   TODO(#59 UI-013): no_data → "데이터 준비중" 배지/회색 처리로 표현 (표현은 #59 범위).
+function resolveGrade(c: CandidateArea): SafetyGrade {
+  const safety = getSafetyByGu(c.gu);
+  if (safety.status === "ok") return safety.grade;
+  return c.safetyGrade ?? "C";
 }
 
 function priceText(c: CandidateArea): string {
@@ -51,7 +56,7 @@ function sortByLayer(
   switch (layer) {
     case "safety":
       return arr.sort(
-        (a, b) => GRADE_ORDER[fallbackGrade(a)] - GRADE_ORDER[fallbackGrade(b)],
+        (a, b) => GRADE_ORDER[resolveGrade(a)] - GRADE_ORDER[resolveGrade(b)],
       );
     case "convenience":
       return arr.sort(
@@ -68,7 +73,7 @@ function sortByLayer(
 function buildLayerStat(c: CandidateArea, layer: SingleLayer) {
   switch (layer) {
     case "safety": {
-      const grade = fallbackGrade(c);
+      const grade = resolveGrade(c);
       return { label: "범죄", value: `${getNightCrimeRate(grade)}건` };
     }
     case "convenience":
@@ -190,7 +195,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
 
             <section aria-label="후보 동네" className="space-y-s-3">
               {sorted.map((c) => {
-                const grade = fallbackGrade(c);
+                const grade = resolveGrade(c);
                 return (
                   <SafetyCard
                     key={c.id}

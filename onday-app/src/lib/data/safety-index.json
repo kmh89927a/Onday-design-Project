@@ -1,0 +1,233 @@
+{
+  "_meta": {
+    "schema": "onday-safety-index@2",
+    "description": "수도권 종합 야간안전 지수 — 시군구 단위. 범죄(행안부 지역안전지수)×0.7 + CCTV(밀집도 정규화)×0.3.",
+    "sources": [
+      {
+        "key": "crime",
+        "name": "행정안전부 지역안전지수 (범죄 분야)",
+        "dataset": "data.go.kr/15069240",
+        "year": 2024
+      },
+      {
+        "key": "cctv",
+        "name": "자치구·시군 CCTV 설치현황",
+        "dataset": "서울 OA-2734(2025.12.31) / 경기데이터드림 / 인천 15104287",
+        "year": 2025
+      }
+    ],
+    "crimeGrade": "행안부 지역안전지수 범죄 등급. 1=가장 안전 … 5=가장 위험 (정부 산출, 인구·면적 정규화 완료). null=미수집.",
+    "cctvPerKm2": "시군구 면적(km²)당 방범 CCTV 대수. 클수록 안전 가점. null=미수집.",
+    "completion": "한 시군구는 crimeGrade·cctvPerKm2 두 값이 모두 차야 '완성'(종합 등급 산출). 하나라도 null 이면 no_data.",
+    "regionCount": {
+      "seoul": 25,
+      "incheon": 10,
+      "gyeonggi": 31,
+      "total": 66
+    },
+    "progress": "2026-05-31: 서울 25구 완성(범죄=행안부2025 hwpx + CCTV=OA-2734 2025.12.31 총계). 인천10·경기31 미수집.",
+    "note": "★ 르르가 채울 데이터. SAFETY_INDEX_DATA_GUIDE.md 참조. _cctvSource/_crimeSource 는 출처 추적(정직성)."
+  },
+  "entries": [
+    {
+      "sigungu": "종로구",
+      "region1": "서울특별시",
+      "crimeGrade": 5,
+      "cctvPerKm2": 131,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "중구",
+      "region1": "서울특별시",
+      "crimeGrade": 5,
+      "cctvPerKm2": 344,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "용산구",
+      "region1": "서울특별시",
+      "crimeGrade": 5,
+      "cctvPerKm2": 174,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "성동구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 284,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "광진구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 286,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "동대문구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 303,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "중랑구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 300,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "성북구",
+      "region1": "서울특별시",
+      "crimeGrade": 1,
+      "cctvPerKm2": 216,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "강북구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 195,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "도봉구",
+      "region1": "서울특별시",
+      "crimeGrade": 1,
+      "cctvPerKm2": 150,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "노원구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 120,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "은평구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 198,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "서대문구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 245,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "마포구",
+      "region1": "서울특별시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 170,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "양천구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 291,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "강서구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 111,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "구로구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 292,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "금천구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 307,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "영등포구",
+      "region1": "서울특별시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 222,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "동작구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 256,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "관악구",
+      "region1": "서울특별시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 244,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "서초구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 136,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "강남구",
+      "region1": "서울특별시",
+      "crimeGrade": 4,
+      "cctvPerKm2": 218,
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적",
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야"
+    },
+    {
+      "sigungu": "송파구",
+      "region1": "서울특별시",
+      "crimeGrade": 3,
+      "cctvPerKm2": 148,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    },
+    {
+      "sigungu": "강동구",
+      "region1": "서울특별시",
+      "crimeGrade": 2,
+      "cctvPerKm2": 200,
+      "_crimeSource": "행안부2025지역안전지수:□구표 범죄분야",
+      "_cctvSource": "서울열린데이터광장 OA-2734 (2025.12.31 기준 총계) ÷ 위키면적"
+    }
+  ]
+}

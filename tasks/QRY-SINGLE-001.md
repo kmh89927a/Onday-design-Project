@@ -16,6 +16,21 @@ assignees: []
 
 ### ⚠️ Rev 1.1: DB-009 의존성 제거, 정적 JSON 에셋 기반으로 변경. DB 호출 0건.
 
+### ⚠️ Rev 1.2 (2026-05-31, #57 W3-1 착수): 명세 역방향 정합 — 현실에 맞게 명세 갱신 (코드가 SSoT)
+
+Rev 1.1 의 전제(동단위 crime-stats.json + 좌표 반경검색)가 데이터 가용성 실측 후 변경됨. 코드를 명세에 억지로 맞추지 않고, 명세를 현실로 갱신. ★ ㊧ Mismatch 5건은 `ISSUE_REGISTER_LOG.md` 에 기록.
+
+| 항목 | Rev 1.1 (구) | Rev 1.2 (신) | 사유 |
+|---|---|---|---|
+| 조회 함수 | `getNightSafetyGrade(coord)` 좌표 반경 1km 검색 | `getSafetyByGu(gu)` 시군구 룩업 | 동단위 데이터 미수집 → 좌표 반경검색 물리적 불가 |
+| 데이터 해상도 | 동(dong) 단위 `crime-stats.json` + `nightIncidentRate` | 시군구 단위 `safety-index.json` (행안부 등급 + CCTV) | 동단위 수집 졸업 전 불가, 시군구는 공공데이터 즉시 가용 |
+| 안전 정의 | 야간(22~06시) 범죄 발생건수 | **종합 안전지수** = 범죄(행안부 지역안전지수)×0.7 + CCTV 밀집도×0.3 | 야간 전용 공개통계 부재 + "종합" 요구 |
+| 커버리지(AC-2) | 동 1,234개 중 90% | **수도권 66 시군구 100%** (서울25+인천10+경기31) | 측정 단위 동→시군구. CI `check:coverage` 기준 변경 |
+| 비수도권(AC-4) | `'D'` + "데이터 없음" | `{grade:null, status:"no_data"}` ("데이터 없음", **'D' 아님**) | 'D'(실제 위험)과 데이터 없음 혼동 = 정직성 위반 |
+| 경기 일반구 | (명시 없음) | 시 단위 타협 ("성남시 분당구"→"성남시"). 정규화 함수로 추후 경찰서 단위 세분화 | 행안부/CCTV가 경기를 시 단위 제공 |
+
+**산출물 (Rev 1.2):** `src/lib/data/safety-index.json`(신규, 위치 변경 public→src/lib/data), `src/features/single/safety-index.ts`(`getSafetyByGu`/`normalizeGu`), `scripts/check-coverage.ts`(기준 변경). `safety-stats.ts` 는 보존(표시 함수 grade-key 유지, 등급 소스만 교체). **UI 표현(no_data 배지/회색)은 #59 UI-013 분리.** USE_MOCK=true 유지, 정적 import (Vercel timeout 무관).
+
 ---
 
 ## 2. 🔗 References (Spec & Context)

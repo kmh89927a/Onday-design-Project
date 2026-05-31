@@ -1902,3 +1902,38 @@ _본 § 신설: 2026-05-30 (fix/mock-dup-neighborhood — neighborhoods.ts 중�
 | 34 | **REAL-API-W2-ODSAY-TRANSIT** | **#27+#30+#33** | **(커밋 대기)** | **코드+(b) 완료** | **★ ㊧ Mismatch 16번째 (SRS "카카오=대중교통" 사실오류) + B2 아키텍처(ODsay CORS→클라 오케스트레이션) + odsay 신규 모듈 + ScoringEngine 추출(#27) + geocode 잠복버그 수정(keyword.json) + 배지 mode-aware + (b) 실 ODsay 검증(왕십리 22분 transit) + Tier 0 IP 유료 정직 + what-if 후속 분리 + 사전박힘 ~50% 실측** |
 
 _본 § 신설: 2026-05-30 (REAL-API-W2-ODSAY-TRANSIT — 대중교통 실 통근시간). ★ ㊧ Mismatch 16번째 = SRS EXT-01 "카카오 모빌리티=대중교통" 사실오류(실제 car 전용) → 대중교통=ODsay 신규 모듈 + SSoT 역방향 갱신 + ★ B2 아키텍처(ODsay CORS 차단→클라 Haversine 사전필터 + /api/commute 프록시 Promise.all, 함수당 1호출=10초 무관) + ★ odsay-transit 신규(types/client/mapper/index) + ScoringEngine 추출(scoring.ts, #27) + ★ geocode 이중 잠복버그 수정(address.json→keyword.json + camelCase→snake_case, production 첫 실행에서 드러남) + ★ 출처 배지 mode-aware(개인/공유 ODsay 대중교통) + ★ (b) 실 검증 통과(geocode→ODsay 35분 transit→실유저 귀속 저장) + ★ Tier 0 ODsay Server IP 화이트리스트 = Vercel 유동IP 유료 정직 플래그 + ★ what-if 불일치 후속 분리(REAL-API-W2-WHATIF-ODSAY) + ★ 자차 후속(REAL-API-W2B-CAR-COMMUTE, REQ-FUNC-004 나머지) + ★ 사전박힘 ~50% 실측(마스터플랜 70/60% 과대). 자동 머지 X, ISSUE Close X, 프로덕션 flip X._
+
+
+## 29. QRY-SINGLE-001 #57 — 종합 야간안전 지수 (수도권 시군구) + ㊧ Mismatch 5건 (2026-05-31 신설 NEW)
+
+**ISSUE:** [#57 QRY-SINGLE-001 야간 안전 등급 (A~D)](https://github.com/kmh89927a/Onday-design-Project/issues/57) — W3-1.
+**브랜치:** `feat/REAL-API-W3-NIGHT-SAFETY-JSON`. 자동 머지 X, ISSUE Close X.
+
+방향: 종합 안전지수(범죄 행안부 ×0.7 + CCTV ×0.3) + 수도권 66 시군구(서울25·인천10·경기31). 경기 일반구=시 단위 타협. grill-me C/D/E 분기 확정 후 착수.
+
+### ㊧ Mismatch (명세 QRY-SINGLE-001 Rev 1.1 vs 현실) — 5건 정직 기록
+
+| # | 명세(Rev 1.1) "있다" 전제 | 실측 현실 | 처리 |
+|---|---|---|---|
+| ㊧a | `getNightSafetyGrade(coord)` 좌표 반경 1km 검색 | 동단위 데이터 미수집 → 반경검색 물리적 불가 | `getSafetyByGu(gu)` 구 룩업으로 대체. 명세 Rev 1.2 갱신 (역방향 정합) |
+| ㊧b | `crime-stats.json` 동(dong) 단위 + `nightIncidentRate` | 12구 mock dict + `incidents_per_1000`, **import 0건(dead)** | 폐기 → `src/lib/data/safety-index.json`(시군구, 신규) |
+| ㊧c | 선행 CMD-SINGLE-001 이 `getNearbyCrimeStats`/`isWithinRadius`/`static-data` 제공 | `src/lib/single-mode/` 디렉토리·함수 **전무** | 선행 산출물 가정 폐기. 구 룩업은 선행 불필요 (자립) |
+| ㊧d | 수도권 90% 커버리지 = 동 1,234개 기준 + CI | 동단위 졸업 전 불가, 시군구는 즉시 가용 | AC-2 = 수도권 66 시군구 100%로 갱신. `check:coverage` 기준 변경 |
+| ㊧e | 비수도권 → `'D'` + "데이터 없음" | 'D'(실제 위험) ↔ 데이터 없음 혼동 = 정직성 위반 | `{grade:null, status:"no_data"}`. + ★ `single-result-view.tsx` 랜덤 `fallbackGrade`(id해시%4) 날조 **제거** |
+
+### 핵심 결정 (grill-me 합의)
+- **C**: 지표 2개 (범죄+CCTV). 범죄=행안부 지역안전지수 등급(정규화 완료). 여성안심은 follow-up.
+- **D**: `crime-stats.json` 폐기 + `safety-index.json` 신규(src/lib/data/). `safety-stats.ts` 보존(표시 함수 grade-key, 등급 소스만 getSafetyByGu로 교체). couple 모드 scoring.ts safetyBonus = neighborhoods.ts hardcoded grade 계속 사용 → **영향 0 확인**.
+- **E**: 명세 Rev 1.2 역방향 정합. UI 표현(no_data 배지/회색) = #59 UI-013 분리. 본 #57 = 데이터/로직만.
+
+### 산출물
+`safety-index.json`(스키마+서울 8행 샘플, NFC), `safety-index.ts`(getSafetyByGu/normalizeGu + NFC 방어), `check-coverage.ts`(66 시군구 검증 + NFC), `package.json`(check:coverage 1줄 추가), QRY-SINGLE-001 Rev 1.2, `SAFETY_INDEX_DATA_GUIDE.md`(르르용), 본 § 29. **데이터 66행 = 르르 수동 정리(서울부터 점진).**
+
+### 검증 통과
+`tsc --noEmit` 0 / ESLint 0 / 인코딩 깨짐 0 / `check:coverage` 8-66=12.1% (점진 채움 정상, exit 1) / getSafetyByGu 단위검증(NFC·NFD·일반구 정규화·비수도권 no_data 전부 통과).
+
+### ⚠️ 자기 정직 (오진 정정 2건)
+- (1) 착수 초기 package.json 을 `"build":"next dev"` + test:jest 15중복으로 **오인하고 Edit 시도→실패** (실제 정상 `"build":"next build"`). 환각. → check:coverage 1줄만 추가. 손상 보고 철회.
+- (2) check:coverage 첫 실행이 무출력이라 NFC/NFD 불일치로 의심했으나, 실측 결과 JSON·EXPECTED 모두 처음부터 NFC 일치(코드포인트 동일)였고 스크립트도 정상이었음(8/66). NFC 정규화 코드는 르르의 향후 NFD 입력 대비 **안전장치로 유지**(불필요했던 게 아니라 예방).
+
+_본 § 신설: 2026-05-31 (Issue #57 W3-1 착수). ★ 명세 역방향 정합 정수 답습 (㊧ Mismatch 5건 동시 = 최다) + Phase B 한계 § 답습 + grill-me C/D/E 분기 확정 + 사용자 "데이터 정직성" 강조(비수도권 'D' 금지·랜덤 날조 제거 ✅✅) 반영. 자동 머지 X, ISSUE Close X (르르 직접)._
