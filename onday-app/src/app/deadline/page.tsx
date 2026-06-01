@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 import { DDayCounter } from "@/components/deadline/dday-counter";
+import { ListingCard } from "@/components/deadline/listing-card";
 import { MiniCalendar } from "@/components/deadline/mini-calendar";
 import { TimelineStep } from "@/components/deadline/timeline-step";
 import { AppHeader } from "@/components/layout/app-header";
+import { MapCanvas } from "@/components/map/map-canvas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +19,9 @@ import {
   deadlineUrgency,
   formatTargetDate,
 } from "@/features/deadline/timeline-builder";
+import { markerLabel } from "@/features/diagnosis/result-utils";
+import { latLngToPixel } from "@/lib/coordinate-transform";
+import { buildMockListings } from "@/lib/mocks/deadline/listings";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
 
@@ -48,6 +53,7 @@ export default function DeadlinePage() {
   const router = useRouter();
   const deadlineDate = useDiagnosisStore((s) => s.deadlineDate);
   const setDeadlineDate = useDiagnosisStore((s) => s.setDeadlineDate);
+  const candidates = useDiagnosisStore((s) => s.candidates);
   const pushToast = useUIStore((s) => s.pushToast);
 
   const [draft, setDraft] = React.useState<string>(
@@ -156,6 +162,16 @@ export default function DeadlinePage() {
   const inRange = Array.from({ length: targetDay - 1 }, (_, i) => i + 1);
   const timeline = buildTimeline(days);
 
+  // 급매 매물 — 진단 후보 동네 기반 (mock). 후보 없으면 안내만.
+  const listings = buildMockListings(candidates);
+  const markers = candidates.map((c, i) => ({
+    id: c.id,
+    label: markerLabel(c.dong),
+    position: latLngToPixel(c.coordinate),
+    coordinate: c.coordinate,
+    rank: i + 1,
+  }));
+
   return (
     <main className="flex min-h-screen flex-col bg-bg">
       <AppHeader
@@ -205,6 +221,41 @@ export default function DeadlinePage() {
               />
             ))}
           </ol>
+        </section>
+
+        {/* REQ-FUNC-016 — 교집합 급매 매물 + 지도 (네이버 부동산 아웃링크 위임). */}
+        <section
+          aria-label="교집합 급매 매물"
+          className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card"
+        >
+          <div className="mb-s-3 flex items-center justify-between">
+            <h2 className="text-title font-bold text-ink">교집합 급매 매물</h2>
+            {listings.length > 0 && (
+              <span className="text-caption text-ink-3">
+                {listings.length}건 · 네이버 연동
+              </span>
+            )}
+          </div>
+
+          {candidates.length === 0 ? (
+            <p className="py-s-4 text-center text-body-sm text-ink-3">
+              진단을 먼저 하면 교집합 동네의 급매 매물이 표시돼요.
+            </p>
+          ) : (
+            <div className="space-y-s-3">
+              <MapCanvas markers={markers} height={200} />
+              <ul className="space-y-s-2">
+                {listings.map((listing) => (
+                  <li key={listing.id}>
+                    <ListingCard listing={listing} />
+                  </li>
+                ))}
+              </ul>
+              <p className="text-caption-xs text-ink-3">
+                매물 정보는 예시이며, 클릭 시 네이버 부동산 검색으로 이동해요.
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </main>

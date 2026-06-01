@@ -24,6 +24,7 @@ import {
   toChipMode,
 } from "@/features/diagnosis/result-utils";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
+import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import type { CandidateArea, DiagnosisFilters } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -376,14 +377,13 @@ export function ResultContent({
               ? `매물 ${selectedCandidate.listingsCount}건 보기`
               : "매물 보기",
             onClick: () => {
-              const query = encodeURIComponent(
+              const url = buildNaverRealEstateUrl(
                 `${selectedCandidate.gu} ${selectedCandidate.dong}`,
+                selectedCandidate.priceRange
+                  ? { priceMax: selectedCandidate.priceRange.max }
+                  : {},
               );
-              window.open(
-                `https://land.naver.com/?query=${query}`,
-                "_blank",
-                "noopener,noreferrer",
-              );
+              window.open(url, "_blank", "noopener,noreferrer");
             },
           }}
         />
