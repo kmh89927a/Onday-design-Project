@@ -50,7 +50,10 @@ export function MapCanvas({
   className,
 }: MapCanvasProps) {
   const appKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
-  const useSdk = Boolean(appKey) && placeholder !== false;
+  // SDK 로드 실패(도메인 미등록 등) 시 SVG placeholder로 degrade — 무한 스피너 방지.
+  const [sdkFailed, setSdkFailed] = React.useState(false);
+  const handleSdkFail = React.useCallback(() => setSdkFailed(true), []);
+  const useSdk = Boolean(appKey) && placeholder !== false && !sdkFailed;
   const kakaoMarkers = React.useMemo(
     () =>
       markers
@@ -80,6 +83,7 @@ export function MapCanvas({
           markers={kakaoMarkers}
           height={height}
           onMarkerClick={onMarkerClick}
+          onFail={handleSdkFail}
         />
         {topRightSlot && (
           <div className="absolute right-s-3 top-s-3 z-10">{topRightSlot}</div>
