@@ -29,9 +29,14 @@ async function getShareData(uuid: string) {
     data: { viewCount: { increment: 1 } },
   });
 
-  const candidates: CandidateArea[] = JSON.parse(
+  // ★ #42 보안 — 잠긴 후보의 점수·통근·시세를 서버에서 제거.
+  //   미리보기 1곳만 전체 데이터, 나머지는 {id, name}만 전달 (REQ-FUNC-011 / CMD-SHARE-003 AC-3).
+  //   이전엔 full candidates가 HTML 소스에 노출돼 CSS 블러로만 가려졌음 = funnel 우회 가능.
+  const allCandidates: CandidateArea[] = JSON.parse(
     shareLink.diagnosis.candidates,
   );
+  const sorted = [...allCandidates].sort((a, b) => b.score - a.score);
+  const [preview, ...rest] = sorted;
   return {
     type: "valid" as const,
     data: {
@@ -40,7 +45,9 @@ async function getShareData(uuid: string) {
       addressA: shareLink.diagnosis.addressA,
       addressB: shareLink.diagnosis.addressB ?? null,
       mode: shareLink.diagnosis.mode as "couple" | "single",
-      candidates,
+      preview: preview ?? null,
+      locked: rest.map((c) => ({ id: c.id, name: `${c.gu} ${c.dong}` })),
+      total: sorted.length,
       expiresAt: shareLink.expiresAt.toISOString(),
     },
   };
