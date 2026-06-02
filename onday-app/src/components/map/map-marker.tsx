@@ -29,8 +29,7 @@ export function MapMarker({
 }: MapMarkerProps) {
   const aria =
     ariaLabel ??
-    `${label}${rank ? `, ${rank}위` : ""}${selected ? " (선택됨)" : ""}`;
-  const isBest = rank === 1 || selected;
+    `${label}${rank ? `, 추천 ${rank}위` : ""}${selected ? " (선택됨)" : ""}`;
   return (
     <g
       role="button"
@@ -47,26 +46,22 @@ export function MapMarker({
       }}
       className="cursor-pointer outline-none focus-visible:[&>circle]:stroke-[3]"
     >
+      {/* 추천지역 = 통일 회색 (직장 파랑/주황과 구분). 선택 시만 진한 회색으로 강조. */}
       <circle
         r="14"
         className={cn(
-          "transition-all",
-          isBest
-            ? "fill-primary stroke-white"
-            : "fill-surface stroke-primary",
-          "stroke-[2] hover:[r:16]",
+          "transition-all stroke-white stroke-[2] hover:[r:16]",
+          selected ? "fill-ink" : "fill-ink-3",
         )}
       />
+      {/* 원 안 = 순위 숫자 (점수 순 1~N). */}
       <text
         aria-hidden
         textAnchor="middle"
         dominantBaseline="central"
-        className={cn(
-          "pointer-events-none text-[10px] font-extrabold tracking-tight",
-          isBest ? "fill-white" : "fill-primary",
-        )}
+        className="pointer-events-none fill-white text-[11px] font-extrabold tracking-tight"
       >
-        {label}
+        {rank ?? label}
       </text>
       {rank === 1 && (
         <g aria-hidden transform="translate(10,-10)">

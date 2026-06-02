@@ -7,6 +7,7 @@ import { CandidateCard } from "@/components/card/candidate-card";
 import { DataSourceBadge } from "@/components/data/data-source-badge";
 import { FilterPanel } from "@/components/form/filter-panel";
 import { MapCanvas } from "@/components/map/map-canvas";
+import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
 import {
   buildCommuteRows,
@@ -191,6 +192,65 @@ export function ResultContent({
     [sorted, selectedId],
   );
 
+  // A-1 (#졸업) — 직장 A·B 마커 + (선택/1위 후보 → 직장) 직선 연결선.
+  //   ★ couple=A·B 둘, single=A 만 (B 좌표 부재 시 자동 생략). 선은 focus 후보 1곳만 = 클러터 방지.
+  //   선 = 직선 추정(점선) — A-2에서 자동차 실 도로선(Kakao vertexes)으로 교체 예정.
+  const workplaces = React.useMemo<MapWorkplace[]>(() => {
+    const out: MapWorkplace[] = [];
+    if (coordinateA)
+      out.push({
+        id: "wp-a",
+        label: "내 직장",
+        short: "A",
+        coordinate: coordinateA,
+        position: latLngToPixel(coordinateA),
+        variant: "a",
+      });
+    if (coordinateB)
+      out.push({
+        id: "wp-b",
+        label: "배우자 직장",
+        short: "B",
+        coordinate: coordinateB,
+        position: latLngToPixel(coordinateB),
+        variant: "b",
+      });
+    return out;
+  }, [coordinateA, coordinateB]);
+
+  // focus = 선택 마커 → 없으면 1위 후보 (로드 직후에도 선이 보이게).
+  const focusCandidate = React.useMemo(
+    () =>
+      (selectedId ? sorted.find((c) => c.id === selectedId) : null) ??
+      sorted[0] ??
+      null,
+    [selectedId, sorted],
+  );
+
+  const lines = React.useMemo<MapLine[]>(() => {
+    if (!focusCandidate) return [];
+    const from = {
+      position: latLngToPixel(focusCandidate.coordinate),
+      coordinate: focusCandidate.coordinate,
+    };
+    const out: MapLine[] = [];
+    if (coordinateA)
+      out.push({
+        id: "line-a",
+        from,
+        to: { position: latLngToPixel(coordinateA), coordinate: coordinateA },
+        variant: "a",
+      });
+    if (coordinateB)
+      out.push({
+        id: "line-b",
+        from,
+        to: { position: latLngToPixel(coordinateB), coordinate: coordinateB },
+        variant: "b",
+      });
+    return out;
+  }, [focusCandidate, coordinateA, coordinateB]);
+
   const open = (cid: string) => {
     setSelectedId(cid);
     setOpenId(cid);
@@ -310,7 +370,13 @@ export function ResultContent({
         )}
       </section>
 
-      <MapCanvas markers={markers} onMarkerClick={open} height={320} />
+      <MapCanvas
+        markers={markers}
+        workplaces={workplaces}
+        lines={lines}
+        onMarkerClick={open}
+        height={320}
+      />
 
       <SortControl total={sorted.length} />
 
