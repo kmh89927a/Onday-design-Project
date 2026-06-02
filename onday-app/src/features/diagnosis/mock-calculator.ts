@@ -43,15 +43,18 @@ async function computeOneCandidate(
   // 비동기 API 지연 시뮬레이션 (50-200ms)
   await new Promise((r) => setTimeout(r, 50 + Math.random() * 150));
 
+  // 출퇴근 시간대 혼잡 계수 — 출발 시각(commuteSchedule.departureTime) 반영 (#졸업 시간대 시뮬).
+  const depTime = filters.commuteSchedule?.departureTime;
+
   const distA = haversineDistance(coordA, neighborhood.coordinate);
-  const commuteA = estimateCommuteMinutes(distA);
+  const commuteA = estimateCommuteMinutes(distA, depTime);
   const transfersA = estimateTransfers(distA);
 
   let commuteB: number | null = null;
   let transfersB: number | undefined;
   if (coordB) {
     const distB = haversineDistance(coordB, neighborhood.coordinate);
-    commuteB = estimateCommuteMinutes(distB);
+    commuteB = estimateCommuteMinutes(distB, depTime);
     transfersB = estimateTransfers(distB);
   }
 

@@ -409,10 +409,12 @@ export function ResultContent({
           </>
         ) : (
           /* production = 실 ODsay 대중교통 (자차=카카오는 후속) */
+          /* ★ "실시간" → "추정": ODsay 는 시간표 기반 평균(실시간 교통 아님) +
+             시간대 혼잡은 계수 추정 → 실시간이라 표기하면 과장. */
           <DataSourceBadge
             kind="aggregated"
             source="ODsay 대중교통"
-            updatedAt="실시간"
+            updatedAt="추정"
             tone="on-light"
           />
         )}

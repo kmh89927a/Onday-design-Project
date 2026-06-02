@@ -22,7 +22,7 @@ export function TimeSlotSelector({
 }: TimeSlotSelectorProps) {
   return (
     <div className={cn("space-y-s-2", className)}>
-      <p className="text-caption text-ink-3">출근 시간대 시뮬레이션</p>
+      <p className="text-caption text-ink-3">출근 시간대 예상 시뮬레이션</p>
       <Tabs
         value={value}
         onValueChange={(next) => onChange(next as TimeSlot)}
