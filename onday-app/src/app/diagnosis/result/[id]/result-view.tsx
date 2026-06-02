@@ -11,6 +11,7 @@ import {
 
 import { DeadlineBanner } from "@/components/deadline/deadline-banner";
 import { DeadlineBell } from "@/components/deadline/deadline-bell";
+import { DeadlineEntryCard } from "@/components/deadline/deadline-entry-card";
 import { EmptyState } from "@/components/diagnosis/empty-state";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
@@ -166,8 +167,9 @@ export function ResultView({ id }: ResultViewProps) {
       />
 
       <div className="flex-1 px-s-5 pb-s-8 pt-s-3">
-        <div className="mb-s-3">
+        <div className="mb-s-3 space-y-s-3">
           <DeadlineBanner />
+          {!isLoading && !error && !showEmpty && <DeadlineEntryCard />}
         </div>
         {isLoading ? (
           <ResultSkeleton />

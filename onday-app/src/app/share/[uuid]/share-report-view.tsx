@@ -8,7 +8,6 @@ import { LockedCard } from "@/components/share/locked-card";
 import { ReportCard } from "@/components/share/report-card";
 import { ShareHero } from "@/components/share/share-hero";
 import { Button } from "@/components/ui/button";
-import { splitForPreview } from "@/features/diagnosis/mock-calculator";
 import { buildReportStats } from "@/features/share/preview-stats";
 import type { CandidateArea } from "@/lib/types";
 
@@ -26,13 +25,21 @@ const SOURCE_BADGES = IS_MOCK
       { kind: "aggregated" as const, source: "ODsay 대중교통", updatedAt: "실시간" },
     ];
 
+// ★ #42 — 잠긴 후보는 서버에서 이름만 전달 (점수·통근·시세 제거).
+interface LockedCandidate {
+  id: string;
+  name: string;
+}
+
 interface ShareData {
   uniqueUrl: string;
   diagnosisId: string;
   addressA: string;
   addressB: string | null;
   mode: "couple" | "single";
-  candidates: CandidateArea[];
+  preview: CandidateArea | null;
+  locked: LockedCandidate[];
+  total: number;
   expiresAt: string;
 }
 
@@ -49,8 +56,7 @@ function expiryChipText(expiresAt: string): string {
 }
 
 export function ShareReportView({ data }: ShareReportViewProps) {
-  const { preview, locked } = splitForPreview(data.candidates);
-  const total = data.candidates.length;
+  const { preview, locked, total } = data;
   const lockedCount = locked.length;
 
   return (
@@ -101,11 +107,8 @@ export function ShareReportView({ data }: ShareReportViewProps) {
         )}
         {locked.map((c) => (
           <LockedCard key={c.id}>
-            <ReportCard
-              name={`${c.gu} ${c.dong}`}
-              score={c.score}
-              stats={buildReportStats(c)}
-            />
+            {/* ★ #42 — 잠긴 후보는 이름만. 점수·통근·시세는 서버에서 제거됨 */}
+            <ReportCard name={c.name} stats={[]} />
           </LockedCard>
         ))}
       </section>

@@ -188,12 +188,3 @@ export async function runMockDiagnosis(
   // Issue #106 ㊓ — 진단 페이지 약속 (후보 6~8개) 정합 (★ top 8개).
   return deduped.sort((a, b) => b.score - a.score).slice(0, 8);
 }
-
-/**
- * SRS pattern: splitForPreview — show 1 location free, lock others.
- */
-export function splitForPreview(areas: CandidateArea[]) {
-  const sorted = [...areas].sort((a, b) => b.score - a.score);
-  const [preview, ...locked] = sorted;
-  return { preview: preview ?? null, locked };
-}

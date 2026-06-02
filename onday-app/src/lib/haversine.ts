@@ -29,5 +29,8 @@ export function estimateCommuteMinutes(distanceKm: number): number {
 }
 
 export function estimateTransfers(distanceKm: number): number {
-  return Math.max(0, Math.floor(distanceKm / 5));
+  // mock 데모 전용 거리 추정. 실 진단(run-real-diagnosis)은 ODsay 실 탑승 횟수 사용.
+  // 상한 3 캡 — 거리만으로 추정해 장거리(예: 김포→강남 35km)에서 7회 같은
+  // 비현실 값이 나오던 것 방지 (#37). 실 ODsay 동일 구간은 2회.
+  return Math.min(3, Math.max(0, Math.floor(distanceKm / 5)));
 }

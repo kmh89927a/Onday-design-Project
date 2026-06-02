@@ -18,6 +18,19 @@ assignees: []
 - **Wave:** 3 (Diagnosis 트랙)
 - **⚠️ 클라이언트 사이드 처리 (절대 준수):** Server Action 사용 금지. `'use client'` 컴포넌트 또는 환경 중립 라이브러리로 구현.
 
+### ⚠️ Rev 1.1 (2026-06-02, #29 검증 정합 — 코드가 SSoT)
+
+명세의 `applyFilters`/`useFilteredCandidates` Hook(슬라이더+디바운스 200ms)이 칩 기반 필터(#38 슬라이더→칩 진화)로 구현돼 코드를 SSoT로 갱신. **클라 사이드 처리(Server Action 0건) + 실시간 필터 + 완화 제안 ≥2 모두 충족.**
+
+| 항목 | 구 명세 (Rev 1.0) | 현황 (Rev 1.1) | 사유 |
+|---|---|---|---|
+| 필터 함수 | `lib/diagnosis/filter.ts applyFilters` | 칩(commute/budget/time-chip-options) + `runMockDiagnosis` 클라 재계산(#111/#112) | 슬라이더→칩 UX 진화(#38) |
+| Hook | `useFilteredCandidates`(디바운스 200ms) | 칩 선택 → store 갱신 → 재계산 | Hook 대신 칩 인터랙션 |
+| 완화 제안(AC-2) | `generateFilterSuggestions` ≥2 | **`generateRelaxationSuggestions`(#125)** — 통근 minor+major+예산 ≥2 ✅ | FEAT-DIAGNOSIS-ZERO-CANDIDATES로 통합 |
+| 클라 사이드(AC-5) | Server Action 0건 | 0건 유지 ✅ | REQ-FUNC-003 준수 |
+
+**핵심(실시간 필터+완화제안) 작동. 실버그 없음.**
+
 ---
 
 ## 2. 🔗 References (Spec & Context)
