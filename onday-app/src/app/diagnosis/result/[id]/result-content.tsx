@@ -27,7 +27,7 @@ import {
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { latLngToPixel } from "@/lib/coordinate-transform";
-import type { CandidateArea, DiagnosisFilters } from "@/lib/types";
+import type { CandidateArea, CommuteInfo, DiagnosisFilters } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore } from "@/stores/favorites";
@@ -227,28 +227,48 @@ export function ResultContent({
     [selectedId, sorted],
   );
 
+  // A-2 — 자동차 실 도로 경로(commute*Car.routePath) 있으면 실선, 없으면(mock·transit·실패) 직선 추정 점선.
   const lines = React.useMemo<MapLine[]>(() => {
     if (!focusCandidate) return [];
-    const from = {
+    const candPoint = {
       position: latLngToPixel(focusCandidate.coordinate),
       coordinate: focusCandidate.coordinate,
     };
-    const out: MapLine[] = [];
-    if (coordinateA)
-      out.push({
-        id: "line-a",
-        from,
-        to: { position: latLngToPixel(coordinateA), coordinate: coordinateA },
-        variant: "a",
-      });
-    if (coordinateB)
-      out.push({
-        id: "line-b",
-        from,
-        to: { position: latLngToPixel(coordinateB), coordinate: coordinateB },
-        variant: "b",
-      });
-    return out;
+    const build = (
+      id: string,
+      variant: "a" | "b",
+      wp: typeof coordinateA,
+      car: CommuteInfo | undefined,
+    ): MapLine | null => {
+      if (!wp) return null;
+      const road = car?.routePath;
+      if (road && road.length >= 2) {
+        // 실 도로 경로 (solid) — Kakao vertexes (후보 → 직장 방향).
+        return {
+          id,
+          variant,
+          dashed: false,
+          points: road.map((c) => ({
+            coordinate: c,
+            position: latLngToPixel(c),
+          })),
+        };
+      }
+      // 직선 추정 (dashed) — A-1 fallback.
+      return {
+        id,
+        variant,
+        dashed: true,
+        points: [
+          candPoint,
+          { position: latLngToPixel(wp), coordinate: wp },
+        ],
+      };
+    };
+    return [
+      build("line-a", "a", coordinateA, focusCandidate.commuteACar),
+      build("line-b", "b", coordinateB, focusCandidate.commuteBCar),
+    ].filter((l): l is MapLine => l !== null);
   }, [focusCandidate, coordinateA, coordinateB]);
 
   const open = (cid: string) => {

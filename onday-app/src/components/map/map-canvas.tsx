@@ -37,11 +37,12 @@ export interface MapWorkplace {
   coordinate?: Coordinate;
   variant: "a" | "b";
 }
+// points ≥2. dashed=true → 직선 추정(A-1) / false → 실 도로 경로(A-2 Kakao vertexes).
 export interface MapLine {
   id: string;
-  from: { position: { x: number; y: number }; coordinate?: Coordinate };
-  to: { position: { x: number; y: number }; coordinate?: Coordinate };
+  points: { position: { x: number; y: number }; coordinate?: Coordinate }[];
   variant: "a" | "b";
+  dashed?: boolean;
 }
 
 const LINE_STROKE: Record<"a" | "b", string> = {
@@ -117,11 +118,12 @@ export function MapCanvas({
   const kakaoLines = React.useMemo(
     () =>
       lines
-        .filter((l) => l.from.coordinate && l.to.coordinate)
+        .filter((l) => l.points.length >= 2 && l.points.every((p) => p.coordinate))
         .map((l) => ({
           id: l.id,
-          path: [l.from.coordinate as Coordinate, l.to.coordinate as Coordinate],
+          path: l.points.map((p) => p.coordinate as Coordinate),
           variant: l.variant,
+          dashed: l.dashed ?? false,
         })),
     [lines],
   );
@@ -195,18 +197,17 @@ export function MapCanvas({
             fill="#B6D6F2"
             opacity="0.85"
           />
-          {/* A-1 — 후보→직장 직선 연결선 (직선 추정 = 점선). 마커보다 먼저 = 아래 깔림. */}
+          {/* A-1/A-2 — 후보→직장 경로선 (점선=직선 추정 / 실선=실 도로). 마커보다 먼저 = 아래 깔림. */}
           {lines.map((l) => (
-            <line
+            <polyline
               key={l.id}
               aria-hidden
-              x1={l.from.position.x}
-              y1={l.from.position.y}
-              x2={l.to.position.x}
-              y2={l.to.position.y}
+              points={l.points.map((p) => `${p.position.x},${p.position.y}`).join(" ")}
+              fill="none"
               strokeWidth="2"
-              strokeDasharray="5 4"
+              strokeDasharray={l.dashed ? "5 4" : undefined}
               strokeLinecap="round"
+              strokeLinejoin="round"
               className={cn(LINE_STROKE[l.variant], "opacity-70")}
             />
           ))}

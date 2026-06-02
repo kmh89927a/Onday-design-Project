@@ -35,6 +35,7 @@ interface KakaoLine {
   id: string;
   path: Coordinate[];
   variant: "a" | "b";
+  dashed?: boolean; // true=직선 추정(A-1) / false=실 도로(A-2)
 }
 
 const LINE_COLOR: Record<"a" | "b", string> = {
@@ -99,23 +100,40 @@ export default function MapCanvasKakao({
     return () => clearTimeout(timer);
   }, [loading, onFail]);
 
-  // A-1 — 처음 로드 시 모든 마커(직장 A·B + 추천 6개)가 한눈에 들어오도록 자동 줌 맞춤.
-  //   ★ onCreate 1회만 = 카드 선택(line follow) 시엔 재줌 안 함 (사용자 줌/팬 보존).
-  //   (Hook은 early-return 위에 위치해야 함 — rules-of-hooks.)
-  const handleCreate = React.useCallback(
-    (map: kakao.maps.Map) => {
-      const pts = [
-        ...markers.map((m) => m.coordinate),
-        ...workplaces.map((w) => w.coordinate),
-      ];
-      if (pts.length < 2) return;
-      const bounds = new kakao.maps.LatLngBounds();
-      pts.forEach((c) => bounds.extend(new kakao.maps.LatLng(c.lat, c.lng)));
-      // 여백 70px — 마커가 가장자리에 붙지 않고 선 전체가 여유롭게 보이도록.
-      map.setBounds(bounds, 70, 70, 70, 70);
-    },
-    [markers, workplaces],
+  // map 인스턴스 — onCreate 로 받아 useEffect 에서 제어 (sdk 권장 패턴).
+  const [mapInstance, setMapInstance] = React.useState<kakao.maps.Map | null>(
+    null,
   );
+
+  // fit 기준 좌표 — couple=직장 A·B / single fallback=전체. 좌표값 key 로 카드 선택 시 재줌 방지.
+  const fitCoords =
+    workplaces.length >= 2
+      ? workplaces.map((w) => w.coordinate)
+      : [
+          ...markers.map((m) => m.coordinate),
+          ...workplaces.map((w) => w.coordinate),
+        ];
+  const fitKey = fitCoords.map((c) => `${c.lat},${c.lng}`).join("|");
+
+  // A-2 — 처음 로드 시 두 직장이 한눈에 들어오도록 자동 줌 맞춤.
+  //   ★ onCreate 직후 setBounds 는 컨테이너 크기 미확정 → 과도 줌인. map 준비 후
+  //     requestAnimationFrame 으로 1프레임 미뤄 레이아웃 확정 후 relayout+setBounds.
+  //   ★ deps=[mapInstance, fitKey] = 좌표값 변할 때만 (카드 선택=배열 identity만 변경 → 재줌 X).
+  React.useEffect(() => {
+    if (!mapInstance || !fitKey) return;
+    const coords = fitKey.split("|").map((s) => {
+      const [lat, lng] = s.split(",").map(Number);
+      return { lat, lng };
+    });
+    if (coords.length < 2) return;
+    const raf = requestAnimationFrame(() => {
+      const bounds = new kakao.maps.LatLngBounds();
+      coords.forEach((c) => bounds.extend(new kakao.maps.LatLng(c.lat, c.lng)));
+      mapInstance.relayout();
+      mapInstance.setBounds(bounds, 70, 70, 70, 70);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [mapInstance, fitKey]);
 
   if (loading) {
     return (
@@ -140,17 +158,17 @@ export default function MapCanvasKakao({
       level={5}
       aria-label="후보 동네 지도"
       className={cn("rounded-lg", className)}
-      onCreate={handleCreate}
+      onCreate={(map) => setMapInstance(map)}
     >
       {/* A-1 — 후보→직장 직선 연결선 (직선 추정 = 점선). 마커보다 먼저 그려 아래 깔림. */}
       {lines.map((l) => (
         <Polyline
           key={l.id}
           path={l.path}
-          strokeWeight={3}
+          strokeWeight={l.dashed ? 3 : 5}
           strokeColor={LINE_COLOR[l.variant]}
-          strokeOpacity={0.8}
-          strokeStyle="shortdash"
+          strokeOpacity={0.85}
+          strokeStyle={l.dashed ? "shortdash" : "solid"}
         />
       ))}
       {/* 추천지역 마커 — 통일 회색 원 + 순위 숫자 (직장 파랑/주황과 구분). 1위=금색 테두리. */}
