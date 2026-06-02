@@ -21,9 +21,21 @@ export interface OdsayPathInfo {
   subwayTransitCount: number; // 지하철 환승 카운트
 }
 
+/** subPath[].passStopList.stations[] — 거쳐가는 정거장 좌표 (x=lng, y=lat). */
+export interface OdsayStation {
+  x: number | string; // 경도(lng)
+  y: number | string; // 위도(lat)
+  stationName?: string;
+}
+export interface OdsaySubPath {
+  trafficType: number; // 1=지하철, 2=버스, 3=도보
+  passStopList?: { stations?: OdsayStation[] };
+}
+
 export interface OdsayPath {
   info: OdsayPathInfo;
-  // subPath(구간 상세)는 현재 CommuteInfo 모델에 미사용.
+  // A-3 (#졸업 지도) — 대중교통 정거장 선. 도보(3)는 좌표 없음, 지하철(1)/버스(2)만 정거장 보유.
+  subPath?: OdsaySubPath[];
 }
 
 /** searchPubTransPathT 응답. 경로 없음/에러 시 result 부재 또는 error 객체. */

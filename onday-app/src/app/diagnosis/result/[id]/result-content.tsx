@@ -24,7 +24,11 @@ import {
   sortCandidates,
   toChipMode,
 } from "@/features/diagnosis/result-utils";
-import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
+import {
+  estimateCommuteMinutes,
+  haversineDistance,
+  rushHourFactor,
+} from "@/lib/haversine";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import type { CandidateArea, CommuteInfo, DiagnosisFilters } from "@/lib/types";
@@ -49,6 +53,62 @@ interface ResultContentProps {
   onShare: () => void | Promise<void>;
 }
 
+// what-if(시간/통근/예산) 재계산 — ★ 후보 재선정 대신 고정 baseline 세트를 in-place 갱신.
+//   기존 runMockDiagnosis 는 풀에서 top-N 을 다시 뽑아(mock 점수) 세트가 바뀌고 → 새 후보엔
+//   routePath/자동차 없음(버그1) + 자동차 시간 미반영(버그2). 본 함수는 세트·순위·routePath 고정,
+//   통근 '분'만 재계산해 두 버그 동시 해소.
+//   · 대중교통: estimateCommuteMinutes(거리, 출발시각) — 러시아워 계수 반영
+//   · 자동차: 실 Kakao 기준시간 × rushHourFactor (거리추정은 도로보다 짧아 부정확 → 기준값 보존)
+//   · routePath(정거장/도로선)·순위(점수)·여가는 baseline 그대로 유지, 필터만 재적용.
+function recomputeWhatIf(
+  baseline: CandidateArea[],
+  filters: DiagnosisFilters,
+  coordA: { lat: number; lng: number },
+  coordB: { lat: number; lng: number } | null | undefined,
+): CandidateArea[] {
+  const depTime = filters.commuteSchedule?.departureTime;
+  const carFactor = rushHourFactor(depTime);
+  return baseline
+    .map((c) => {
+      const distA = haversineDistance(coordA, c.coordinate);
+      const next: CandidateArea = {
+        ...c,
+        commuteA: { ...c.commuteA, time: estimateCommuteMinutes(distA, depTime) },
+      };
+      if (coordB && c.commuteB) {
+        const distB = haversineDistance(coordB, c.coordinate);
+        next.commuteB = {
+          ...c.commuteB,
+          time: estimateCommuteMinutes(distB, depTime),
+        };
+      }
+      if (c.commuteACar) {
+        next.commuteACar = {
+          ...c.commuteACar,
+          time: Math.round(c.commuteACar.time * carFactor),
+        };
+      }
+      if (c.commuteBCar) {
+        next.commuteBCar = {
+          ...c.commuteBCar,
+          time: Math.round(c.commuteBCar.time * carFactor),
+        };
+      }
+      return next;
+    })
+    .filter((c) => {
+      if (filters.maxCommuteTime) {
+        const maxC = Math.max(c.commuteA.time, c.commuteB?.time ?? 0);
+        if (maxC > filters.maxCommuteTime) return false;
+      }
+      if (filters.budget && c.priceRange) {
+        const avg = (c.priceRange.min + c.priceRange.max) / 2;
+        if (avg < filters.budget.min || avg > filters.budget.max) return false;
+      }
+      return true;
+    });
+}
+
 export function ResultContent({
   candidates,
   filters,
@@ -67,12 +127,19 @@ export function ResultContent({
   const diagnosisId = useDiagnosisStore((s) => s.diagnosisId);
   const coordinateA = useDiagnosisStore((s) => s.coordinateA);
   const coordinateB = useDiagnosisStore((s) => s.coordinateB);
-  const mode = useDiagnosisStore((s) => s.mode);
-  const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
-  const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
 
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
+
+  // ★ 첫 진단 결과를 baseline 으로 1회 캡처 — what-if 는 항상 이 고정 세트(routePath·자동차 보유)에서
+  //   재계산해 세트 churn/데이터 소실 방지. setResult 로 store 가 바뀌어도 ref 는 원본 유지.
+  //   (React 19 규칙 — 렌더 중 ref 접근 금지 → effect 에서 캡처. 핸들러는 이벤트라 ref 읽기 허용.)
+  const baselineRef = React.useRef<CandidateArea[] | null>(null);
+  React.useEffect(() => {
+    if (baselineRef.current === null && candidates.length > 0) {
+      baselineRef.current = candidates;
+    }
+  }, [candidates]);
 
   // Issue #111 β — 출근시간 chip 클릭 시 what-if 입력 inline 박힘 토글.
   // Issue #112 — maxCommuteTime + budget chip 클릭 시 what-if 입력 inline 박힘 토글 답습.
@@ -81,7 +148,7 @@ export function ResultContent({
   const [showBudgetOptions, setShowBudgetOptions] = React.useState(false);
   const currentDepartureTime = filters.commuteSchedule?.departureTime ?? "08:00";
 
-  const handleTimeWhatIf = async (time: string) => {
+  const handleTimeWhatIf = (time: string) => {
     if (!coordinateA) {
       pushToast({
         variant: "default",
@@ -97,23 +164,17 @@ export function ResultContent({
       },
     };
     setFilters(newFilters);
-    try {
-      const next = await runMockDiagnosis(
-        coordinateA,
-        coordinateB,
-        newFilters,
-        mode,
-        leisureCoordA,
-        leisureCoordB,
-      );
-      if (diagnosisId) setResult(diagnosisId, next);
-    } catch {
-      pushToast({ variant: "danger", message: "재계산에 실패했습니다" });
-    }
+    const next = recomputeWhatIf(
+      baselineRef.current ?? candidates,
+      newFilters,
+      coordinateA,
+      coordinateB,
+    );
+    if (diagnosisId) setResult(diagnosisId, next);
   };
 
   // Issue #112 — what-if maxCommuteTime/budget 재계산 (★ handleTimeWhatIf 답습).
-  const handleCommuteWhatIf = async (maxCommute: number) => {
+  const handleCommuteWhatIf = (maxCommute: number) => {
     if (!coordinateA) {
       pushToast({
         variant: "default",
@@ -123,22 +184,16 @@ export function ResultContent({
     }
     const newFilters = { ...filters, maxCommuteTime: maxCommute };
     setFilters(newFilters);
-    try {
-      const next = await runMockDiagnosis(
-        coordinateA,
-        coordinateB,
-        newFilters,
-        mode,
-        leisureCoordA,
-        leisureCoordB,
-      );
-      if (diagnosisId) setResult(diagnosisId, next);
-    } catch {
-      pushToast({ variant: "danger", message: "재계산에 실패했습니다" });
-    }
+    const next = recomputeWhatIf(
+      baselineRef.current ?? candidates,
+      newFilters,
+      coordinateA,
+      coordinateB,
+    );
+    if (diagnosisId) setResult(diagnosisId, next);
   };
 
-  const handleBudgetWhatIf = async (min: number, max: number) => {
+  const handleBudgetWhatIf = (min: number, max: number) => {
     if (!coordinateA) {
       pushToast({
         variant: "default",
@@ -148,19 +203,13 @@ export function ResultContent({
     }
     const newFilters = { ...filters, budget: { min, max } };
     setFilters(newFilters);
-    try {
-      const next = await runMockDiagnosis(
-        coordinateA,
-        coordinateB,
-        newFilters,
-        mode,
-        leisureCoordA,
-        leisureCoordB,
-      );
-      if (diagnosisId) setResult(diagnosisId, next);
-    } catch {
-      pushToast({ variant: "danger", message: "재계산에 실패했습니다" });
-    }
+    const next = recomputeWhatIf(
+      baselineRef.current ?? candidates,
+      newFilters,
+      coordinateA,
+      coordinateB,
+    );
+    if (diagnosisId) setResult(diagnosisId, next);
   };
 
   const sorted = React.useMemo(
@@ -227,10 +276,15 @@ export function ResultContent({
     [selectedId, sorted],
   );
 
-  // A-2 — 후보→직장 경로선. 자동차 실 도로(commute*Car.routePath) 있으면 실선,
-  //   없으면(mock·transit·실패) 직선 추정 점선. ★ 메인 맵(focus)·시트(selected) 공용.
+  // 지도 경로 표시 모드 — 🚇 대중교통(주 지표·정거장 선) / 🚗 자동차(실 도로). 기본=대중교통.
+  const [mapMode, setMapMode] = React.useState<"transit" | "car">("transit");
+
+  // 후보→직장 경로선. mode별 실 경로(routePath) 있으면 실선, 없으면(mock·실패) 직선 추정 점선.
+  //   · transit = commuteA/B.routePath(정거장 좌표) — 출발(후보)·도착(직장) 보강
+  //   · car     = commuteACar/BCar.routePath(도로 vertexes) — 이미 양끝 포함
+  //   ★ 메인 맵(focus)·시트(selected) 공용.
   const buildLinesFor = React.useCallback(
-    (cand: CandidateArea | null): MapLine[] => {
+    (cand: CandidateArea | null, mode: "transit" | "car"): MapLine[] => {
       if (!cand) return [];
       const candPoint = {
         position: latLngToPixel(cand.coordinate),
@@ -240,23 +294,25 @@ export function ResultContent({
         id: string,
         variant: "a" | "b",
         wp: typeof coordinateA,
-        car: CommuteInfo | undefined,
+        commute: CommuteInfo | undefined,
       ): MapLine | null => {
         if (!wp) return null;
-        const road = car?.routePath;
-        if (road && road.length >= 2) {
-          // 실 도로 경로 (solid) — Kakao vertexes (후보 → 직장 방향).
+        const route = commute?.routePath;
+        if (route && route.length >= 2) {
+          // transit=정거장만 → 출발·도착 보강 / car=도로 vertexes는 이미 양끝 포함.
+          const coords =
+            mode === "transit" ? [cand.coordinate, ...route, wp] : route;
           return {
             id,
             variant,
             dashed: false,
-            points: road.map((c) => ({
+            points: coords.map((c) => ({
               coordinate: c,
               position: latLngToPixel(c),
             })),
           };
         }
-        // 직선 추정 (dashed) — A-1 fallback.
+        // 직선 추정 (dashed) — 실 경로 없을 때(mock·실패) fallback.
         return {
           id,
           variant,
@@ -264,17 +320,19 @@ export function ResultContent({
           points: [candPoint, { position: latLngToPixel(wp), coordinate: wp }],
         };
       };
+      const aCommute = mode === "transit" ? cand.commuteA : cand.commuteACar;
+      const bCommute = mode === "transit" ? cand.commuteB : cand.commuteBCar;
       return [
-        build("line-a", "a", coordinateA, cand.commuteACar),
-        build("line-b", "b", coordinateB, cand.commuteBCar),
+        build("line-a", "a", coordinateA, aCommute),
+        build("line-b", "b", coordinateB, bCommute),
       ].filter((l): l is MapLine => l !== null);
     },
     [coordinateA, coordinateB],
   );
 
   const lines = React.useMemo(
-    () => buildLinesFor(focusCandidate),
-    [buildLinesFor, focusCandidate],
+    () => buildLinesFor(focusCandidate, mapMode),
+    [buildLinesFor, focusCandidate, mapMode],
   );
 
   // B — DetailSheet 지도: 선택 후보 1곳 + 두 직장 + 연결선 (전체 fit).
@@ -295,8 +353,39 @@ export function ResultContent({
     [selectedCandidate, selectedRank],
   );
   const detailLines = React.useMemo(
-    () => buildLinesFor(selectedCandidate),
-    [buildLinesFor, selectedCandidate],
+    () => buildLinesFor(selectedCandidate, mapMode),
+    [buildLinesFor, selectedCandidate, mapMode],
+  );
+
+  // 🚇/🚗 경로 표시 모드 토글 (지도 위 우상단). 통근 정보 [대중교통]/[차량] 그룹과 일관.
+  const mapModeToggle = (
+    <div
+      role="group"
+      aria-label="경로 표시 모드"
+      className="flex rounded-full bg-surface/90 p-0.5 shadow-card backdrop-blur"
+    >
+      {(
+        [
+          ["transit", "🚇 대중교통"],
+          ["car", "🚗 자동차"],
+        ] as const
+      ).map(([m, label]) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => setMapMode(m)}
+          aria-pressed={mapMode === m}
+          className={cn(
+            "rounded-full px-s-2 py-s-1 text-caption-xs font-bold transition-colors",
+            mapMode === m
+              ? "bg-primary text-primary-foreground"
+              : "text-ink-3",
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   );
 
   const open = (cid: string) => {
@@ -424,6 +513,7 @@ export function ResultContent({
         markers={markers}
         workplaces={workplaces}
         lines={lines}
+        topRightSlot={mapModeToggle}
         onMarkerClick={open}
         height={320}
       />
@@ -487,6 +577,7 @@ export function ResultContent({
               markers={detailMarkers}
               workplaces={workplaces}
               lines={detailLines}
+              topRightSlot={mapModeToggle}
               fitAll
               height={180}
             />
