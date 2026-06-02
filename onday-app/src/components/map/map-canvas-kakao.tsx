@@ -53,6 +53,8 @@ interface MapCanvasKakaoProps {
   workplaces?: KakaoWorkplace[];
   /** A-1 — 후보→직장 직선 연결선 (직선 추정 = 점선). */
   lines?: KakaoLine[];
+  /** B — true면 전체 마커(추천+직장) 기준 fit (DetailSheet). 기본=직장 A·B 기준 (메인 맵). */
+  fitAll?: boolean;
   /** SDK 로드 실패/타임아웃 시 호출 — 부모(MapCanvas)가 SVG fallback으로 전환 */
   onFail?: () => void;
 }
@@ -70,6 +72,7 @@ export default function MapCanvasKakao({
   className,
   workplaces = [],
   lines = [],
+  fitAll = false,
   onFail,
 }: MapCanvasKakaoProps) {
   const [loading, error] = useKakaoLoader({ appkey: appKey });
@@ -105,14 +108,16 @@ export default function MapCanvasKakao({
     null,
   );
 
-  // fit 기준 좌표 — couple=직장 A·B / single fallback=전체. 좌표값 key 로 카드 선택 시 재줌 방지.
+  // fit 기준 좌표 — fitAll(시트)=전체 / 기본(메인)=직장 A·B (single은 전체 fallback).
+  //   좌표값 key 로 카드 선택 시 재줌 방지.
+  const allCoords = [
+    ...markers.map((m) => m.coordinate),
+    ...workplaces.map((w) => w.coordinate),
+  ];
   const fitCoords =
-    workplaces.length >= 2
+    !fitAll && workplaces.length >= 2
       ? workplaces.map((w) => w.coordinate)
-      : [
-          ...markers.map((m) => m.coordinate),
-          ...workplaces.map((w) => w.coordinate),
-        ];
+      : allCoords;
   const fitKey = fitCoords.map((c) => `${c.lat},${c.lng}`).join("|");
 
   // A-2 — 처음 로드 시 두 직장이 한눈에 들어오도록 자동 줌 맞춤.
@@ -126,14 +131,16 @@ export default function MapCanvasKakao({
       return { lat, lng };
     });
     if (coords.length < 2) return;
+    // 시트(fitAll)=후보 더 잘 보이게 좁은 여백(35px) / 메인 맵=넉넉히(70px).
+    const pad = fitAll ? 35 : 70;
     const raf = requestAnimationFrame(() => {
       const bounds = new kakao.maps.LatLngBounds();
       coords.forEach((c) => bounds.extend(new kakao.maps.LatLng(c.lat, c.lng)));
       mapInstance.relayout();
-      mapInstance.setBounds(bounds, 70, 70, 70, 70);
+      mapInstance.setBounds(bounds, pad, pad, pad, pad);
     });
     return () => cancelAnimationFrame(raf);
-  }, [mapInstance, fitKey]);
+  }, [mapInstance, fitKey, fitAll]);
 
   if (loading) {
     return (

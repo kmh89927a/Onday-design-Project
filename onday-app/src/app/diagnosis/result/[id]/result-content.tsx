@@ -227,49 +227,77 @@ export function ResultContent({
     [selectedId, sorted],
   );
 
-  // A-2 — 자동차 실 도로 경로(commute*Car.routePath) 있으면 실선, 없으면(mock·transit·실패) 직선 추정 점선.
-  const lines = React.useMemo<MapLine[]>(() => {
-    if (!focusCandidate) return [];
-    const candPoint = {
-      position: latLngToPixel(focusCandidate.coordinate),
-      coordinate: focusCandidate.coordinate,
-    };
-    const build = (
-      id: string,
-      variant: "a" | "b",
-      wp: typeof coordinateA,
-      car: CommuteInfo | undefined,
-    ): MapLine | null => {
-      if (!wp) return null;
-      const road = car?.routePath;
-      if (road && road.length >= 2) {
-        // 실 도로 경로 (solid) — Kakao vertexes (후보 → 직장 방향).
+  // A-2 — 후보→직장 경로선. 자동차 실 도로(commute*Car.routePath) 있으면 실선,
+  //   없으면(mock·transit·실패) 직선 추정 점선. ★ 메인 맵(focus)·시트(selected) 공용.
+  const buildLinesFor = React.useCallback(
+    (cand: CandidateArea | null): MapLine[] => {
+      if (!cand) return [];
+      const candPoint = {
+        position: latLngToPixel(cand.coordinate),
+        coordinate: cand.coordinate,
+      };
+      const build = (
+        id: string,
+        variant: "a" | "b",
+        wp: typeof coordinateA,
+        car: CommuteInfo | undefined,
+      ): MapLine | null => {
+        if (!wp) return null;
+        const road = car?.routePath;
+        if (road && road.length >= 2) {
+          // 실 도로 경로 (solid) — Kakao vertexes (후보 → 직장 방향).
+          return {
+            id,
+            variant,
+            dashed: false,
+            points: road.map((c) => ({
+              coordinate: c,
+              position: latLngToPixel(c),
+            })),
+          };
+        }
+        // 직선 추정 (dashed) — A-1 fallback.
         return {
           id,
           variant,
-          dashed: false,
-          points: road.map((c) => ({
-            coordinate: c,
-            position: latLngToPixel(c),
-          })),
+          dashed: true,
+          points: [candPoint, { position: latLngToPixel(wp), coordinate: wp }],
         };
-      }
-      // 직선 추정 (dashed) — A-1 fallback.
-      return {
-        id,
-        variant,
-        dashed: true,
-        points: [
-          candPoint,
-          { position: latLngToPixel(wp), coordinate: wp },
-        ],
       };
-    };
-    return [
-      build("line-a", "a", coordinateA, focusCandidate.commuteACar),
-      build("line-b", "b", coordinateB, focusCandidate.commuteBCar),
-    ].filter((l): l is MapLine => l !== null);
-  }, [focusCandidate, coordinateA, coordinateB]);
+      return [
+        build("line-a", "a", coordinateA, cand.commuteACar),
+        build("line-b", "b", coordinateB, cand.commuteBCar),
+      ].filter((l): l is MapLine => l !== null);
+    },
+    [coordinateA, coordinateB],
+  );
+
+  const lines = React.useMemo(
+    () => buildLinesFor(focusCandidate),
+    [buildLinesFor, focusCandidate],
+  );
+
+  // B — DetailSheet 지도: 선택 후보 1곳 + 두 직장 + 연결선 (전체 fit).
+  const detailMarkers = React.useMemo(
+    () =>
+      selectedCandidate
+        ? [
+            {
+              id: selectedCandidate.id,
+              label: markerLabel(selectedCandidate.dong),
+              position: latLngToPixel(selectedCandidate.coordinate),
+              coordinate: selectedCandidate.coordinate,
+              selected: true,
+              rank: selectedRank,
+            },
+          ]
+        : [],
+    [selectedCandidate, selectedRank],
+  );
+  const detailLines = React.useMemo(
+    () => buildLinesFor(selectedCandidate),
+    [buildLinesFor, selectedCandidate],
+  );
 
   const open = (cid: string) => {
     setSelectedId(cid);
@@ -452,6 +480,15 @@ export function ResultContent({
           liked={Boolean(favorites[selectedCandidate.id])}
           onLike={handleLike}
           onShare={onShare}
+          map={
+            <MapCanvas
+              markers={detailMarkers}
+              workplaces={workplaces}
+              lines={detailLines}
+              fitAll
+              height={180}
+            />
+          }
           commuteExtra={
             <TimeSlotSelector
               value={currentDepartureTime}

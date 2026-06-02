@@ -41,6 +41,8 @@ interface DetailSheetProps {
   onLike?: () => void;
   liked?: boolean;
   onShare?: () => void;
+  /** B (#졸업 지도) — header 아래 inject. 해당 추천지역 1곳 + 두 직장 + 연결선. */
+  map?: React.ReactNode;
   /** commute rows와 metrics 사이 inject (예: TimeSlotSelector) */
   commuteExtra?: React.ReactNode;
   primaryCta: {
@@ -58,6 +60,7 @@ export function DetailSheet({
   onLike,
   liked,
   onShare,
+  map,
   commuteExtra,
   primaryCta,
 }: DetailSheetProps) {
@@ -114,6 +117,11 @@ export function DetailSheet({
           )}
           <p className="text-caption text-ink-3">{candidate.lines}</p>
         </header>
+
+        {/* B (#졸업 지도) — 해당 추천지역 + 두 직장 + 연결선 (선택 후보 1곳 기준). */}
+        {map && (
+          <div className="overflow-hidden rounded-lg">{map}</div>
+        )}
 
         {/* ★ W2B: 수단별 그룹 ([대중교통] A/B / [차량] A/B) + 방향 '동네→직장'.
             행 카드 디자인은 보존, 수단은 그룹 헤더 아이콘+라벨로 이동. */}

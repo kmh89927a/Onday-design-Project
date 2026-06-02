@@ -58,6 +58,8 @@ interface MapCanvasProps {
   markers: MarkerInput[];
   workplaces?: MapWorkplace[];
   lines?: MapLine[];
+  /** B — true면 전체 마커 기준 줌(DetailSheet). 기본=직장 A·B 기준(메인 맵). */
+  fitAll?: boolean;
   placeholder?: boolean;
   height?: number;
   topRightSlot?: React.ReactNode;
@@ -71,6 +73,7 @@ export function MapCanvas({
   markers,
   workplaces = [],
   lines = [],
+  fitAll = false,
   placeholder = true,
   height = 320,
   topRightSlot,
@@ -141,6 +144,7 @@ export function MapCanvas({
           markers={kakaoMarkers}
           workplaces={kakaoWorkplaces}
           lines={kakaoLines}
+          fitAll={fitAll}
           height={height}
           onMarkerClick={onMarkerClick}
           onFail={handleSdkFail}
