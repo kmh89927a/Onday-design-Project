@@ -310,6 +310,11 @@ export default function DiagnosisPage() {
                   leisureCoordA && leisureA === queryL1 && queryL1.length > 0,
                 )}
                 onSelect={(item) => {
+                  // ★ UI-012 AC-5 (#58) — 여가거점 수도권 검증 (REQ-FUNC-024, 직장 A와 동일 가드).
+                  if (item.coordinate && !isWithinMetroBounds(item.coordinate)) {
+                    pushToast({ variant: "danger", message: "현재 수도권만 지원됩니다" });
+                    return;
+                  }
                   setLeisureA(item.title, item.coordinate);
                   setQueryL1(item.title);
                 }}
@@ -325,6 +330,11 @@ export default function DiagnosisPage() {
                   leisureCoordB && leisureB === queryL2 && queryL2.length > 0,
                 )}
                 onSelect={(item) => {
+                  // ★ UI-012 AC-5 (#58) — 여가거점 수도권 검증 (REQ-FUNC-024, 직장 A와 동일 가드).
+                  if (item.coordinate && !isWithinMetroBounds(item.coordinate)) {
+                    pushToast({ variant: "danger", message: "현재 수도권만 지원됩니다" });
+                    return;
+                  }
                   setLeisureB(item.title, item.coordinate);
                   setQueryL2(item.title);
                 }}
