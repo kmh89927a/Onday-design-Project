@@ -17,6 +17,19 @@ assignees: []
 - **복잡도:** M
 - **Wave:** 4 (SavedSearch 트랙)
 
+### ⚠️ Rev 1.1 (2026-06-02, #60 검증 정합 — 부분 보류)
+
+저장 트랙이 **클라이언트 localStorage**(`onday-last-config`, #96/#112)로 피벗됐다. 명세의 서버 best-effort UPSERT(`saveSearch` Server Action + beforeunload + 디바운스 5초 + beacon)는 **미구현**이며, 서버 영속화는 **Supabase Postgres 연결(CLAUDE.md Step 13) 이후**로 보류한다.
+
+| 항목 | 구 명세 (Rev 1.0) | 현황 (Rev 1.1) |
+|---|---|---|
+| 저장 메커니즘 | `saveSearch` Server Action + Prisma best-effort UPSERT | localStorage(`diagnosis/page.tsx:158`, **진단 성공 시** 저장) |
+| 자동저장 트리거 | beforeunload + 디바운스 5초 + `sendBeacon` | (미구현) — 진단 성공 시점 1회 저장으로 대체 |
+| 서버 엔드포인트 | `app/actions/save-search.ts` + beacon route | `app/api/save/route.ts`(POST UPSERT 존재하나 **호출처 0 = dead**, best-effort 미준수) |
+| 게스트 처리(AC-3) | 조용히 skip | `getEffectiveUserId` fallback (localStorage는 게스트도 로컬 저장) |
+
+**USER VALUE:** 조건 저장·복원은 localStorage로 **작동**. **보류 사유:** 서버 영속화(다중 세션/기기 동기화)는 Supabase 연결 전 불가 → Step 13 이후 `/api/save` 배선 + best-effort/게스트 skip 재구현. **OPEN 유지.**
+
 ---
 
 ## 2. 🔗 References (Spec & Context)

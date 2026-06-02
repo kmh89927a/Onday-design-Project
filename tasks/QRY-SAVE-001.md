@@ -27,6 +27,19 @@ assignees: []
 > - 시나리오 비교 (저장 시점 vs 현재)
 > - replaySearch() API
 
+### ⚠️ Rev 1.2 (2026-06-02, #61 검증 정합 — 부분 보류)
+
+복원이 **클라이언트 localStorage**(`handleLoadLast`, `diagnosis/page.tsx:183-215`)로 작동한다. 명세의 `getSavedSearch` Server Action(Prisma SELECT + **geocoding 재검증** + "주소를 다시 입력해주세요")은 **미구현**이며, 서버 조회·geocoding 재검증은 **Supabase 연결(CLAUDE.md Step 13) 이후**로 보류한다.
+
+| 항목 | 구 명세 (Rev 1.1) | 현황 (Rev 1.2) |
+|---|---|---|
+| 조회 메커니즘 | `getSavedSearch` Server Action + Prisma SELECT | localStorage `handleLoadLast` (즉시 복원, ≤1초 충족) |
+| geocoding 재검증(AC-4) | 저장 주소 재검증 → "주소를 다시 입력해주세요" | (미구현) — `validateAddress`/`mapToGetResponse` 부재 |
+| 저장 없음(AC-5) | null → "저장된 조건이 없습니다" | "저장된 이전 조건이 없습니다" 토스트(`:188`) ✅ |
+| 재계산·비교(AC-2/3) | 0건 | 0건 (Rev 1.1 준수) ✅ |
+
+**USER VALUE:** 복원은 localStorage로 **작동**(폼 자동 채움). **보류 사유:** 서버 SELECT + geocoding 재검증(주소 유효성 안내)은 Supabase + 카카오 API 키 연결 후 → Step 13 이후 구현. **OPEN 유지.**
+
 ---
 
 ## 2. 🔗 References (Spec & Context)
