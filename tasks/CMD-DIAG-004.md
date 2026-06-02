@@ -18,6 +18,21 @@ assignees: []
 - **Wave:** 3 (Diagnosis 트랙)
 - **⚠️ Server Action ('use server'):** CMD-DIAG-001/002와 달리 본 태스크는 서버 측 처리. DB 저장은 Server Action이 적절.
 
+### ⚠️ Rev 1.1 (2026-06-02, #28 검증 정합 — 코드가 SSoT)
+
+구현이 명세 전제(Server Action + `$transaction` + 정규화 CandidateArea 테이블)와 달라 코드를 SSoT로 명세 갱신(#57 Rev 방식). **USER VALUE(진단 결과 저장 → 재조회·공유) 작동.**
+
+| 항목 | 구 명세 (Rev 1.0) | 현황 (Rev 1.1) | 사유 |
+|---|---|---|---|
+| 저장 방식 | `saveDiagnosisResult` Server Action | `POST /api/diagnosis` Route Handler(`route.ts`) | 앱 전체 Route Handler 표준(app/actions 미사용) |
+| 데이터 모델 | Diagnosis + CandidateArea `$transaction` | candidates를 Diagnosis row에 **JSON 임베드**(단일 create) | 비정규화 — 단일 row라 원자성 자명, $transaction 불필요 |
+| 응답 | `mapDiagnosisToDTO`→DiagnosisDTO | `{diagnosisId, candidates, timeline}` 인라인 | mapper 미사용 |
+| 게스트(AC-2) | `requireAuth` 차단 | `getEffectiveUserId` fallback(게스트 허용) | 게스트 체험 모드 의도적 |
+| Sentry(AC-6) | `captureException` | `console.error` | Sentry 미배선(Step 13 백로그) |
+| userId(AC-5) | 세션 추출 | `getEffectiveUserId`(서버) — 클라 주입 불가 ✅ | 유지 |
+
+**보류:** 정규화·$transaction·requireAuth·Sentry는 Supabase 연결(Step 13) 시 재검토. **실버그 없음.**
+
 ---
 
 ## 2. 🔗 References (Spec & Context)

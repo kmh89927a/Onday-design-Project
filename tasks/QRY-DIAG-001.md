@@ -17,6 +17,20 @@ assignees: []
 - **복잡도:** L
 - **Wave:** 3 (Diagnosis 트랙)
 
+### ⚠️ Rev 1.1 (2026-06-02, #32 검증 정합 — 코드가 SSoT + 보안 이연)
+
+GET `/api/diagnosis/[id]` Route Handler가 구현돼 **조회 USER VALUE 작동**(결과 재조회·공유). 단 명세의 인증/권한 검증은 미구현 → **`/api/diagnosis/[id]` 권한 검증은 #146 SEC 이슈에 합류 + Supabase 인증 연결(Step 13) 시 처리.**
+
+| 항목 | 구 명세 (Rev 1.0) | 현황 (Rev 1.1) | 사유 |
+|---|---|---|---|
+| 조회 | `findUnique` + `include` candidates | `findUnique` + candidates JSON.parse(`route.ts:13,19`) | 비정규화 모델(CMD-DIAG-004 정합) |
+| 404(AC-4) | DIAGNOSIS_NOT_FOUND | `{error}` 404(`:16`) ✅ | 유지 |
+| **인증/권한(AC-2/3)** | 401 미인증 + 403 타인 차단 | **미구현 — 오픈 엔드포인트** → #146 이연 | Supabase 인증 미연결(Step 13). mock 공용 userId라 소유권 무의미 |
+| 응답 매핑 | `mapDiagnosisToDTO` | 인라인 객체(`:22-34`) | mapper 미사용 |
+| Sentry(AC-6) | `captureException` | `console.error`(`:36`) | Sentry 미배선(Step 13) |
+
+**보안 갭:** 프로덕션 Supabase 연결 시 타인 진단 ID 조회 가능 → #146 권한 검증 트랙에서 `getCurrentUser`+owner 체크. ID=cuid라 추측 난이도는 있음. **조회 기능 자체는 작동.**
+
 ---
 
 ## 2. 🔗 References (Spec & Context)
