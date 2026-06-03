@@ -92,14 +92,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("[API] POST /api/diagnosis error:", error);
-    // ★ 디버그 임시 — 실제 에러를 응답에 실어 브라우저 Network 탭에서 바로 확인 (DB 진단용).
-    //   원인 잡으면 제거 예정.
-    return NextResponse.json(
-      {
-        error: "서버 오류가 발생했습니다",
-        debug: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "서버 오류가 발생했습니다" }, { status: 500 });
   }
 }
