@@ -25,11 +25,12 @@ interface KakaoMarker {
 }
 
 // A-1 (#졸업) — 직장 마커 + 직선 연결선. A=primary(파랑) / B=warning(주황).
+//   ★ single 모드 — variant "leisure"(녹색) = 여가거점 마커 (연결선은 직장만이라 a/b만).
 interface KakaoWorkplace {
   id: string;
   coordinate: Coordinate;
   label: string;
-  variant: "a" | "b";
+  variant: "a" | "b" | "leisure";
 }
 interface KakaoLine {
   id: string;
@@ -38,9 +39,11 @@ interface KakaoLine {
   dashed?: boolean; // true=직선 추정(A-1) / false=실 도로(A-2)
 }
 
-const LINE_COLOR: Record<"a" | "b", string> = {
+// 직장/거점 마커 + 연결선 색. leisure(녹색)=여가거점, 연결선은 a/b만 사용.
+const VARIANT_COLOR: Record<"a" | "b" | "leisure", string> = {
   a: "#2563EB", // primary
   b: "#F59E0B", // warning
+  leisure: "#10B981", // success (emerald)
 };
 
 interface MapCanvasKakaoProps {
@@ -173,7 +176,7 @@ export default function MapCanvasKakao({
           key={l.id}
           path={l.path}
           strokeWeight={l.dashed ? 3 : 5}
-          strokeColor={LINE_COLOR[l.variant]}
+          strokeColor={VARIANT_COLOR[l.variant]}
           strokeOpacity={0.85}
           strokeStyle={l.dashed ? "shortdash" : "solid"}
         />
@@ -219,7 +222,7 @@ export default function MapCanvasKakao({
         >
           <div
             style={{
-              background: LINE_COLOR[w.variant],
+              background: VARIANT_COLOR[w.variant],
               color: "#fff",
               padding: "3px 9px",
               borderRadius: 999,

@@ -6,6 +6,9 @@ import { AlertCircle, ChevronLeft, Filter, FileDown } from "lucide-react";
 
 import { SafetyCard } from "@/components/card/safety-card";
 import { LegendBar } from "@/components/data/legend-bar";
+import { MapCanvas } from "@/components/map/map-canvas";
+import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
+import { DetailSheet } from "@/components/sheet/detail-sheet";
 import { DeadlineBanner } from "@/components/deadline/deadline-banner";
 import { DeadlineBell } from "@/components/deadline/deadline-bell";
 import { AppHeader } from "@/components/layout/app-header";
@@ -20,8 +23,16 @@ import {
   getRadiusSub,
 } from "@/features/single/safety-stats";
 import { getSafetyByGu } from "@/features/single/safety-index";
+import { buildSinglePills, buildSingleMetrics } from "@/features/single/detail-mapper";
+import { markerLabel } from "@/features/diagnosis/result-utils";
+import { buildCommuteRows, buildLines } from "@/features/diagnosis/detail-mapper";
+import { latLngToPixel } from "@/lib/coordinate-transform";
+import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
+import { copyToClipboard } from "@/lib/utils/clipboard";
+import { cn } from "@/lib/utils";
 import type { CandidateArea, SafetyGrade } from "@/lib/types";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
+import { useFavoritesStore } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
 
 import { LayerToggle, type SingleLayer } from "./layer-toggle";
@@ -107,6 +118,12 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const storeCandidates = useDiagnosisStore((s) => s.candidates);
   const storeAddressA = useDiagnosisStore((s) => s.addressA);
   const setResult = useDiagnosisStore((s) => s.setResult);
+  // 지도 마커용 좌표 — 부부 모드와 동일하게 store 직접 참조(같은 세션에서만 표시).
+  const coordinateA = useDiagnosisStore((s) => s.coordinateA);
+  const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
+  const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
+  const favorites = useFavoritesStore((s) => s.favorites);
+  const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
   const inSync = storeId === id && storeCandidates.length > 0;
   const query = useDiagnosis(inSync ? null : id);
@@ -134,6 +151,207 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   );
 
   const legend = LEGEND_META[layer];
+
+  // 지도 마커: 직장 A(파랑) + 여가거점 1~2(녹색). 좌표 없으면 자동 생략(공유링크/새로고침).
+  const workplaces = React.useMemo<MapWorkplace[]>(() => {
+    const out: MapWorkplace[] = [];
+    if (coordinateA)
+      out.push({
+        id: "wp-a",
+        label: "내 직장",
+        short: "A",
+        coordinate: coordinateA,
+        position: latLngToPixel(coordinateA),
+        variant: "a",
+      });
+    // 거점 2곳이면 "여가거점 1/2"로 번호 구분, 1곳이면 번호 생략.
+    const twoLeisure = Boolean(leisureCoordA && leisureCoordB);
+    if (leisureCoordA)
+      out.push({
+        id: "leisure-a",
+        label: twoLeisure ? "여가거점 1" : "여가거점",
+        short: "♥",
+        coordinate: leisureCoordA,
+        position: latLngToPixel(leisureCoordA),
+        variant: "leisure",
+      });
+    if (leisureCoordB)
+      out.push({
+        id: "leisure-b",
+        label: twoLeisure ? "여가거점 2" : "여가거점",
+        short: "♥",
+        coordinate: leisureCoordB,
+        position: latLngToPixel(leisureCoordB),
+        variant: "leisure",
+      });
+    return out;
+  }, [coordinateA, leisureCoordA, leisureCoordB]);
+
+  // 후보 마커 — 안전순 1위부터 회색 원+순위 (부부 모드 메인 맵과 동일).
+  const markers = React.useMemo(
+    () =>
+      sorted.map((c, i) => ({
+        id: c.id,
+        label: markerLabel(c.dong),
+        position: latLngToPixel(c.coordinate),
+        coordinate: c.coordinate,
+        rank: i + 1,
+      })),
+    [sorted],
+  );
+
+  // 지도 경로 표시 모드 — 🚇 대중교통(ODsay 정거장) / 🚗 자동차(Kakao 도로 vertexes). 부부와 일관.
+  const [mapMode, setMapMode] = React.useState<"transit" | "car">("transit");
+
+  // 후보 → 직장 A 연결선 1줄 (여가거점은 마커로 위치만). 메인 맵(focus)·시트(selected) 공용.
+  //   · transit = commuteA.routePath(정거장) — 출발(후보)·도착(직장) 보강
+  //   · car     = commuteACar.routePath(도로 vertexes) — 이미 양끝 포함
+  //   실 경로 없으면(mock·실패) 직선 점선 fallback.
+  const buildLineForMode = React.useCallback(
+    (cand: CandidateArea | null, mode: "transit" | "car"): MapLine[] => {
+      if (!cand || !coordinateA) return [];
+      const commute = mode === "transit" ? cand.commuteA : cand.commuteACar;
+      const route = commute?.routePath;
+      if (route && route.length >= 2) {
+        const coords =
+          mode === "transit" ? [cand.coordinate, ...route, coordinateA] : route;
+        return [
+          {
+            id: "line-a",
+            variant: "a",
+            dashed: false,
+            points: coords.map((c) => ({
+              coordinate: c,
+              position: latLngToPixel(c),
+            })),
+          },
+        ];
+      }
+      return [
+        {
+          id: "line-a",
+          variant: "a",
+          dashed: true,
+          points: [
+            {
+              coordinate: cand.coordinate,
+              position: latLngToPixel(cand.coordinate),
+            },
+            { coordinate: coordinateA, position: latLngToPixel(coordinateA) },
+          ],
+        },
+      ];
+    },
+    [coordinateA],
+  );
+
+  const focusCandidate = sorted[0] ?? null;
+  const lines = React.useMemo(
+    () => buildLineForMode(focusCandidate, mapMode),
+    [buildLineForMode, focusCandidate, mapMode],
+  );
+
+  // 카드 탭 → 상세 시트. 싱글은 배우자(B) 없음 → 직장A·여가거점·야간안전 중심.
+  const [openId, setOpenId] = React.useState<string | null>(null);
+  const selectedCandidate = React.useMemo(
+    () => (openId ? sorted.find((c) => c.id === openId) ?? null : null),
+    [openId, sorted],
+  );
+  const selectedRank = selectedCandidate
+    ? sorted.findIndex((c) => c.id === selectedCandidate.id) + 1
+    : 0;
+
+  // 시트 지도 — 선택 후보 1곳 focus + 직장A·여가거점 + 연결선 (전체 fit).
+  const detailMarkers = React.useMemo(
+    () =>
+      selectedCandidate
+        ? [
+            {
+              id: selectedCandidate.id,
+              label: markerLabel(selectedCandidate.dong),
+              position: latLngToPixel(selectedCandidate.coordinate),
+              coordinate: selectedCandidate.coordinate,
+              selected: true,
+              rank: selectedRank,
+            },
+          ]
+        : [],
+    [selectedCandidate, selectedRank],
+  );
+  const detailLines = React.useMemo(
+    () => buildLineForMode(selectedCandidate, mapMode),
+    [buildLineForMode, selectedCandidate, mapMode],
+  );
+
+  // 🚇/🚗 경로 표시 모드 토글 (지도 위 우상단). 시트 통근정보 [대중교통]/[차량] 그룹과 일관.
+  const mapModeToggle = (
+    <div
+      role="group"
+      aria-label="경로 표시 모드"
+      className="flex rounded-full bg-surface/90 p-0.5 shadow-card backdrop-blur"
+    >
+      {(
+        [
+          ["transit", "🚇 대중교통"],
+          ["car", "🚗 자동차"],
+        ] as const
+      ).map(([m, label]) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => setMapMode(m)}
+          aria-pressed={mapMode === m}
+          className={cn(
+            "rounded-full px-s-2 py-s-1 text-caption-xs font-bold transition-colors",
+            mapMode === m ? "bg-primary text-primary-foreground" : "text-ink-3",
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+
+  const open = (cid: string) => setOpenId(cid);
+
+  const handleLike = () => {
+    if (!selectedCandidate) return;
+    const wasLiked = Boolean(favorites[selectedCandidate.id]);
+    toggleFavorite(selectedCandidate.id);
+    pushToast({
+      variant: wasLiked ? "default" : "ok",
+      message: wasLiked
+        ? "찜 목록에서 뺐어요"
+        : `${selectedCandidate.gu} ${selectedCandidate.dong} 찜!`,
+    });
+  };
+
+  // 공유 — couple과 동일 흐름(/api/share POST → 링크 복사). 커플 브릿지(파트너 공유)의 기반.
+  const [isSharing, setIsSharing] = React.useState(false);
+  const handleShare = async () => {
+    if (isSharing) return;
+    setIsSharing(true);
+    try {
+      const res = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ diagnosisId: id }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "공유 링크 생성에 실패했습니다");
+      }
+      const data: { shareUrl: string } = await res.json();
+      await copyToClipboard(`${window.location.origin}${data.shareUrl}`);
+      pushToast({ variant: "ok", message: "공유 링크가 복사되었습니다" });
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "공유 링크 생성에 실패했습니다";
+      pushToast({ variant: "danger", message: msg });
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   return (
     <main className="flex min-h-screen flex-col bg-bg">
@@ -187,6 +405,17 @@ export function SingleResultView({ id }: SingleResultViewProps) {
               />
             </header>
 
+            {/* 지도 — 직장 A(파랑) + 여가거점(녹색) + 후보(회색·순위) + 1위→직장 연결선.
+                SDK 캔버스는 인쇄 시 빈칸이라 print 숨김 (PDF 리포트는 카드 중심). */}
+            <div className="print:hidden">
+              <MapCanvas
+                markers={markers}
+                workplaces={workplaces}
+                lines={lines}
+                topRightSlot={mapModeToggle}
+              />
+            </div>
+
             <div className="print:hidden">
               <LayerToggle value={layer} onChange={setLayer} />
             </div>
@@ -197,24 +426,32 @@ export function SingleResultView({ id }: SingleResultViewProps) {
               {sorted.map((c) => {
                 const grade = resolveGrade(c);
                 return (
-                  <SafetyCard
+                  <div
                     key={c.id}
-                    name={`${c.gu} ${c.dong}`}
-                    sub={getRadiusSub(c.facilities)}
-                    grade={grade}
-                    gradeLabel={getNightGradeLabel(grade)}
-                    metric={{
-                      label: "야간 범죄율 (10만명당)",
-                      value: getNightCrimeRate(grade),
-                      unit: "건",
-                    }}
-                    barPercent={getCrimePercent(grade)}
-                    stats={[
-                      { label: "통근", value: `${c.commuteA.time}분` },
-                      { label: "시세", value: priceText(c) },
-                      buildLayerStat(c, layer),
-                    ]}
-                  />
+                    className={cn(
+                      "scroll-mt-s-4 rounded-lg transition-shadow",
+                      openId === c.id && "ring-2 ring-primary ring-offset-2",
+                    )}
+                  >
+                    <SafetyCard
+                      name={`${c.gu} ${c.dong}`}
+                      sub={getRadiusSub(c.facilities)}
+                      grade={grade}
+                      gradeLabel={getNightGradeLabel(grade)}
+                      metric={{
+                        label: "야간 범죄율 (10만명당)",
+                        value: getNightCrimeRate(grade),
+                        unit: "건",
+                      }}
+                      barPercent={getCrimePercent(grade)}
+                      stats={[
+                        { label: "통근", value: `${c.commuteA.time}분` },
+                        { label: "시세", value: priceText(c) },
+                        buildLayerStat(c, layer),
+                      ]}
+                      onClick={() => open(c.id)}
+                    />
+                  </div>
                 );
               })}
             </section>
@@ -235,6 +472,55 @@ export function SingleResultView({ id }: SingleResultViewProps) {
             >
               리포트 저장 (PDF)
             </Button>
+
+            {selectedCandidate && (
+              <DetailSheet
+                open={openId !== null}
+                onClose={() => setOpenId(null)}
+                candidate={{
+                  name: `${selectedCandidate.gu} ${selectedCandidate.dong}`,
+                  score: selectedCandidate.score,
+                  pills: buildSinglePills(
+                    selectedCandidate,
+                    selectedRank,
+                    resolveGrade(selectedCandidate),
+                  ),
+                  lines: buildLines(selectedCandidate),
+                  commutes: buildCommuteRows(selectedCandidate, addressA),
+                  metrics: buildSingleMetrics(
+                    selectedCandidate,
+                    resolveGrade(selectedCandidate),
+                  ),
+                }}
+                liked={Boolean(favorites[selectedCandidate.id])}
+                onLike={handleLike}
+                onShare={handleShare}
+                map={
+                  <MapCanvas
+                    markers={detailMarkers}
+                    workplaces={workplaces}
+                    lines={detailLines}
+                    topRightSlot={mapModeToggle}
+                    fitAll
+                    height={180}
+                  />
+                }
+                primaryCta={{
+                  label: selectedCandidate.listingsCount
+                    ? `매물 ${selectedCandidate.listingsCount}건 보기`
+                    : "매물 보기",
+                  onClick: () => {
+                    const url = buildNaverRealEstateUrl(
+                      `${selectedCandidate.gu} ${selectedCandidate.dong}`,
+                      selectedCandidate.priceRange
+                        ? { priceMax: selectedCandidate.priceRange.max }
+                        : {},
+                    );
+                    window.open(url, "_blank", "noopener,noreferrer");
+                  },
+                }}
+              />
+            )}
           </>
         )}
       </div>

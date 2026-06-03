@@ -29,13 +29,14 @@ interface MarkerInput {
 }
 
 // A-1 (#졸업) — 직장 마커 + 후보→직장 직선 연결선. position(SVG)+coordinate(SDK) 둘 다 보유.
+//   ★ single 모드 — variant "leisure"(녹색) = 여가거점. 직장(파랑/주황)과 색으로 구분.
 export interface MapWorkplace {
   id: string;
-  label: string; // "내 직장" / "배우자 직장"
-  short: string; // SVG 뱃지용 "A" / "B"
+  label: string; // "내 직장" / "배우자 직장" / "여가거점"
+  short: string; // SVG 뱃지용 "A" / "B" / "♥"
   position: { x: number; y: number };
   coordinate?: Coordinate;
-  variant: "a" | "b";
+  variant: "a" | "b" | "leisure";
 }
 // points ≥2. dashed=true → 직선 추정(A-1) / false → 실 도로 경로(A-2 Kakao vertexes).
 export interface MapLine {
@@ -49,9 +50,10 @@ const LINE_STROKE: Record<"a" | "b", string> = {
   a: "stroke-primary",
   b: "stroke-warning",
 };
-const WORKPLACE_FILL: Record<"a" | "b", string> = {
+const WORKPLACE_FILL: Record<"a" | "b" | "leisure", string> = {
   a: "fill-primary",
   b: "fill-warning",
+  leisure: "fill-success",
 };
 
 interface MapCanvasProps {
