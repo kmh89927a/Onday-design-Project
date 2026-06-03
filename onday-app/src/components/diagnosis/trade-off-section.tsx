@@ -38,28 +38,43 @@ function AltCard({
   const price = formatPriceDelta(priceDelta);
   const monthly = formatPriceDelta(monthlyDelta);
 
+  // ★ 솔리드 토큰만 사용 — 토큰이 hsl(var(--x)) 형식(alpha placeholder 없음)이라
+  //   opacity modifier(/50·/5·/30)는 색이 안 먹음. 후보 best 카드(border-primary bg-primary-soft) 패턴 답습.
   const tone =
     kind === "cheaper"
-      ? { Icon: TrendingDown, badge: "더 싸게", cls: "text-success bg-success-soft" }
-      : { Icon: Zap, badge: "더 빠르게", cls: "text-primary bg-primary/10" };
+      ? {
+          Icon: TrendingDown,
+          badge: "더 싸게",
+          chip: "bg-success text-white", // 솔리드 원/뱃지 (틴트 카드 위 대비)
+          card: "border-success bg-success-soft", // 녹색 틴트 카드
+        }
+      : {
+          Icon: Zap,
+          badge: "더 빠르게",
+          chip: "bg-primary text-white",
+          card: "border-primary bg-primary-soft", // 파랑 틴트 카드
+        };
 
   return (
     <button
       type="button"
       onClick={() => onSelect?.(c.id)}
-      className="flex w-full items-start gap-s-3 rounded-lg border border-card-border bg-surface px-s-4 py-s-3 text-left shadow-card transition-shadow hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className={cn(
+        "flex w-full items-start gap-s-3 rounded-lg border px-s-4 py-s-3 text-left shadow-card transition-shadow hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+        tone.card,
+      )}
     >
       <span
         className={cn(
           "mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full",
-          tone.cls,
+          tone.chip,
         )}
       >
         <tone.Icon aria-hidden className="size-4" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-s-2">
-          <span className={cn("shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold", tone.cls)}>
+          <span className={cn("shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold", tone.chip)}>
             {tone.badge}
           </span>
           <span className="truncate text-body font-bold text-ink">{name}</span>
