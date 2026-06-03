@@ -1,11 +1,14 @@
 import type { SafetyGrade } from "@/lib/types";
 
+import { getCommunityByGu } from "./community-index";
+
 // ScoringEngine (#27 CMD-DIAG-003) — mock-calculator 에서 추출한 순수 점수 로직.
 // client(실 ODsay 오케스트레이션) + server(mock-calculator) 양쪽이 동일 점수식을 재사용.
 // ★ 점수 기준 = 대중교통(transit) 통근시간 (R2 결정). 입력 commute* 는 "분".
 
 /** 점수 계산에 필요한 동네 속성만 (MOCK_NEIGHBORHOODS 항목이 구조적으로 할당 가능). */
 export interface ScoringNeighborhood {
+  gu: string; // #조용한동네 가중 — getCommunityByGu(gu) 조회
   safetyGrade: SafetyGrade;
   facilities: { convenience: number; cafes: number; schools?: number };
 }
@@ -16,7 +19,7 @@ export interface ScoreInput {
   commuteB: number | null;
   leisureA: number | null;
   leisureB: number | null;
-  // 선호 태그 1개(⑥) — "safety"(#안심귀가) / "convenience"(#슬세권) / "hotplace"(#핫플).
+  // 선호 태그 1개(⑥) — "safety"(#안심귀가)/"convenience"(#슬세권)/"hotplace"(#핫플)/"quiet"(#조용한동네).
   priority?: string;
 }
 
@@ -35,6 +38,13 @@ function priorityBonus(
       return Math.min(10, Math.max(0, (n.facilities.convenience - 12) / 2.3));
     case "hotplace":
       return Math.min(10, Math.max(0, (n.facilities.cafes - 9) / 5.6));
+    case "quiet": {
+      // B 정책 #조용한동네 — 공원+도서관 실데이터(getCommunityByGu) 기반 가산.
+      //   미수집(no_data) 시 0 = 가중 안 함(정직, 날조 X).
+      const com = getCommunityByGu(n.gu);
+      if (com.status !== "ok") return 0;
+      return Math.min(10, Math.max(0, com.total * 0.9));
+    }
     default:
       return 0;
   }

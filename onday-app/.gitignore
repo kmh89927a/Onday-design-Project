@@ -56,3 +56,6 @@ prisma/dev.db-journal
 .sentryclirc
 
 /src/generated/prisma
+
+# B 정책 — 공공데이터 원본 CSV (집계 전용, 커밋 X)
+data-raw/

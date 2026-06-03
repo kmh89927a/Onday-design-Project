@@ -27,6 +27,7 @@ import {
   getRadiusSub,
 } from "@/features/single/safety-stats";
 import { getSafetyByGu } from "@/features/single/safety-index";
+import { getCommunityByGu } from "@/lib/diagnosis/community-index";
 import { buildSinglePills, buildSingleMetrics } from "@/features/single/detail-mapper";
 import { markerLabel } from "@/features/diagnosis/result-utils";
 import { buildCommuteRows, buildLines } from "@/features/diagnosis/detail-mapper";
@@ -79,11 +80,15 @@ function sortByLayer(
         (a, b) =>
           (b.facilities?.convenience ?? 0) - (a.facilities?.convenience ?? 0),
       );
-    case "cafes":
-      return arr.sort(
-        (a, b) => (b.facilities?.cafes ?? 0) - (a.facilities?.cafes ?? 0),
-      );
+    case "community":
+      return arr.sort((a, b) => communityCount(b) - communityCount(a));
   }
+}
+
+// 공원+도서관 실데이터 합계 (미수집 시 0 = 정렬 후순위) — B 정책.
+function communityCount(c: CandidateArea): number {
+  const com = getCommunityByGu(c.gu);
+  return com.status === "ok" ? com.total : 0;
 }
 
 function buildLayerStat(c: CandidateArea, layer: SingleLayer) {
@@ -97,8 +102,13 @@ function buildLayerStat(c: CandidateArea, layer: SingleLayer) {
         label: "편의점",
         value: `${c.facilities?.convenience ?? 0}개`,
       };
-    case "cafes":
-      return { label: "카페", value: `${c.facilities?.cafes ?? 0}개` };
+    case "community": {
+      const com = getCommunityByGu(c.gu);
+      return {
+        label: "공원·도서관",
+        value: com.status === "ok" ? `${com.total}개` : "준비중",
+      };
+    }
   }
 }
 
@@ -111,9 +121,9 @@ const LEGEND_META: Record<SingleLayer, { title: string; meta: string }> = {
     title: "편의시설 밀집도 기준",
     meta: "편의점 + 약국 + 24시간 매장 · 반경 1km",
   },
-  cafes: {
-    title: "카페 밀집도 기준",
-    meta: "스타벅스급 + 개인 카페 · 반경 1km",
+  community: {
+    title: "공원·공공도서관 기준",
+    meta: "근린공원 + 공공도서관 · 반경 1km",
   },
 };
 

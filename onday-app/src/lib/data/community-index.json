@@ -1,0 +1,524 @@
+{
+  "entries": [
+    {
+      "sigungu": "종로구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "중구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "용산구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "성동구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "광진구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "동대문구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "중랑구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "성북구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "강북구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "도봉구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "노원구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "은평구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "서대문구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "마포구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "양천구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "강서구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "구로구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "금천구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "영등포구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "동작구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "관악구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "서초구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "강남구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "송파구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "강동구",
+      "region1": "서울특별시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 중구",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 동구",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 미추홀구",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 연수구",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 남동구",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 부평구",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 계양구",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 서구",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 강화군",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "인천 옹진군",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "성남시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "의정부시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "안양시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "부천시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "광명시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "평택시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "동두천시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "안산시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "고양시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "과천시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "구리시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "남양주시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "오산시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "시흥시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "군포시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "의왕시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "하남시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "용인시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "파주시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "이천시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "안성시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "김포시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "화성시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "광주시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "양주시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "포천시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "여주시",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "연천군",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "가평군",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "양평군",
+      "region1": "경기도",
+      "parks": null,
+      "libraries": null,
+      "_parksSource": null,
+      "_librariesSource": null
+    }
+  ]
+}
