@@ -34,7 +34,7 @@ import { latLngToPixel } from "@/lib/coordinate-transform";
 import type { CandidateArea, CommuteInfo, DiagnosisFilters } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
-import { useFavoritesStore } from "@/stores/favorites";
+import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
 
 import { BudgetChipOptions } from "./budget-chip-options";
@@ -402,7 +402,7 @@ export function ResultContent({
   const handleLike = () => {
     if (!selectedCandidate) return;
     const wasLiked = Boolean(favorites[selectedCandidate.id]);
-    toggleFavorite(selectedCandidate.id);
+    toggleFavorite(toFavoriteSnapshot(selectedCandidate, "couple"));
     pushToast({
       variant: wasLiked ? "default" : "ok",
       message: wasLiked

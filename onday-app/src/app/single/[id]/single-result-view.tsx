@@ -11,6 +11,7 @@ import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
 import { DeadlineBanner } from "@/components/deadline/deadline-banner";
 import { DeadlineBell } from "@/components/deadline/deadline-bell";
+import { DeadlineEntryCard } from "@/components/deadline/deadline-entry-card";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -31,8 +32,9 @@ import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { copyToClipboard } from "@/lib/utils/clipboard";
 import { cn } from "@/lib/utils";
 import type { CandidateArea, SafetyGrade } from "@/lib/types";
+import { FavoritesMenu } from "@/components/favorites/favorites-menu";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
-import { useFavoritesStore } from "@/stores/favorites";
+import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
 
 import { LayerToggle, type SingleLayer } from "./layer-toggle";
@@ -317,7 +319,9 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const handleLike = () => {
     if (!selectedCandidate) return;
     const wasLiked = Boolean(favorites[selectedCandidate.id]);
-    toggleFavorite(selectedCandidate.id);
+    toggleFavorite(
+      toFavoriteSnapshot(selectedCandidate, "single", resolveGrade(selectedCandidate)),
+    );
     pushToast({
       variant: wasLiked ? "default" : "ok",
       message: wasLiked
@@ -358,7 +362,12 @@ export function SingleResultView({ id }: SingleResultViewProps) {
       <AppHeader
         backHref="/diagnosis"
         title="싱글 모드 결과"
-        trailing={<DeadlineBell />}
+        trailing={
+          <>
+            <FavoritesMenu />
+            <DeadlineBell />
+          </>
+        }
       />
 
       <div className="flex-1 px-s-5 pt-s-3 pb-s-8 space-y-s-4">
@@ -379,8 +388,11 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                 발행 {new Date().toLocaleDateString("ko-KR")} · {addressA} 기준
               </p>
             </div>
-            <div className="print:hidden">
+            <div className="print:hidden space-y-s-3">
               <DeadlineBanner />
+              {/* 데드라인 미설정 시 진입 카드 (부부와 패리티) — 계약 역산 + 교집합 급매 보기 → /deadline.
+                  급매 리스트·지도·네이버는 /deadline 공용 라우트가 store candidates로 이미 처리. */}
+              <DeadlineEntryCard />
             </div>
             <header className="flex items-start justify-between gap-s-3 print:hidden">
               <div>
