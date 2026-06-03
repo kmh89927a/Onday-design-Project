@@ -5,8 +5,9 @@
 //   표준데이터 컬럼명은 데이터셋마다 약간 다를 수 있음 → ADDRESS_COLS 후보로 자동 탐색.
 //   매핑이 비면 콘솔에 미매핑 주소를 찍어주니 후보를 보강하면 됨.
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import * as XLSX from "xlsx";
 
 const RAW = join(process.cwd(), "data-raw");
 const JSON_PATH = join(process.cwd(), "src/lib/data/community-index.json");
@@ -58,10 +59,26 @@ function toSigunguKey(address: string): string | null {
   return null; // 비수도권 제외
 }
 
-function countByKey(file: string): Map<string, number> {
-  const rows = parseCsv(readFileSync(join(RAW, file), "utf-8"));
+// basename.xlsx 우선, 없으면 basename.csv. 헤더 키는 trim (엑셀 헤더 공백 방지).
+function readRows(basename: string): Record<string, string>[] {
+  const xlsxPath = join(RAW, `${basename}.xlsx`);
+  if (existsSync(xlsxPath)) {
+    const wb = XLSX.readFile(xlsxPath);
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const raw = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false }) as Record<string, unknown>[];
+    return raw.map((r) =>
+      Object.fromEntries(Object.entries(r).map(([k, v]) => [k.trim(), String(v).trim()])),
+    );
+  }
+  const csvPath = join(RAW, `${basename}.csv`);
+  if (existsSync(csvPath)) return parseCsv(readFileSync(csvPath, "utf-8"));
+  throw new Error(`data-raw/${basename}.xlsx 또는 ${basename}.csv 가 없음`);
+}
+
+function countByKey(basename: string): Map<string, number> {
+  const rows = readRows(basename);
   const col = ADDRESS_COLS.find((c) => rows[0] && c in rows[0]);
-  if (!col) throw new Error(`${file}: 주소 컬럼 없음. ADDRESS_COLS 보강 필요. 헤더=${Object.keys(rows[0] ?? {})}`);
+  if (!col) throw new Error(`${basename}: 주소 컬럼 없음. ADDRESS_COLS 보강 필요. 헤더=${Object.keys(rows[0] ?? {})}`);
   const counts = new Map<string, number>();
   let unmapped = 0;
   for (const r of rows) {
@@ -69,12 +86,12 @@ function countByKey(file: string): Map<string, number> {
     if (!key) { unmapped++; continue; }
     counts.set(key.normalize("NFC"), (counts.get(key.normalize("NFC")) ?? 0) + 1);
   }
-  console.log(`${file}: ${rows.length}행 → ${counts.size}개 시군구 매핑 (미매핑 ${unmapped})`);
+  console.log(`${basename}: ${rows.length}행 → ${counts.size}개 시군구 매핑 (미매핑 ${unmapped})`);
   return counts;
 }
 
-const parks = countByKey("parks.csv");
-const libraries = countByKey("libraries.csv");
+const parks = countByKey("parks");
+const libraries = countByKey("libraries");
 
 const data = JSON.parse(readFileSync(JSON_PATH, "utf-8")) as {
   entries: { sigungu: string; parks: number | null; libraries: number | null; _parksSource?: string | null; _librariesSource?: string | null }[];

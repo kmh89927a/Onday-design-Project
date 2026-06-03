@@ -19,11 +19,12 @@
 
 | 데이터 | 검색어 | 다운로드 |
 |---|---|---|
-| 공원 | **전국도시공원정보표준데이터** | 파일데이터 → CSV |
-| 공공도서관 | **전국공공도서관표준데이터** | 파일데이터 → CSV |
+| 공원 | **전국도시공원정보표준데이터** | 파일데이터 → **xlsx 또는 csv** |
+| 공공도서관 | **전국공공도서관표준데이터** | 파일데이터 → **xlsx 또는 csv** |
 
+- **엑셀(.xlsx) 그대로 OK** — 스크립트가 xlsx·csv 둘 다 읽음(변환 불필요)
 - 둘 다 "소재지도로명주소" 또는 "소재지지번주소" 컬럼 포함 → 거기서 시군구 추출
-- 인코딩이 EUC-KR이면 UTF-8로 저장(엑셀: 다른 이름으로 저장 → CSV UTF-8)
+- (csv를 쓸 경우만) 인코딩 EUC-KR이면 UTF-8로 저장
 
 ## 2. ★ 시군구 키 규칙 (#57과 동일 — 틀리면 매핑 안 됨)
 
@@ -37,9 +38,9 @@
 
 ## 3-A. 자동 집계 (권장)
 
-1. 다운로드한 CSV를 `onday-app/data-raw/` 에 넣고 이름 변경:
-   - `data-raw/parks.csv`
-   - `data-raw/libraries.csv`
+1. 다운로드한 파일을 `onday-app/data-raw/` 에 넣고 이름 변경 (.xlsx 또는 .csv):
+   - 공원 → `data-raw/parks.xlsx` (또는 `parks.csv`)
+   - 도서관 → `data-raw/libraries.xlsx` (또는 `libraries.csv`)
 2. 실행:
    ```bash
    npx tsx scripts/build-community-index.ts
