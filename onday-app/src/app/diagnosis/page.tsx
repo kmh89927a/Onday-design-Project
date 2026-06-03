@@ -85,6 +85,8 @@ export default function DiagnosisPage() {
   const [queryB, setQueryB] = React.useState(addressB);
   const [queryL1, setQueryL1] = React.useState(leisureA);
   const [queryL2, setQueryL2] = React.useState(leisureB);
+  // 여가거점2 점진 공개 — 처음엔 L1만, "+ 추가"로 L2 노출. 이미 값 있으면(불러오기) 자동 노출.
+  const [showL2, setShowL2] = React.useState(() => Boolean(leisureB));
 
   // Issue #112 — maxCommuteTime + budget 입력 영역 (★ 단방향 input → store 동기화, "이전 조건 불러오기" 시점 별도 sync).
   //   budget은 억 단위 input + 내부 만원 변환 (★ formatBudgetFilter "X-Y억" 표시 정합).
@@ -202,6 +204,8 @@ export default function DiagnosisPage() {
       setQueryB(config.addressB ?? "");
       setQueryL1(config.leisureA ?? "");
       setQueryL2(config.leisureB ?? "");
+      // 불러온 조건에 여가거점2가 있으면 입력창 펼침(점진 공개 자동 해제).
+      setShowL2(Boolean(config.leisureB));
       // Issue #112 — budget local state sync (★ filters.budget 자가 치유와 별개 영역).
       const nextBudget = (config.filters?.budget ?? undefined) as
         | { min: number; max: number }
@@ -319,26 +323,36 @@ export default function DiagnosisPage() {
                   setQueryL1(item.title);
                 }}
               />
-              <AddressInput
-                tag="L2"
-                label="여가 거점 2 (선택, 다른 동네)"
-                value={queryL2}
-                onChange={setQueryL2}
-                placeholder="두 번째 자주 가는 동네"
-                suggestions={suggestionsL2}
-                verified={Boolean(
-                  leisureCoordB && leisureB === queryL2 && queryL2.length > 0,
-                )}
-                onSelect={(item) => {
-                  // ★ UI-012 AC-5 (#58) — 여가거점 수도권 검증 (REQ-FUNC-024, 직장 A와 동일 가드).
-                  if (item.coordinate && !isWithinMetroBounds(item.coordinate)) {
-                    pushToast({ variant: "danger", message: "현재 수도권만 지원됩니다" });
-                    return;
-                  }
-                  setLeisureB(item.title, item.coordinate);
-                  setQueryL2(item.title);
-                }}
-              />
+              {showL2 ? (
+                <AddressInput
+                  tag="L2"
+                  label="여가 거점 2 (선택, 다른 동네)"
+                  value={queryL2}
+                  onChange={setQueryL2}
+                  placeholder="두 번째 자주 가는 동네"
+                  suggestions={suggestionsL2}
+                  verified={Boolean(
+                    leisureCoordB && leisureB === queryL2 && queryL2.length > 0,
+                  )}
+                  onSelect={(item) => {
+                    // ★ UI-012 AC-5 (#58) — 여가거점 수도권 검증 (REQ-FUNC-024, 직장 A와 동일 가드).
+                    if (item.coordinate && !isWithinMetroBounds(item.coordinate)) {
+                      pushToast({ variant: "danger", message: "현재 수도권만 지원됩니다" });
+                      return;
+                    }
+                    setLeisureB(item.title, item.coordinate);
+                    setQueryL2(item.title);
+                  }}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowL2(true)}
+                  className="flex w-full items-center justify-center gap-s-1 rounded-md border border-dashed border-card-border bg-surface px-s-3 py-s-2 text-body-sm font-bold text-ink-2 transition-colors hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                >
+                  + 자주 가는 동네 추가
+                </button>
+              )}
             </>
           )}
         </section>
