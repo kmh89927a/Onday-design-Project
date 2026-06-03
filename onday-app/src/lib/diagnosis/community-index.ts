@@ -34,8 +34,16 @@ export interface CommunityNoData {
 }
 export type CommunityLookup = CommunityOk | CommunityNoData;
 
+// neighborhood.gu → 시군구 키 정규화 (safety-index normalizeGu 와 동일 규칙).
+//   "고양시 일산동구" → "고양시" / "강남구"·"인천 서구" 그대로. NFC 우선(NFD 방어).
+function normalizeGu(gu: string): string {
+  const nfc = gu.normalize("NFC");
+  const m = nfc.match(/^(.+?시)\s+\S+구$/);
+  return m ? m[1] : nfc;
+}
+
 export function getCommunityByGu(gu: string): CommunityLookup {
-  const key = gu.normalize("NFC");
+  const key = normalizeGu(gu);
   const e = BY_SIGUNGU.get(key);
   if (!e || e.parks == null || e.libraries == null) {
     return { status: "no_data", sigungu: key };
