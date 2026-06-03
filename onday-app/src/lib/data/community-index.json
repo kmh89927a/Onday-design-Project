@@ -1,0 +1,532 @@
+{
+  "entries": [
+    {
+      "sigungu": "종로구",
+      "region1": "서울특별시",
+      "parks": 43,
+      "libraries": 15,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "중구",
+      "region1": "서울특별시",
+      "parks": 38,
+      "libraries": 19,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "용산구",
+      "region1": "서울특별시",
+      "parks": 49,
+      "libraries": 16,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "성동구",
+      "region1": "서울특별시",
+      "parks": 48,
+      "libraries": 24,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "광진구",
+      "region1": "서울특별시",
+      "parks": 43,
+      "libraries": 34,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "동대문구",
+      "region1": "서울특별시",
+      "parks": 50,
+      "libraries": null,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": null
+    },
+    {
+      "sigungu": "중랑구",
+      "region1": "서울특별시",
+      "parks": 58,
+      "libraries": 6,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "성북구",
+      "region1": "서울특별시",
+      "parks": 53,
+      "libraries": 17,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "강북구",
+      "region1": "서울특별시",
+      "parks": 54,
+      "libraries": 7,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "도봉구",
+      "region1": "서울특별시",
+      "parks": 49,
+      "libraries": 31,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "노원구",
+      "region1": "서울특별시",
+      "parks": 4,
+      "libraries": 34,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "은평구",
+      "region1": "서울특별시",
+      "parks": 105,
+      "libraries": 77,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "서대문구",
+      "region1": "서울특별시",
+      "parks": 67,
+      "libraries": 15,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "마포구",
+      "region1": "서울특별시",
+      "parks": 90,
+      "libraries": 15,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "양천구",
+      "region1": "서울특별시",
+      "parks": 96,
+      "libraries": 23,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "강서구",
+      "region1": "서울특별시",
+      "parks": 146,
+      "libraries": 36,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "구로구",
+      "region1": "서울특별시",
+      "parks": 62,
+      "libraries": 14,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "금천구",
+      "region1": "서울특별시",
+      "parks": 52,
+      "libraries": 27,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "영등포구",
+      "region1": "서울특별시",
+      "parks": 50,
+      "libraries": 26,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "동작구",
+      "region1": "서울특별시",
+      "parks": 52,
+      "libraries": 11,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "관악구",
+      "region1": "서울특별시",
+      "parks": 75,
+      "libraries": 39,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "서초구",
+      "region1": "서울특별시",
+      "parks": 128,
+      "libraries": 10,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "강남구",
+      "region1": "서울특별시",
+      "parks": 146,
+      "libraries": 27,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "송파구",
+      "region1": "서울특별시",
+      "parks": 140,
+      "libraries": 12,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "강동구",
+      "region1": "서울특별시",
+      "parks": 74,
+      "libraries": 6,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 중구",
+      "region1": "인천광역시",
+      "parks": 124,
+      "libraries": 29,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 동구",
+      "region1": "인천광역시",
+      "parks": 15,
+      "libraries": 8,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 미추홀구",
+      "region1": "인천광역시",
+      "parks": 66,
+      "libraries": 16,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 연수구",
+      "region1": "인천광역시",
+      "parks": 118,
+      "libraries": 28,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 남동구",
+      "region1": "인천광역시",
+      "parks": 157,
+      "libraries": 13,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 부평구",
+      "region1": "인천광역시",
+      "parks": 102,
+      "libraries": 58,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 계양구",
+      "region1": "인천광역시",
+      "parks": 66,
+      "libraries": 14,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 서구",
+      "region1": "인천광역시",
+      "parks": 158,
+      "libraries": 113,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 강화군",
+      "region1": "인천광역시",
+      "parks": 6,
+      "libraries": 5,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "인천 옹진군",
+      "region1": "인천광역시",
+      "parks": null,
+      "libraries": 10,
+      "_parksSource": null,
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "수원시",
+      "region1": "경기도",
+      "parks": 335,
+      "libraries": 25,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "성남시",
+      "region1": "경기도",
+      "parks": 216,
+      "libraries": 41,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "의정부시",
+      "region1": "경기도",
+      "parks": 107,
+      "libraries": 19,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "안양시",
+      "region1": "경기도",
+      "parks": 138,
+      "libraries": 11,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "부천시",
+      "region1": "경기도",
+      "parks": 195,
+      "libraries": 35,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "광명시",
+      "region1": "경기도",
+      "parks": 84,
+      "libraries": 6,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "평택시",
+      "region1": "경기도",
+      "parks": 535,
+      "libraries": 14,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "동두천시",
+      "region1": "경기도",
+      "parks": 40,
+      "libraries": 6,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "안산시",
+      "region1": "경기도",
+      "parks": 241,
+      "libraries": 24,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "고양시",
+      "region1": "경기도",
+      "parks": 281,
+      "libraries": 25,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "과천시",
+      "region1": "경기도",
+      "parks": 19,
+      "libraries": 4,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "구리시",
+      "region1": "경기도",
+      "parks": 61,
+      "libraries": 8,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "남양주시",
+      "region1": "경기도",
+      "parks": 172,
+      "libraries": 13,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "오산시",
+      "region1": "경기도",
+      "parks": 118,
+      "libraries": 7,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "시흥시",
+      "region1": "경기도",
+      "parks": 200,
+      "libraries": 31,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "군포시",
+      "region1": "경기도",
+      "parks": 123,
+      "libraries": 42,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "의왕시",
+      "region1": "경기도",
+      "parks": 62,
+      "libraries": 13,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "하남시",
+      "region1": "경기도",
+      "parks": 81,
+      "libraries": 9,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "용인시",
+      "region1": "경기도",
+      "parks": 340,
+      "libraries": 27,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "파주시",
+      "region1": "경기도",
+      "parks": 173,
+      "libraries": 21,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "이천시",
+      "region1": "경기도",
+      "parks": 44,
+      "libraries": 5,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "안성시",
+      "region1": "경기도",
+      "parks": 75,
+      "libraries": 17,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "김포시",
+      "region1": "경기도",
+      "parks": 189,
+      "libraries": 7,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "화성시",
+      "region1": "경기도",
+      "parks": 598,
+      "libraries": 33,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "광주시",
+      "region1": "경기도",
+      "parks": 66,
+      "libraries": 16,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "양주시",
+      "region1": "경기도",
+      "parks": 100,
+      "libraries": 10,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "포천시",
+      "region1": "경기도",
+      "parks": 47,
+      "libraries": 7,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "여주시",
+      "region1": "경기도",
+      "parks": 24,
+      "libraries": 9,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "연천군",
+      "region1": "경기도",
+      "parks": 17,
+      "libraries": 2,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "가평군",
+      "region1": "경기도",
+      "parks": 18,
+      "libraries": 4,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    },
+    {
+      "sigungu": "양평군",
+      "region1": "경기도",
+      "parks": 34,
+      "libraries": 12,
+      "_parksSource": "data.go.kr:전국도시공원표준데이터",
+      "_librariesSource": "data.go.kr:전국공공도서관표준데이터"
+    }
+  ]
+}

@@ -10,6 +10,8 @@ import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
 import { TradeOffSection } from "@/components/diagnosis/trade-off-section";
+import { PreferenceBanner } from "@/components/diagnosis/preference-banner";
+import { buildPreferenceReason } from "@/features/diagnosis/preference-reason";
 import { DeadlineBanner } from "@/components/deadline/deadline-banner";
 import { DeadlineBell } from "@/components/deadline/deadline-bell";
 import { DeadlineEntryCard } from "@/components/deadline/deadline-entry-card";
@@ -25,6 +27,7 @@ import {
   getRadiusSub,
 } from "@/features/single/safety-stats";
 import { getSafetyByGu } from "@/features/single/safety-index";
+import { getCommunityByGu } from "@/lib/diagnosis/community-index";
 import { buildSinglePills, buildSingleMetrics } from "@/features/single/detail-mapper";
 import { markerLabel } from "@/features/diagnosis/result-utils";
 import { buildCommuteRows, buildLines } from "@/features/diagnosis/detail-mapper";
@@ -77,11 +80,15 @@ function sortByLayer(
         (a, b) =>
           (b.facilities?.convenience ?? 0) - (a.facilities?.convenience ?? 0),
       );
-    case "cafes":
-      return arr.sort(
-        (a, b) => (b.facilities?.cafes ?? 0) - (a.facilities?.cafes ?? 0),
-      );
+    case "community":
+      return arr.sort((a, b) => communityCount(b) - communityCount(a));
   }
+}
+
+// 공원+도서관 실데이터 합계 (미수집 시 0 = 정렬 후순위) — B 정책.
+function communityCount(c: CandidateArea): number {
+  const com = getCommunityByGu(c.gu);
+  return com.status === "ok" ? com.total : 0;
 }
 
 function buildLayerStat(c: CandidateArea, layer: SingleLayer) {
@@ -95,8 +102,13 @@ function buildLayerStat(c: CandidateArea, layer: SingleLayer) {
         label: "편의점",
         value: `${c.facilities?.convenience ?? 0}개`,
       };
-    case "cafes":
-      return { label: "카페", value: `${c.facilities?.cafes ?? 0}개` };
+    case "community": {
+      const com = getCommunityByGu(c.gu);
+      return {
+        label: "공원·도서관",
+        value: com.status === "ok" ? `${com.total}개` : "준비중",
+      };
+    }
   }
 }
 
@@ -109,9 +121,9 @@ const LEGEND_META: Record<SingleLayer, { title: string; meta: string }> = {
     title: "편의시설 밀집도 기준",
     meta: "편의점 + 약국 + 24시간 매장 · 반경 1km",
   },
-  cafes: {
-    title: "카페 밀집도 기준",
-    meta: "스타벅스급 + 개인 카페 · 반경 1km",
+  community: {
+    title: "공원·공공도서관 (시군구 단위)",
+    meta: "구 전체 등록 수 · data.go.kr 표준데이터",
   },
 };
 
@@ -125,6 +137,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const coordinateA = useDiagnosisStore((s) => s.coordinateA);
   const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
   const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
+  const priorityKey = useDiagnosisStore((s) => s.filters.priorities?.[0]);
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
@@ -394,6 +407,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
               {/* 데드라인 미설정 시 진입 카드 (부부와 패리티) — 계약 역산 + 교집합 급매 보기 → /deadline.
                   급매 리스트·지도·네이버는 /deadline 공용 라우트가 store candidates로 이미 처리. */}
               <DeadlineEntryCard />
+              <PreferenceBanner priorityKey={priorityKey} />
             </div>
             <header className="flex items-start justify-between gap-s-3 print:hidden">
               <div>
@@ -462,6 +476,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                         { label: "시세", value: priceText(c) },
                         buildLayerStat(c, layer),
                       ]}
+                      tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
                       onClick={() => open(c.id)}
                     />
                   </div>
@@ -497,11 +512,22 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                 candidate={{
                   name: `${selectedCandidate.gu} ${selectedCandidate.dong}`,
                   score: selectedCandidate.score,
-                  pills: buildSinglePills(
-                    selectedCandidate,
-                    selectedRank,
-                    resolveGrade(selectedCandidate),
-                  ),
+                  pills: [
+                    ...(priorityKey
+                      ? [
+                          {
+                            variant: "default" as const,
+                            label:
+                              buildPreferenceReason(priorityKey, selectedCandidate) ?? "",
+                          },
+                        ]
+                      : []),
+                    ...buildSinglePills(
+                      selectedCandidate,
+                      selectedRank,
+                      resolveGrade(selectedCandidate),
+                    ),
+                  ],
                   lines: buildLines(selectedCandidate),
                   commutes: buildCommuteRows(selectedCandidate, addressA),
                   metrics: buildSingleMetrics(

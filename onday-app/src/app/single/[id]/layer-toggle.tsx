@@ -6,13 +6,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 // Figma 비전 (single_mode_vision 메모리) + wiki/concepts/single-mode.md
-// 야간치안 / 편의시설 / 카페 — 1인 가구 핵심 Layer
-export type SingleLayer = "safety" | "convenience" | "cafes";
+// 야간치안 / 편의시설 / 공원·도서관 — 1인 가구 핵심 Layer
+//   ★ B 정책: 카페(유흥·야간 변수) → 공원·공공도서관(안전 커뮤니티 시설)로 교체.
+export type SingleLayer = "safety" | "convenience" | "community";
 
 const LAYER_OPTIONS: { value: SingleLayer; label: string; meta: string }[] = [
   { value: "safety", label: "야간 안전", meta: "범죄율 (10만명당)" },
   { value: "convenience", label: "편의시설", meta: "편의점 밀집도" },
-  { value: "cafes", label: "카페", meta: "카페 밀집도" },
+  { value: "community", label: "공원·도서관", meta: "구 전체 공원·도서관 수" },
 ];
 
 export const LAYER_META: Record<SingleLayer, string> = LAYER_OPTIONS.reduce(

@@ -6,7 +6,11 @@ import type {
   Coordinate,
   DiagnosisInput,
 } from "@/lib/types";
-import { haversineDistance } from "@/lib/haversine";
+import {
+  haversineDistance,
+  estimateCommuteMinutes,
+  estimateTransfers,
+} from "@/lib/haversine";
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 import { KakaoCarClient } from "@/lib/external/kakao-car";
@@ -14,6 +18,22 @@ import { KakaoCarClient } from "@/lib/external/kakao-car";
 // ★ W2B 자차 — 카카오 모빌리티 브라우저 직접 (NEXT_PUBLIC, 도메인 제한). ODsay 프록시와 병렬.
 const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY ?? "";
 const kakaoCar = KAKAO_KEY ? new KakaoCarClient({ apiKey: KAKAO_KEY }) : null;
+
+// ODsay(대중교통) 실패 시 haversine 추정 fallback — 후보 drop 대신 추정값 유지.
+//   ★ Vercel 무료(ODsay 공인 IP 화이트리스트 불가) 환경에서도 결과가 비지 않게.
+//   routePath 없음 → 지도에서 직선 점선(추정) 표시 = 정직. 자차(Kakao)는 실 도로선 유지.
+function estimateTransit(
+  origin: Coordinate,
+  destination: Coordinate,
+  departureTime?: string,
+): CommuteInfo {
+  const dist = haversineDistance(origin, destination);
+  return {
+    time: estimateCommuteMinutes(dist, departureTime),
+    mode: "transit",
+    transfers: estimateTransfers(dist),
+  };
+}
 
 /** 자차 통근 — best-effort. 실패/키없음 → null (차량 행만 생략, 후보·점수 무영향). */
 async function fetchCarCommute(
@@ -99,20 +119,30 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
     prefiltered,
     ODSAY_CONCURRENCY,
     async ({ n }): Promise<CandidateArea | null> => {
-      const commuteA = await fetchCommute(n.coordinate, coordinateA);
-      if (!commuteA) return null; // 직장 A 경로 없으면 후보 제외
+      const depTime = filters.commuteSchedule?.departureTime;
+      // ODsay 실패 → 후보 drop 대신 haversine 추정(빈 결과 방지, Vercel 무료 대응).
+      const commuteA =
+        (await fetchCommute(n.coordinate, coordinateA)) ??
+        estimateTransit(n.coordinate, coordinateA, depTime);
 
       let commuteB: CommuteInfo | null = null;
       if (coordinateB) {
-        commuteB = await fetchCommute(n.coordinate, coordinateB);
-        if (!commuteB) return null; // couple 인데 배우자 경로 없으면 제외
+        commuteB =
+          (await fetchCommute(n.coordinate, coordinateB)) ??
+          estimateTransit(n.coordinate, coordinateB, depTime);
       }
 
-      // single 모드 여가거점 (선택) — 동네 → 여가거점
+      // single 모드 여가거점 (선택) — 동네 → 여가거점 (실패 시 추정).
       let leisureA: CommuteInfo | null = null;
-      if (leisureCoordA) leisureA = await fetchCommute(n.coordinate, leisureCoordA);
+      if (leisureCoordA)
+        leisureA =
+          (await fetchCommute(n.coordinate, leisureCoordA)) ??
+          estimateTransit(n.coordinate, leisureCoordA, depTime);
       let leisureB: CommuteInfo | null = null;
-      if (leisureCoordB) leisureB = await fetchCommute(n.coordinate, leisureCoordB);
+      if (leisureCoordB)
+        leisureB =
+          (await fetchCommute(n.coordinate, leisureCoordB)) ??
+          estimateTransit(n.coordinate, leisureCoordB, depTime);
 
       // 필터 — 통근 상한
       if (filters.maxCommuteTime) {
@@ -141,6 +171,7 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         commuteB: commuteB?.time ?? null,
         leisureA: leisureA?.time ?? null,
         leisureB: leisureB?.time ?? null,
+        priority: filters.priorities?.[0],
       });
 
       return {

@@ -44,6 +44,8 @@ interface CandidateCardProps {
   best?: boolean;
   commutes: CommuteSummary[];
   price: string;
+  /** 선호 태그(⑥) 근거 — "치안 우수 (A등급)" 등. 태그 선택 시에만. */
+  tagReason?: string;
   href?: string;
   onClick?: () => void;
   className?: string;
@@ -56,6 +58,7 @@ export function CandidateCard({
   best,
   commutes,
   price,
+  tagReason,
   href,
   onClick,
   className,
@@ -132,6 +135,13 @@ export function CandidateCard({
       </div>
 
       <p className="text-body-sm font-bold text-ink-2">{price}</p>
+
+      {tagReason && (
+        <p className="flex items-center gap-1 text-caption font-bold text-primary">
+          <span aria-hidden>✨</span>
+          {tagReason}
+        </p>
+      )}
     </>
   );
 
