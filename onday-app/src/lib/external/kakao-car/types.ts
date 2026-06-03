@@ -26,11 +26,20 @@ export interface KakaoCarSummary {
   fare: KakaoCarFare;
 }
 
+/** routes[].sections[].roads[].vertexes — 평면 [x,y,x,y,…] = [lng,lat,lng,lat,…] 도로 폴리라인. */
+export interface KakaoCarRoad {
+  vertexes: number[];
+}
+export interface KakaoCarSection {
+  roads?: KakaoCarRoad[];
+}
+
 export interface KakaoCarRoute {
   result_code: number; // 0 = 성공
   result_msg: string;
   summary: KakaoCarSummary;
-  // sections(roads/guides)는 현재 CommuteInfo 미사용.
+  // A-2 (#졸업 지도) — 실 도로 경로. /v1/directions 는 summary=true 미지정 시 sections 포함.
+  sections?: KakaoCarSection[];
 }
 
 export interface KakaoCarResponse {

@@ -13,6 +13,9 @@ export interface CommuteInfo {
   time: number; // minutes
   mode: CommuteMode;
   transfers?: number;
+  // A-2 (#졸업 지도) — 실 이동 경로 좌표열. 자동차=Kakao 도로 vertexes.
+  //   없으면(mock·실패·transit) 화면에서 직선 추정으로 fallback.
+  routePath?: Coordinate[];
 }
 
 export interface CandidateArea {

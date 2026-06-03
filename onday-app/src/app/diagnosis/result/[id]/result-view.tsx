@@ -12,6 +12,7 @@ import {
 import { DeadlineBanner } from "@/components/deadline/deadline-banner";
 import { DeadlineBell } from "@/components/deadline/deadline-bell";
 import { DeadlineEntryCard } from "@/components/deadline/deadline-entry-card";
+import { FavoritesMenu } from "@/components/favorites/favorites-menu";
 import { EmptyState } from "@/components/diagnosis/empty-state";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
@@ -147,6 +148,7 @@ export function ResultView({ id }: ResultViewProps) {
         title={headerTitle}
         trailing={
           <>
+            <FavoritesMenu />
             <DeadlineBell />
             <Button
               variant="outline"

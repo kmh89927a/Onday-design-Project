@@ -28,8 +28,40 @@ interface MarkerInput {
   rank?: number;
 }
 
+// A-1 (#졸업) — 직장 마커 + 후보→직장 직선 연결선. position(SVG)+coordinate(SDK) 둘 다 보유.
+//   ★ single 모드 — variant "leisure"(녹색) = 여가거점. 직장(파랑/주황)과 색으로 구분.
+export interface MapWorkplace {
+  id: string;
+  label: string; // "내 직장" / "배우자 직장" / "여가거점"
+  short: string; // SVG 뱃지용 "A" / "B" / "♥"
+  position: { x: number; y: number };
+  coordinate?: Coordinate;
+  variant: "a" | "b" | "leisure";
+}
+// points ≥2. dashed=true → 직선 추정(A-1) / false → 실 도로 경로(A-2 Kakao vertexes).
+export interface MapLine {
+  id: string;
+  points: { position: { x: number; y: number }; coordinate?: Coordinate }[];
+  variant: "a" | "b";
+  dashed?: boolean;
+}
+
+const LINE_STROKE: Record<"a" | "b", string> = {
+  a: "stroke-primary",
+  b: "stroke-warning",
+};
+const WORKPLACE_FILL: Record<"a" | "b" | "leisure", string> = {
+  a: "fill-primary",
+  b: "fill-warning",
+  leisure: "fill-success",
+};
+
 interface MapCanvasProps {
   markers: MarkerInput[];
+  workplaces?: MapWorkplace[];
+  lines?: MapLine[];
+  /** B — true면 전체 마커 기준 줌(DetailSheet). 기본=직장 A·B 기준(메인 맵). */
+  fitAll?: boolean;
   placeholder?: boolean;
   height?: number;
   topRightSlot?: React.ReactNode;
@@ -41,6 +73,9 @@ interface MapCanvasProps {
 
 export function MapCanvas({
   markers,
+  workplaces = [],
+  lines = [],
+  fitAll = false,
   placeholder = true,
   height = 320,
   topRightSlot,
@@ -70,6 +105,34 @@ export function MapCanvas({
     [markers],
   );
 
+  // SDK 모드 — 좌표 있는 직장 마커 + 양끝 좌표 있는 연결선만 전달.
+  const kakaoWorkplaces = React.useMemo(
+    () =>
+      workplaces
+        .filter((w): w is MapWorkplace & { coordinate: Coordinate } =>
+          Boolean(w.coordinate),
+        )
+        .map((w) => ({
+          id: w.id,
+          coordinate: w.coordinate,
+          label: w.label,
+          variant: w.variant,
+        })),
+    [workplaces],
+  );
+  const kakaoLines = React.useMemo(
+    () =>
+      lines
+        .filter((l) => l.points.length >= 2 && l.points.every((p) => p.coordinate))
+        .map((l) => ({
+          id: l.id,
+          path: l.points.map((p) => p.coordinate as Coordinate),
+          variant: l.variant,
+          dashed: l.dashed ?? false,
+        })),
+    [lines],
+  );
+
   if (useSdk && kakaoMarkers.length === markers.length) {
     return (
       <div
@@ -81,6 +144,9 @@ export function MapCanvas({
         <MapCanvasKakao
           appKey={appKey as string}
           markers={kakaoMarkers}
+          workplaces={kakaoWorkplaces}
+          lines={kakaoLines}
+          fitAll={fitAll}
           height={height}
           onMarkerClick={onMarkerClick}
           onFail={handleSdkFail}
@@ -137,6 +203,20 @@ export function MapCanvas({
             fill="#B6D6F2"
             opacity="0.85"
           />
+          {/* A-1/A-2 — 후보→직장 경로선 (점선=직선 추정 / 실선=실 도로). 마커보다 먼저 = 아래 깔림. */}
+          {lines.map((l) => (
+            <polyline
+              key={l.id}
+              aria-hidden
+              points={l.points.map((p) => `${p.position.x},${p.position.y}`).join(" ")}
+              fill="none"
+              strokeWidth="2"
+              strokeDasharray={l.dashed ? "5 4" : undefined}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={cn(LINE_STROKE[l.variant], "opacity-70")}
+            />
+          ))}
           {/* 마커 = 시맨틱 (각 마커 g에 role=button + aria-label) */}
           {markers.map((m) => (
             <MapMarker
@@ -147,6 +227,47 @@ export function MapCanvas({
               rank={m.rank}
               onClick={() => onMarkerClick?.(m.id)}
             />
+          ))}
+          {/* A-1 — 직장 A·B 마커 (둥근 사각 + A/B 뱃지 + 선 색 맞춘 라벨, 후보 원형과 구분). */}
+          {workplaces.map((w) => (
+            <g
+              key={w.id}
+              aria-label={w.label}
+              transform={`translate(${w.position.x},${w.position.y})`}
+            >
+              <rect
+                x="-13"
+                y="-13"
+                width="26"
+                height="26"
+                rx="7"
+                className={cn(WORKPLACE_FILL[w.variant], "stroke-white stroke-[2]")}
+              />
+              <text
+                aria-hidden
+                textAnchor="middle"
+                dominantBaseline="central"
+                className="pointer-events-none fill-white text-[11px] font-extrabold"
+              >
+                {w.short}
+              </text>
+              {/* 선 색과 맞춘 라벨 — 흰 외곽선(paint-order:stroke)으로 지도 위 가독성 확보. */}
+              <text
+                aria-hidden
+                y="26"
+                textAnchor="middle"
+                dominantBaseline="central"
+                stroke="white"
+                strokeWidth="3"
+                style={{ paintOrder: "stroke" }}
+                className={cn(
+                  WORKPLACE_FILL[w.variant],
+                  "pointer-events-none text-[10px] font-extrabold",
+                )}
+              >
+                {w.label}
+              </text>
+            </g>
           ))}
         </svg>
       )}

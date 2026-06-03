@@ -1,6 +1,20 @@
-import type { CommuteInfo } from "@/lib/types";
-import type { OdsayTransitResponse } from "./types";
+import type { Coordinate, CommuteInfo } from "@/lib/types";
+import type { OdsayPath, OdsayTransitResponse } from "./types";
 import { OdsayTransitError } from "./types";
+
+/**
+ * A-3 (#졸업 지도) — subPath 의 지하철·버스 정거장 좌표를 순서대로 → Coordinate[].
+ * "거쳐가는 역" 선용. 도보 구간은 좌표 없어 제외(출발·도착 연결은 화면단에서 보강).
+ */
+function extractStationPath(path: OdsayPath): Coordinate[] {
+  const out: Coordinate[] = [];
+  for (const sp of path.subPath ?? []) {
+    for (const st of sp.passStopList?.stations ?? []) {
+      out.push({ lat: Number(st.y), lng: Number(st.x) });
+    }
+  }
+  return out;
+}
 
 /**
  * ODsay 대중교통 길찾기 응답 → CommuteInfo (앱 모델 무변경 — R2 transit-only).
@@ -25,11 +39,14 @@ export function mapOdsayResponseToCommuteInfo(
 
   const { totalTime, subwayTransitCount, busTransitCount } = path.info;
   const transfers = Math.max(0, subwayTransitCount + busTransitCount - 1);
+  const stationPath = extractStationPath(path);
 
   return {
     time: totalTime,
     mode: "transit",
     transfers,
+    // A-3 — 거쳐가는 정거장 좌표 (2개 이상일 때만). 출발·도착 연결은 화면단에서 보강.
+    ...(stationPath.length >= 2 ? { routePath: stationPath } : {}),
     // totalWalk / payment 는 현재 CommuteInfo 미보유 — 정보 손실 수용 (차후 모델 확장 시).
   } satisfies CommuteInfo;
 }
