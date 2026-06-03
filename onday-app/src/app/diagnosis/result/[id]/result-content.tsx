@@ -9,6 +9,7 @@ import { FilterPanel } from "@/components/form/filter-panel";
 import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
+import { TradeOffSection } from "@/components/diagnosis/trade-off-section";
 import {
   buildCommuteRows,
   buildLines,
@@ -556,6 +557,8 @@ export function ResultContent({
           </li>
         ))}
       </ul>
+
+      <TradeOffSection candidates={sorted} onSelect={open} />
 
       {selectedCandidate && (
         <DetailSheet

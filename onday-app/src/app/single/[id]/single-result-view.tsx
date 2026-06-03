@@ -9,6 +9,7 @@ import { LegendBar } from "@/components/data/legend-bar";
 import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
+import { TradeOffSection } from "@/components/diagnosis/trade-off-section";
 import { DeadlineBanner } from "@/components/deadline/deadline-banner";
 import { DeadlineBell } from "@/components/deadline/deadline-bell";
 import { DeadlineEntryCard } from "@/components/deadline/deadline-entry-card";
@@ -467,6 +468,10 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                 );
               })}
             </section>
+
+            <div className="print:hidden">
+              <TradeOffSection candidates={sorted} onSelect={open} />
+            </div>
 
             <Button
               fullWidth
