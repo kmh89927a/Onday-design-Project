@@ -10,6 +10,8 @@ import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
 import { TradeOffSection } from "@/components/diagnosis/trade-off-section";
+import { PreferenceBanner } from "@/components/diagnosis/preference-banner";
+import { buildPreferenceReason } from "@/features/diagnosis/preference-reason";
 import {
   buildCommuteRows,
   buildLines,
@@ -412,8 +414,11 @@ export function ResultContent({
     });
   };
 
+  const priorityKey = filters.priorities?.[0];
+
   return (
     <div className="space-y-s-4">
+      <PreferenceBanner priorityKey={priorityKey} />
       <FilterPanel
         // Issue #106 ㊘ — TimeTabs 미박힘 (★ "사용자 입력 → 결과" 자연 흐름 도달).
         //   ㊔ 사용자 입력 X 필터는 chip 숨김 (★ "제한 없음"/"전체" 표시 X).
@@ -552,6 +557,7 @@ export function ResultContent({
                   : []),
               ]}
               price={formatPrice(c.priceRange)}
+              tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
               onClick={() => open(c.id)}
             />
           </li>
@@ -567,7 +573,17 @@ export function ResultContent({
           candidate={{
             name: `${selectedCandidate.gu} ${selectedCandidate.dong}`,
             score: selectedCandidate.score,
-            pills: buildPills(selectedCandidate, selectedRank === 1),
+            pills: [
+              ...(priorityKey
+                ? [
+                    {
+                      variant: "default" as const,
+                      label: buildPreferenceReason(priorityKey, selectedCandidate) ?? "",
+                    },
+                  ]
+                : []),
+              ...buildPills(selectedCandidate, selectedRank === 1),
+            ],
             lines: buildLines(selectedCandidate),
             commutes: buildCommuteRows(selectedCandidate, addressA, addressB),
             metrics: buildMetrics(selectedCandidate),

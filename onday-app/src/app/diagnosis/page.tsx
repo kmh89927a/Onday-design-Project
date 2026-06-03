@@ -22,6 +22,8 @@ import { isWithinMetroBounds } from "@/lib/diagnosis";
 import { trackDiagnosisStarted } from "@/lib/analytics/mixpanel";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
+import { cn } from "@/lib/utils";
+import { PREFERENCE_TAGS } from "@/lib/diagnosis/preference-tags";
 
 // ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — 이전 조건 불러오기 (localStorage 직접 + 명시적 패턴, Zustand store 보존 답습).
 const LAST_CONFIG_KEY = "onday-last-config";
@@ -429,6 +431,46 @@ export default function DiagnosisPage() {
               if (next === "couple" || next === "single") setMode(next);
             }}
           />
+        </section>
+
+        {/* 선호 태그(⑥) — 단일 선택, 점수 가중(priorityBonus). 부부·싱글 공통. */}
+        <section className="mt-s-6 space-y-s-2">
+          <p className="text-caption font-bold text-ink">
+            어떤 동네가 좋아요?{" "}
+            <span className="font-normal text-ink-3">(선택 · 취향 반영)</span>
+          </p>
+          <div
+            role="radiogroup"
+            aria-label="선호 태그"
+            className="flex flex-wrap gap-s-2"
+          >
+            {PREFERENCE_TAGS.map((t) => {
+              const active = filters.priorities?.[0] === t.key;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() =>
+                    setFilters({
+                      ...filters,
+                      priorities: active ? [] : [t.key],
+                    })
+                  }
+                  className={cn(
+                    "rounded-full border px-s-3 py-s-2 text-body-sm font-bold transition-colors",
+                    active
+                      ? "border-primary bg-primary-soft text-primary"
+                      : "border-card-border bg-surface text-ink-2 hover:bg-bg",
+                    "focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
+                  )}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </section>
       </div>
 

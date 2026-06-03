@@ -16,6 +16,28 @@ export interface ScoreInput {
   commuteB: number | null;
   leisureA: number | null;
   leisureB: number | null;
+  // 선호 태그 1개(⑥) — "safety"(#안심귀가) / "convenience"(#슬세권) / "hotplace"(#핫플).
+  priority?: string;
+}
+
+// 선호 태그 가중 — 해당 지표를 한 번 더 가산(±10). 취향 맞는 동네를 상위로.
+//   conv 12~35 / cafes 9~65 분포를 0~+10으로 정규화(min/max 보정).
+function priorityBonus(
+  priority: string | undefined,
+  n: ScoringNeighborhood,
+): number {
+  switch (priority) {
+    case "safety": {
+      const b: Record<string, number> = { A: 10, B: 5, C: 0, D: -10 };
+      return b[n.safetyGrade] ?? 0;
+    }
+    case "convenience":
+      return Math.min(10, Math.max(0, (n.facilities.convenience - 12) / 2.3));
+    case "hotplace":
+      return Math.min(10, Math.max(0, (n.facilities.cafes - 9) / 5.6));
+    default:
+      return 0;
+  }
 }
 
 // 여가거점 가산 (Figma 비전 — single 모드, 0~5점/거점)
@@ -31,6 +53,7 @@ export function scoreCandidate({
   commuteB,
   leisureA,
   leisureB,
+  priority,
 }: ScoreInput): number {
   let score = 100;
 
@@ -49,6 +72,9 @@ export function scoreCandidate({
 
   // 여가거점 가산 (single 모드 — Figma 비전)
   score += leisureBonus(leisureA) + leisureBonus(leisureB);
+
+  // 선호 태그 가중 (⑥) — 취향 지표 한 번 더 가산.
+  score += priorityBonus(priority, neighborhood);
 
   return Math.max(0, Math.min(100, Math.round(score)));
 }

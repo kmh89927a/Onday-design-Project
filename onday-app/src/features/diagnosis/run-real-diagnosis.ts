@@ -141,6 +141,7 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         commuteB: commuteB?.time ?? null,
         leisureA: leisureA?.time ?? null,
         leisureB: leisureB?.time ?? null,
+        priority: filters.priorities?.[0],
       });
 
       return {

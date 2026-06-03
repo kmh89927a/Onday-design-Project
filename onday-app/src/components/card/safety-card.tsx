@@ -21,6 +21,8 @@ interface SafetyCardProps {
   metric: { label: string; value: number; unit?: string };
   barPercent: number;
   stats: { label: string; value: string; sub?: string }[];
+  /** 선호 태그(⑥) 근거 — "편의시설 풍부 (28곳)" 등. 태그 선택 시에만. */
+  tagReason?: string;
   href?: string;
   onClick?: () => void;
   className?: string;
@@ -34,6 +36,7 @@ export function SafetyCard({
   metric,
   barPercent,
   stats,
+  tagReason,
   href,
   onClick,
   className,
@@ -67,6 +70,13 @@ export function SafetyCard({
           <Stat key={s.label} label={s.label} value={s.value} sub={s.sub} />
         ))}
       </div>
+
+      {tagReason && (
+        <p className="flex items-center gap-1 text-caption font-bold text-primary">
+          <span aria-hidden>✨</span>
+          {tagReason}
+        </p>
+      )}
     </>
   );
 

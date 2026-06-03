@@ -10,6 +10,8 @@ import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
 import { TradeOffSection } from "@/components/diagnosis/trade-off-section";
+import { PreferenceBanner } from "@/components/diagnosis/preference-banner";
+import { buildPreferenceReason } from "@/features/diagnosis/preference-reason";
 import { DeadlineBanner } from "@/components/deadline/deadline-banner";
 import { DeadlineBell } from "@/components/deadline/deadline-bell";
 import { DeadlineEntryCard } from "@/components/deadline/deadline-entry-card";
@@ -125,6 +127,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const coordinateA = useDiagnosisStore((s) => s.coordinateA);
   const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
   const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
+  const priorityKey = useDiagnosisStore((s) => s.filters.priorities?.[0]);
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
@@ -394,6 +397,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
               {/* 데드라인 미설정 시 진입 카드 (부부와 패리티) — 계약 역산 + 교집합 급매 보기 → /deadline.
                   급매 리스트·지도·네이버는 /deadline 공용 라우트가 store candidates로 이미 처리. */}
               <DeadlineEntryCard />
+              <PreferenceBanner priorityKey={priorityKey} />
             </div>
             <header className="flex items-start justify-between gap-s-3 print:hidden">
               <div>
@@ -462,6 +466,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                         { label: "시세", value: priceText(c) },
                         buildLayerStat(c, layer),
                       ]}
+                      tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
                       onClick={() => open(c.id)}
                     />
                   </div>
@@ -497,11 +502,22 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                 candidate={{
                   name: `${selectedCandidate.gu} ${selectedCandidate.dong}`,
                   score: selectedCandidate.score,
-                  pills: buildSinglePills(
-                    selectedCandidate,
-                    selectedRank,
-                    resolveGrade(selectedCandidate),
-                  ),
+                  pills: [
+                    ...(priorityKey
+                      ? [
+                          {
+                            variant: "default" as const,
+                            label:
+                              buildPreferenceReason(priorityKey, selectedCandidate) ?? "",
+                          },
+                        ]
+                      : []),
+                    ...buildSinglePills(
+                      selectedCandidate,
+                      selectedRank,
+                      resolveGrade(selectedCandidate),
+                    ),
+                  ],
                   lines: buildLines(selectedCandidate),
                   commutes: buildCommuteRows(selectedCandidate, addressA),
                   metrics: buildSingleMetrics(

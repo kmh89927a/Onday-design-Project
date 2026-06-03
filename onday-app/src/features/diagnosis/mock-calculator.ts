@@ -104,6 +104,7 @@ async function computeOneCandidate(
     commuteB,
     leisureA,
     leisureB,
+    priority: filters.priorities?.[0],
   });
 
   return {
