@@ -41,9 +41,10 @@ function priorityBonus(
     case "quiet": {
       // B 정책 #조용한동네 — 공원+도서관 실데이터(getCommunityByGu) 기반 가산.
       //   미수집(no_data) 시 0 = 가중 안 함(정직, 날조 X).
+      //   실 분포(구 단위 38~631, avg 155) → 40~290 을 0~10 으로 정규화(변별력 확보).
       const com = getCommunityByGu(n.gu);
       if (com.status !== "ok") return 0;
-      return Math.min(10, Math.max(0, com.total * 0.9));
+      return Math.min(10, Math.max(0, (com.total - 40) / 25));
     }
     default:
       return 0;

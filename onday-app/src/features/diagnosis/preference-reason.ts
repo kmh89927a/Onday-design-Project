@@ -35,11 +35,12 @@ export function buildPreferenceReason(
       return `${tier} (${n}곳)`;
     }
     case "quiet": {
+      // ★ 구(시군구) 단위 집계값 — 동네 카드에 "구 N곳"으로 정직 표기(동 단위 아님).
       const com = getCommunityByGu(c.gu);
       if (com.status !== "ok") return "공원·도서관 데이터 준비중";
       const tier =
-        com.total >= 9 ? "공원·도서관 풍부" : com.total >= 6 ? "공원·도서관 양호" : "공원·도서관 보통";
-      return `${tier} (${com.total}곳)`;
+        com.total >= 200 ? "공원·도서관 풍부" : com.total >= 100 ? "공원·도서관 양호" : "공원·도서관 보통";
+      return `${tier} (구 ${com.total}곳)`;
     }
     default:
       return null;

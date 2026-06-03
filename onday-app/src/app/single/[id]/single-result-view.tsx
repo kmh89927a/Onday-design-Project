@@ -122,8 +122,8 @@ const LEGEND_META: Record<SingleLayer, { title: string; meta: string }> = {
     meta: "편의점 + 약국 + 24시간 매장 · 반경 1km",
   },
   community: {
-    title: "공원·공공도서관 기준",
-    meta: "근린공원 + 공공도서관 · 반경 1km",
+    title: "공원·공공도서관 (시군구 단위)",
+    meta: "구 전체 등록 수 · data.go.kr 표준데이터",
   },
 };
 

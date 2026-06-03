@@ -13,7 +13,7 @@ export type SingleLayer = "safety" | "convenience" | "community";
 const LAYER_OPTIONS: { value: SingleLayer; label: string; meta: string }[] = [
   { value: "safety", label: "야간 안전", meta: "범죄율 (10만명당)" },
   { value: "convenience", label: "편의시설", meta: "편의점 밀집도" },
-  { value: "community", label: "공원·도서관", meta: "공원 + 공공도서관" },
+  { value: "community", label: "공원·도서관", meta: "구 전체 공원·도서관 수" },
 ];
 
 export const LAYER_META: Record<SingleLayer, string> = LAYER_OPTIONS.reduce(
