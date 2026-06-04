@@ -24,7 +24,9 @@ export interface ScoreInput {
 }
 
 // 선호 태그 가중 — 해당 지표를 한 번 더 가산(±10). 취향 맞는 동네를 상위로.
-//   conv 12~35 / cafes 9~65 분포를 0~+10으로 정규화(min/max 보정).
+//   ★ 실데이터 정규화 — 편의점/카페는 소상공인 상가정보(반경 1km 실집계).
+//   실분포: 편의점 2~165(중앙63) / 카페 10~663(중앙150). 이 분포를 0~10 으로 매핑.
+//   (구 mock 12~35 / 9~65 기준 상수는 실데이터선 전부 saturate → 재튜닝.)
 function priorityBonus(
   priority: string | undefined,
   n: ScoringNeighborhood,
@@ -35,9 +37,9 @@ function priorityBonus(
       return b[n.safetyGrade] ?? 0;
     }
     case "convenience":
-      return Math.min(10, Math.max(0, (n.facilities.convenience - 12) / 2.3));
+      return Math.min(10, Math.max(0, (n.facilities.convenience - 15) / 10));
     case "hotplace":
-      return Math.min(10, Math.max(0, (n.facilities.cafes - 9) / 5.6));
+      return Math.min(10, Math.max(0, (n.facilities.cafes - 30) / 24));
     case "quiet": {
       // B 정책 #조용한동네 — 공원+도서관 실데이터(getCommunityByGu) 기반 가산.
       //   미수집(no_data) 시 0 = 가중 안 함(정직, 날조 X).
@@ -76,9 +78,10 @@ export function scoreCandidate({
   const safetyBonus: Record<string, number> = { A: 10, B: 5, C: 0, D: -10 };
   score += safetyBonus[neighborhood.safetyGrade] ?? 0;
 
-  // 편의시설 가산
+  // 편의시설 가산 — 실데이터(편의점+카페 반경1km). 합 분포 ~12~828(중앙 213) → /40 으로 0~10.
+  //   (구 /10 은 mock(합~70) 기준 — 실데이터선 전부 10 saturate → /40 재튜닝.)
   const facilityScore =
-    (neighborhood.facilities.convenience + neighborhood.facilities.cafes) / 10;
+    (neighborhood.facilities.convenience + neighborhood.facilities.cafes) / 40;
   score += Math.min(10, facilityScore);
 
   // 여가거점 가산 (single 모드 — Figma 비전)
