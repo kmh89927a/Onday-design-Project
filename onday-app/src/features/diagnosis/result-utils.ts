@@ -4,7 +4,11 @@ import type { CandidateArea, CommuteMode, DealType } from "@/lib/types";
 export type SortKey = "score" | "commute" | "price";
 
 // 거래유형 표시 라벨 — undefined(레거시 데이터)는 전세로 간주(avgPrice=전세 추정).
-const DEAL_LABEL: Record<DealType, string> = { jeonse: "전세", maemae: "매매" };
+const DEAL_LABEL: Record<DealType, string> = {
+  jeonse: "전세",
+  maemae: "매매",
+  wolse: "월세",
+};
 
 const SORT_KEYS: ReadonlySet<SortKey> = new Set(["score", "commute", "price"]);
 
@@ -52,14 +56,37 @@ export function formatPrice(
   return `평균 ${(avg / 10000).toFixed(1)}억${suffix}`;
 }
 
+// 월세 추정 { deposit, monthly }(만원) → "보증금 X억 / 월 Y만 (추정)"
+//   동네 데이터는 전세 추정뿐 → 전월세전환율 환산값이라 "추정" 명시(날조 X).
+export function formatWolse(
+  estimate: { deposit: number; monthly: number } | undefined,
+): string {
+  if (!estimate) return "시세 미공개";
+  const deposit = (estimate.deposit / 10000).toFixed(1);
+  return `보증금 ${deposit}억 / 월 ${estimate.monthly}만 (추정)`;
+}
+
 export function formatCommuteFilter(maxMinutes: number | undefined): string {
   return maxMinutes ? `≤ ${maxMinutes}분` : "제한 없음";
 }
 
 export function formatBudgetFilter(
-  budget: { dealType?: DealType; min: number; max: number } | undefined,
+  budget:
+    | {
+        dealType?: DealType;
+        min: number;
+        max: number;
+        depositMin?: number;
+        depositMax?: number;
+      }
+    | undefined,
 ): string {
   if (!budget) return "전체";
+  if (budget.dealType === "wolse") {
+    // 월세 — 보증금 상한(억) + 월세 상한(만원).
+    const dep = ((budget.depositMax ?? 0) / 10000).toFixed(1);
+    return `월세 보증금 ${dep}억↓ / 월 ${budget.max}만↓`;
+  }
   const min = (budget.min / 10000).toFixed(0);
   const max = (budget.max / 10000).toFixed(0);
   const label = DEAL_LABEL[budget.dealType ?? "jeonse"];

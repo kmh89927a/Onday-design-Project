@@ -12,7 +12,7 @@ import {
   estimateTransfers,
 } from "@/lib/haversine";
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
-import { comparablePrice } from "@/lib/diagnosis/price";
+import { comparablePrice, estimateWolse } from "@/lib/diagnosis/price";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 import { KakaoCarClient } from "@/lib/external/kakao-car";
 
@@ -152,10 +152,19 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
       }
       // 필터 — 예산 범위
       if (filters.budget) {
-        // 거래유형별 비교가 — 매매 시 전세가율로 환산(추정). 미지정=전세(기존과 동일).
-        const price = comparablePrice(n.avgPrice, filters.budget.dealType);
-        if (price < filters.budget.min || price > filters.budget.max) {
-          return null;
+        if (filters.budget.dealType === "wolse") {
+          // 월세 — 보증금(상한) + 월세(범위) 2축. 추정값 기준.
+          const { deposit, monthly } = estimateWolse(n.avgPrice);
+          const depositOk = deposit <= (filters.budget.depositMax ?? Infinity);
+          const monthlyOk =
+            monthly >= filters.budget.min && monthly <= filters.budget.max;
+          if (!depositOk || !monthlyOk) return null;
+        } else {
+          // 전세/매매 — 단일 금액. 매매 시 전세가율로 환산(추정). 미지정=전세(기존과 동일).
+          const price = comparablePrice(n.avgPrice, filters.budget.dealType);
+          if (price < filters.budget.min || price > filters.budget.max) {
+            return null;
+          }
         }
       }
 
@@ -195,6 +204,11 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
           const base = comparablePrice(n.avgPrice, filters.budget?.dealType);
           return { min: Math.round(base * 0.85), max: Math.round(base * 1.15) };
         })(),
+        // 월세 추정 — dealType=wolse 시만 채움. 그 외 undefined.
+        wolseEstimate:
+          filters.budget?.dealType === "wolse"
+            ? estimateWolse(n.avgPrice)
+            : undefined,
         facilities: n.facilities,
         lines: n.lines,
         listingsCount: n.listingsCount,
