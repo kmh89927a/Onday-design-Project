@@ -28,7 +28,7 @@ export interface SearchParams {
   coordinateB?: { lat: number; lng: number };
   filters?: {
     maxCommuteTime?: number;
-    budget?: { min: number; max: number };
+    budget?: { dealType?: "jeonse" | "maemae"; min: number; max: number };
     commuteSchedule?: CommuteSchedule;
     priorities?: string[];
   };

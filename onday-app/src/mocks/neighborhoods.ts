@@ -1,5 +1,6 @@
 import type { Neighborhood } from "@/lib/types";
 
+// avgPrice = 전세 추정 보증금(만원). 매매가는 미보유 → comparablePrice()로 전세가율 환산(추정).
 export const MOCK_NEIGHBORHOODS: Neighborhood[] = [
   {
     id: "jong-3",
