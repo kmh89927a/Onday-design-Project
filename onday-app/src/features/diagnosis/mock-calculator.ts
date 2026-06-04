@@ -12,7 +12,7 @@ import {
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 // ScoringEngine (#27) — 점수 로직은 공용 모듈로 추출. client(실 ODsay) + server(mock) 공유.
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
-import { comparablePrice } from "@/lib/diagnosis/price";
+import { comparablePrice, estimateWolse } from "@/lib/diagnosis/price";
 
 interface ComputeResult {
   status: "fulfilled";
@@ -89,14 +89,32 @@ async function computeOneCandidate(
   // Issue #123 — 예산 범위 외 제외 (★ maxCommuteTime 답습 정합).
   //   사용자 시각 검증 짚음: "예산 4~5억 박힘 + 결과 카드 4~5억 사이 X = 다양 박힘" → 범위 외 카드 제외 박힘.
   if (filters.budget) {
-    // 거래유형별 비교가 — 매매 시 전세가율로 환산(추정). 미지정=전세(기존과 동일).
-    const price = comparablePrice(neighborhood.avgPrice, filters.budget.dealType);
-    if (price < filters.budget.min || price > filters.budget.max) {
-      return {
-        status: "rejected",
-        neighborhoodId: neighborhood.id,
-        reason: `Price ${price} outside budget [${filters.budget.min}, ${filters.budget.max}]`,
-      };
+    if (filters.budget.dealType === "wolse") {
+      // 월세 — 보증금(상한) + 월세(범위) 2축. 추정값(estimateWolse) 기준.
+      const { deposit, monthly } = estimateWolse(neighborhood.avgPrice);
+      const depositOk = deposit <= (filters.budget.depositMax ?? Infinity);
+      const monthlyOk =
+        monthly >= filters.budget.min && monthly <= filters.budget.max;
+      if (!depositOk || !monthlyOk) {
+        return {
+          status: "rejected",
+          neighborhoodId: neighborhood.id,
+          reason: `Wolse deposit ${deposit}/monthly ${monthly} outside budget`,
+        };
+      }
+    } else {
+      // 전세/매매 — 단일 금액. 매매 시 전세가율로 환산(추정). 미지정=전세(기존과 동일).
+      const price = comparablePrice(
+        neighborhood.avgPrice,
+        filters.budget.dealType,
+      );
+      if (price < filters.budget.min || price > filters.budget.max) {
+        return {
+          status: "rejected",
+          neighborhoodId: neighborhood.id,
+          reason: `Price ${price} outside budget [${filters.budget.min}, ${filters.budget.max}]`,
+        };
+      }
     }
   }
 
@@ -146,6 +164,11 @@ async function computeOneCandidate(
         );
         return { min: Math.round(base * 0.85), max: Math.round(base * 1.15) };
       })(),
+      // 월세 추정 — dealType=wolse 시만 채움(표시는 보증금/월). 그 외 undefined.
+      wolseEstimate:
+        filters.budget?.dealType === "wolse"
+          ? estimateWolse(neighborhood.avgPrice)
+          : undefined,
       facilities: neighborhood.facilities,
       lines: neighborhood.lines,
       listingsCount: neighborhood.listingsCount,

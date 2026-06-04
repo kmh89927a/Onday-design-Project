@@ -18,9 +18,11 @@ export const diagnosisInputSchema = z.object({
     maxCommuteTime: z.number().min(10).max(120).optional(),
     budget: z
       .object({
-        dealType: z.enum(["jeonse", "maemae"]).optional(), // 미지정 = 전세 (하위호환)
+        dealType: z.enum(["jeonse", "maemae", "wolse"]).optional(), // 미지정 = 전세 (하위호환)
         min: z.number().min(0),
         max: z.number().min(0),
+        depositMin: z.number().min(0).optional(), // 월세 전용 — 보증금 범위(만원)
+        depositMax: z.number().min(0).optional(),
       })
       .optional(),
     commuteSchedule: z

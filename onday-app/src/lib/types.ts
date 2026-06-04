@@ -3,8 +3,9 @@ export type DiagnosisMode = "couple" | "single";
 export type DiagnosisStatus = "processing" | "completed" | "expired";
 export type SafetyGrade = "A" | "B" | "C" | "D";
 export type CommuteMode = "transit" | "driving";
-// 거래유형 — budget 범위가 어떤 시세를 가리키는지. Stage 2에서 "wolse"(월세) 추가 예정.
-export type DealType = "jeonse" | "maemae";
+// 거래유형 — budget 범위가 어떤 시세를 가리키는지.
+//   jeonse/maemae=단일 금액(min/max), wolse=월세(min/max) + 보증금(depositMin/Max) 2축.
+export type DealType = "jeonse" | "maemae" | "wolse";
 
 export interface Coordinate {
   lat: number;
@@ -36,7 +37,9 @@ export interface CandidateArea {
   leisureB?: CommuteInfo;
   score: number; // 0-100
   safetyGrade?: SafetyGrade;
-  priceRange?: { min: number; max: number }; // KRW in 만원
+  priceRange?: { min: number; max: number }; // KRW in 만원 (전세/매매 표시·정렬용)
+  // 월세 추정(만원) — dealType=wolse 시 채움. 표시는 보증금/월 (estimateWolse, 추정).
+  wolseEstimate?: { deposit: number; monthly: number };
   facilities?: { convenience: number; cafes: number; schools?: number };
   lines?: string; // 지하철/버스 노선 요약 — step-10.5에서 22개 보강
   listingsCount?: number; // 매물 건수 — step-10.5에서 보강
@@ -53,9 +56,16 @@ export interface CommuteSchedule {
 
 export interface DiagnosisFilters {
   maxCommuteTime?: number; // minutes
-  // dealType 미지정 = 전세 (기존 {min,max} 하위호환). min/max 단위 = 만원.
-  //   maemae 시 비교가는 comparablePrice()로 전세→매매 환산(추정).
-  budget?: { dealType?: DealType; min: number; max: number };
+  // dealType 미지정 = 전세 (기존 {min,max} 하위호환). 단위 = 만원.
+  //   jeonse/maemae: min/max = 금액 범위 (maemae 비교가는 comparablePrice 환산).
+  //   wolse: min/max = 월세 범위, depositMin/Max = 보증금 범위 (상한만 입력 시 min=0).
+  budget?: {
+    dealType?: DealType;
+    min: number;
+    max: number;
+    depositMin?: number;
+    depositMax?: number;
+  };
   commuteSchedule?: CommuteSchedule; // 요일 + 시간 자유 — Issue #98 commuteSchedule DTO 정수 정정 (★ REFACTOR-COMMUTE-LEGACY #102 timeRange 제거 완성).
   priorities?: string[];
 }
