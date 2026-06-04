@@ -339,7 +339,12 @@ export function SingleResultView({ id }: SingleResultViewProps) {
     if (!selectedCandidate) return;
     const wasLiked = Boolean(favorites[selectedCandidate.id]);
     toggleFavorite(
-      toFavoriteSnapshot(selectedCandidate, "single", resolveGrade(selectedCandidate)),
+      toFavoriteSnapshot(
+        selectedCandidate,
+        "single",
+        resolveGrade(selectedCandidate),
+        dealType,
+      ),
     );
     pushToast({
       variant: wasLiked ? "default" : "ok",

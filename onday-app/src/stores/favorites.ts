@@ -1,7 +1,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-import type { CandidateArea, DiagnosisMode, SafetyGrade } from "@/lib/types";
+import type {
+  CandidateArea,
+  DealType,
+  DiagnosisMode,
+  SafetyGrade,
+} from "@/lib/types";
 
 // 저장한 동네 (즐겨찾기) — localStorage persist.
 // ★ id만 저장하면 새로고침 후 후보 상세(이름·등급·통근·시세)를 못 그림(diagnosis-store는 메모리).
@@ -18,15 +23,21 @@ export interface FavoriteItem {
   commuteA: number;
   commuteB?: number;
   priceRange?: { min: number; max: number };
+  // 진단 시점 거래유형 + 월세 추정 — 시세 표시 정합(월세 "보증금/월 추정", 매매 "추정").
+  //   레거시 스냅샷은 미보유 → 전세로 간주(formatPrice 경로).
+  dealType?: DealType;
+  wolseEstimate?: { deposit: number; monthly: number };
   mode: DiagnosisMode;
   savedAt: number;
 }
 
 // 후보 → 찜 스냅샷. grade는 호출처가 모드별 소스로 넘김(싱글=resolveGrade).
+//   dealType은 진단 filters.budget?.dealType — 시세 표시용. wolseEstimate는 후보에 이미 박힘.
 export function toFavoriteSnapshot(
   c: CandidateArea,
   mode: DiagnosisMode,
   grade?: SafetyGrade,
+  dealType?: DealType,
   savedAt: number = Date.now(),
 ): FavoriteItem {
   return {
@@ -38,6 +49,8 @@ export function toFavoriteSnapshot(
     commuteA: c.commuteA.time,
     commuteB: c.commuteB?.time,
     priceRange: c.priceRange,
+    dealType,
+    wolseEstimate: c.wolseEstimate,
     mode,
     savedAt,
   };
