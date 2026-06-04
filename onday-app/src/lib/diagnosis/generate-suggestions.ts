@@ -51,7 +51,7 @@ export function generateRelaxationSuggestions(
     const newMaxOk = newMax / 10_000; // 만원 → 억원 변환 (10,000만원 = 1억원)
     suggestions.push({
       label: `예산 최대를 ${newMaxOk.toFixed(1)}억원으로 늘려보세요`,
-      apply: { budget: { min: filters.budget.min, max: newMax } },
+      apply: { budget: { ...filters.budget, max: newMax } }, // dealType 보존
     });
   }
 

@@ -12,6 +12,7 @@ import {
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 // ScoringEngine (#27) — 점수 로직은 공용 모듈로 추출. client(실 ODsay) + server(mock) 공유.
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
+import { comparablePrice } from "@/lib/diagnosis/price";
 
 interface ComputeResult {
   status: "fulfilled";
@@ -88,7 +89,8 @@ async function computeOneCandidate(
   // Issue #123 — 예산 범위 외 제외 (★ maxCommuteTime 답습 정합).
   //   사용자 시각 검증 짚음: "예산 4~5억 박힘 + 결과 카드 4~5억 사이 X = 다양 박힘" → 범위 외 카드 제외 박힘.
   if (filters.budget) {
-    const price = neighborhood.avgPrice;
+    // 거래유형별 비교가 — 매매 시 전세가율로 환산(추정). 미지정=전세(기존과 동일).
+    const price = comparablePrice(neighborhood.avgPrice, filters.budget.dealType);
     if (price < filters.budget.min || price > filters.budget.max) {
       return {
         status: "rejected",

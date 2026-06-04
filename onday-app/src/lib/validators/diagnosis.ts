@@ -18,6 +18,7 @@ export const diagnosisInputSchema = z.object({
     maxCommuteTime: z.number().min(10).max(120).optional(),
     budget: z
       .object({
+        dealType: z.enum(["jeonse", "maemae"]).optional(), // 미지정 = 전세 (하위호환)
         min: z.number().min(0),
         max: z.number().min(0),
       })

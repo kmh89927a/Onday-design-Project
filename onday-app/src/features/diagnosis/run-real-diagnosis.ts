@@ -12,6 +12,7 @@ import {
   estimateTransfers,
 } from "@/lib/haversine";
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
+import { comparablePrice } from "@/lib/diagnosis/price";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 import { KakaoCarClient } from "@/lib/external/kakao-car";
 
@@ -151,7 +152,9 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
       }
       // 필터 — 예산 범위
       if (filters.budget) {
-        if (n.avgPrice < filters.budget.min || n.avgPrice > filters.budget.max) {
+        // 거래유형별 비교가 — 매매 시 전세가율로 환산(추정). 미지정=전세(기존과 동일).
+        const price = comparablePrice(n.avgPrice, filters.budget.dealType);
+        if (price < filters.budget.min || price > filters.budget.max) {
           return null;
         }
       }
