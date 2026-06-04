@@ -29,13 +29,13 @@ import {
 import { getSafetyByGu } from "@/features/single/safety-index";
 import { getCommunityByGu } from "@/lib/diagnosis/community-index";
 import { buildSinglePills, buildSingleMetrics } from "@/features/single/detail-mapper";
-import { markerLabel } from "@/features/diagnosis/result-utils";
+import { formatWolse, markerLabel } from "@/features/diagnosis/result-utils";
 import { buildCommuteRows, buildLines } from "@/features/diagnosis/detail-mapper";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { copyToClipboard } from "@/lib/utils/clipboard";
 import { cn } from "@/lib/utils";
-import type { CandidateArea, SafetyGrade } from "@/lib/types";
+import type { CandidateArea, DealType, SafetyGrade } from "@/lib/types";
 import { FavoritesMenu } from "@/components/favorites/favorites-menu";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
@@ -57,10 +57,14 @@ function resolveGrade(c: CandidateArea): SafetyGrade {
   return c.safetyGrade ?? "C";
 }
 
-function priceText(c: CandidateArea): string {
+// 거래유형별 시세 표시 — 부부 result-content 와 동일 패턴.
+//   wolse: 보증금/월 추정 · maemae: 억 + (추정) · jeonse/미지정: 기존 bare 억 (회귀 0)
+function priceText(c: CandidateArea, dealType?: DealType): string {
+  if (dealType === "wolse") return formatWolse(c.wolseEstimate);
   if (!c.priceRange) return "—";
   const avg = (c.priceRange.min + c.priceRange.max) / 2;
-  return `${(avg / 10000).toFixed(1)}억`;
+  const suffix = dealType === "maemae" ? " (추정)" : "";
+  return `${(avg / 10000).toFixed(1)}억${suffix}`;
 }
 
 const GRADE_ORDER: Record<SafetyGrade, number> = { A: 0, B: 1, C: 2, D: 3 };
@@ -138,6 +142,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
   const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
   const priorityKey = useDiagnosisStore((s) => s.filters.priorities?.[0]);
+  const dealType = useDiagnosisStore((s) => s.filters.budget?.dealType);
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
@@ -473,7 +478,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                       barPercent={getCrimePercent(grade)}
                       stats={[
                         { label: "통근", value: `${c.commuteA.time}분` },
-                        { label: "시세", value: priceText(c) },
+                        { label: "시세", value: priceText(c, dealType) },
                         buildLayerStat(c, layer),
                       ]}
                       tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
@@ -555,9 +560,10 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                   onClick: () => {
                     const url = buildNaverRealEstateUrl(
                       `${selectedCandidate.gu} ${selectedCandidate.dong}`,
-                      selectedCandidate.priceRange
-                        ? { priceMax: selectedCandidate.priceRange.max }
-                        : {},
+                      // 월세는 priceRange(전세 scale)를 가격 상한으로 쓰면 오값 → 생략(사용자가 네이버에서 월세 필터).
+                      dealType === "wolse" || !selectedCandidate.priceRange
+                        ? {}
+                        : { priceMax: selectedCandidate.priceRange.max },
                     );
                     window.open(url, "_blank", "noopener,noreferrer");
                   },
