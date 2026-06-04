@@ -310,6 +310,14 @@
       "_cctvSource": "공공데이터15104287 인천방범CCTV(2025.09.30) ÷ 표준면적 (경제자유구역청3391 제외)"
     },
     {
+      "sigungu": "수원시",
+      "region1": "경기도",
+      "crimeGrade": 4,
+      "cctvPerKm2": null,
+      "_crimeSource": "행안부2025지역안전지수:경기 시/군 범죄분야",
+      "_cctvSource": "준비중 — 경기데이터드림 CCTV현황에 수원시 미수집(전국표준에도 누락). 범죄만 단계 수집."
+    },
+    {
       "sigungu": "성남시",
       "region1": "경기도",
       "crimeGrade": 4,
