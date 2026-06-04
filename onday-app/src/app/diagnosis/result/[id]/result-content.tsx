@@ -428,7 +428,14 @@ export function ResultContent({
   const handleLike = () => {
     if (!selectedCandidate) return;
     const wasLiked = Boolean(favorites[selectedCandidate.id]);
-    toggleFavorite(toFavoriteSnapshot(selectedCandidate, "couple"));
+    toggleFavorite(
+      toFavoriteSnapshot(
+        selectedCandidate,
+        "couple",
+        undefined,
+        filters.budget?.dealType,
+      ),
+    );
     pushToast({
       variant: wasLiked ? "default" : "ok",
       message: wasLiked

@@ -6,7 +6,7 @@ import { Heart, X, ExternalLink } from "lucide-react";
 import { SafetyGradeBadge } from "@/components/data/safety-grade-badge";
 import { BottomSheet } from "@/components/sheet/bottom-sheet";
 import { IconButton } from "@/components/ui/icon-button";
-import { formatPrice } from "@/features/diagnosis/result-utils";
+import { formatPrice, formatWolse } from "@/features/diagnosis/result-utils";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { cn } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites";
@@ -159,14 +159,19 @@ export function FavoritesMenu() {
                     <p className="mt-1 truncate text-caption text-ink-3">
                       통근 {it.commuteA}분
                       {it.commuteB != null && ` · 배우자 ${it.commuteB}분`} ·{" "}
-                      {formatPrice(it.priceRange)}
+                      {it.dealType === "wolse"
+                        ? formatWolse(it.wolseEstimate)
+                        : formatPrice(it.priceRange, it.dealType)}
                     </p>
                   </div>
 
                   <a
                     href={buildNaverRealEstateUrl(
                       `${it.gu} ${it.dong}`,
-                      it.priceRange ? { priceMax: it.priceRange.max } : {},
+                      // 월세는 priceRange(전세 scale)를 가격 상한으로 쓰면 오값 → 생략.
+                      it.dealType === "wolse" || !it.priceRange
+                        ? {}
+                        : { priceMax: it.priceRange.max },
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
