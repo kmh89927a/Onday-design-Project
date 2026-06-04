@@ -190,10 +190,11 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         leisureB: leisureB ?? undefined,
         score,
         safetyGrade: mode === "single" ? n.safetyGrade : undefined,
-        priceRange: {
-          min: Math.round(n.avgPrice * 0.85),
-          max: Math.round(n.avgPrice * 1.15),
-        },
+        // priceRange 는 거래유형 scale — 매매는 전세가율 환산값 기준(추정). 전세=avgPrice 그대로(동일).
+        priceRange: (() => {
+          const base = comparablePrice(n.avgPrice, filters.budget?.dealType);
+          return { min: Math.round(base * 0.85), max: Math.round(base * 1.15) };
+        })(),
         facilities: n.facilities,
         lines: n.lines,
         listingsCount: n.listingsCount,
