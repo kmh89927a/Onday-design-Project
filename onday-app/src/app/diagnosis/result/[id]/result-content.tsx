@@ -22,6 +22,7 @@ import {
   formatBudgetFilter,
   formatCommuteFilter,
   formatPrice,
+  formatWolse,
   markerLabel,
   parseSortKey,
   sortCandidates,
@@ -104,9 +105,23 @@ function recomputeWhatIf(
         const maxC = Math.max(c.commuteA.time, c.commuteB?.time ?? 0);
         if (maxC > filters.maxCommuteTime) return false;
       }
-      if (filters.budget && c.priceRange) {
-        const avg = (c.priceRange.min + c.priceRange.max) / 2;
-        if (avg < filters.budget.min || avg > filters.budget.max) return false;
+      if (filters.budget) {
+        if (filters.budget.dealType === "wolse") {
+          // 월세 — 추정 보증금/월세로 재필터 (priceRange 는 전세 scale 라 부적합).
+          const w = c.wolseEstimate;
+          if (w) {
+            if (w.monthly > filters.budget.max) return false;
+            if (
+              filters.budget.depositMax != null &&
+              w.deposit > filters.budget.depositMax
+            ) {
+              return false;
+            }
+          }
+        } else if (c.priceRange) {
+          const avg = (c.priceRange.min + c.priceRange.max) / 2;
+          if (avg < filters.budget.min || avg > filters.budget.max) return false;
+        }
       }
       return true;
     });
@@ -196,7 +211,11 @@ export function ResultContent({
     if (diagnosisId) setResult(diagnosisId, next);
   };
 
-  const handleBudgetWhatIf = (min: number, max: number) => {
+  const handleBudgetWhatIf = (
+    min: number,
+    max: number,
+    depositMax?: number,
+  ) => {
     if (!coordinateA) {
       pushToast({
         variant: "default",
@@ -204,10 +223,10 @@ export function ResultContent({
       });
       return;
     }
-    // what-if 는 min/max 만 조정 — dealType(거래유형)은 진단 시점 값 보존.
+    // what-if 는 금액만 조정 — dealType(거래유형)은 진단 시점 값 보존. depositMax 는 월세 전용.
     const newFilters = {
       ...filters,
-      budget: { dealType: filters.budget?.dealType, min, max },
+      budget: { dealType: filters.budget?.dealType, min, max, depositMax },
     };
     setFilters(newFilters);
     const next = recomputeWhatIf(
@@ -469,9 +488,10 @@ export function ResultContent({
       )}
       {showBudgetOptions && filters.budget != null && (
         <BudgetChipOptions
-          key={`${filters.budget.min}-${filters.budget.max}`}
+          key={`${filters.budget.min}-${filters.budget.max}-${filters.budget.depositMax ?? ""}`}
           baseMin={filters.budget.min}
           baseMax={filters.budget.max}
+          baseDepositMax={filters.budget.depositMax}
           dealType={filters.budget.dealType}
           onConfirm={handleBudgetWhatIf}
         />
@@ -561,7 +581,11 @@ export function ResultContent({
                     ]
                   : []),
               ]}
-              price={formatPrice(c.priceRange, filters.budget?.dealType)}
+              price={
+                filters.budget?.dealType === "wolse"
+                  ? formatWolse(c.wolseEstimate)
+                  : formatPrice(c.priceRange, filters.budget?.dealType)
+              }
               tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
               onClick={() => open(c.id)}
             />

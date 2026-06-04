@@ -93,17 +93,28 @@ export default function DiagnosisPage() {
   // Issue #112 — maxCommuteTime + budget 입력 영역 (★ 단방향 input → store 동기화, "이전 조건 불러오기" 시점 별도 sync).
   //   budget은 억 단위 input + 내부 만원 변환 (★ formatBudgetFilter "X-Y억" 표시 정합).
   //   min/max 둘 다 박힘 + > 0 시점 store budget 박힘. 그 외 = undefined.
+  // 전세/매매 = 억~억 단일 금액. 월세는 별도 입력(아래) — 억 input 은 비전세 시 비움.
+  const isWolseBudget = filters.budget?.dealType === "wolse";
   const [budgetMinInput, setBudgetMinInput] = React.useState(
-    filters.budget ? String(filters.budget.min / 10000) : "",
+    filters.budget && !isWolseBudget ? String(filters.budget.min / 10000) : "",
   );
   const [budgetMaxInput, setBudgetMaxInput] = React.useState(
-    filters.budget ? String(filters.budget.max / 10000) : "",
+    filters.budget && !isWolseBudget ? String(filters.budget.max / 10000) : "",
   );
-  // 거래유형(전세/매매) — 월세는 Stage 2(준비중). budget 에 함께 박힘.
+  // 월세 전용 — 보증금 상한(억) + 월세 상한(만원). 월세 상한이 主(필수), 보증금은 옵션.
+  const [depositMaxInput, setDepositMaxInput] = React.useState(
+    isWolseBudget && filters.budget?.depositMax
+      ? String(filters.budget.depositMax / 10000)
+      : "",
+  );
+  const [monthlyMaxInput, setMonthlyMaxInput] = React.useState(
+    isWolseBudget ? String(filters.budget!.max) : "",
+  );
   const [dealType, setDealType] = React.useState<DealType>(
     filters.budget?.dealType ?? "jeonse",
   );
 
+  // 전세/매매 — 억~억 단일 금액 범위.
   const syncBudget = (minStr: string, maxStr: string, dt: DealType = dealType) => {
     const minNum = Number(minStr);
     const maxNum = Number(maxStr);
@@ -117,10 +128,32 @@ export default function DiagnosisPage() {
     }
   };
 
-  // 거래유형 변경 — dealType 즉시 반영 + 입력값 있으면 budget 재동기화(새 dealType 로).
+  // 월세 — 월세 상한(만원, 必) + 보증금 상한(억→만원, 옵션). 월세 상한 없으면 budget 해제.
+  //   Infinity 미저장(JSON null화 방지) — 보증금 미입력 시 depositMax=undefined(필터가 ??로 처리).
+  const syncWolse = (depStr: string, monStr: string) => {
+    const monNum = Number(monStr);
+    if (monStr !== "" && monNum > 0) {
+      const depNum = Number(depStr);
+      const hasDep = depStr !== "" && depNum > 0;
+      setFilters({
+        ...filters,
+        budget: {
+          dealType: "wolse",
+          min: 0,
+          max: monNum,
+          depositMax: hasDep ? depNum * 10000 : undefined,
+        },
+      });
+    } else {
+      setFilters({ ...filters, budget: undefined });
+    }
+  };
+
+  // 거래유형 변경 — dealType 반영 + 해당 입력값으로 budget 재동기화.
   const handleDealType = (dt: DealType) => {
     setDealType(dt);
-    syncBudget(budgetMinInput, budgetMaxInput, dt);
+    if (dt === "wolse") syncWolse(depositMaxInput, monthlyMaxInput);
+    else syncBudget(budgetMinInput, budgetMaxInput, dt);
   };
 
   const { suggestions: suggestionsA } = useAddressSuggest(queryA);
@@ -220,10 +253,26 @@ export default function DiagnosisPage() {
       setShowL2(Boolean(config.leisureB));
       // Issue #112 — budget local state sync (★ filters.budget 자가 치유와 별개 영역).
       const nextBudget = (config.filters?.budget ?? undefined) as
-        | { dealType?: DealType; min: number; max: number }
+        | {
+            dealType?: DealType;
+            min: number;
+            max: number;
+            depositMax?: number;
+          }
         | undefined;
-      setBudgetMinInput(nextBudget ? String(nextBudget.min / 10000) : "");
-      setBudgetMaxInput(nextBudget ? String(nextBudget.max / 10000) : "");
+      const nextIsWolse = nextBudget?.dealType === "wolse";
+      setBudgetMinInput(
+        nextBudget && !nextIsWolse ? String(nextBudget.min / 10000) : "",
+      );
+      setBudgetMaxInput(
+        nextBudget && !nextIsWolse ? String(nextBudget.max / 10000) : "",
+      );
+      setDepositMaxInput(
+        nextIsWolse && nextBudget?.depositMax
+          ? String(nextBudget.depositMax / 10000)
+          : "",
+      );
+      setMonthlyMaxInput(nextIsWolse ? String(nextBudget!.max) : "");
       setDealType(nextBudget?.dealType ?? "jeonse");
       pushToast({ variant: "default", message: "이전 조건을 불러왔습니다 ✨" });
     } catch {
@@ -401,7 +450,7 @@ export default function DiagnosisPage() {
               />
               분
             </label>
-            {/* 거래유형(전세/매매) — 월세는 Stage 2(준비중·disabled). 선택 시 예산 라벨도 전환. */}
+            {/* 거래유형(전세/매매/월세) — 선택 시 예산 입력칸·라벨 전환. */}
             <div className="space-y-s-2">
               <p className="text-body-sm text-ink-2">거래유형</p>
               <div className="flex gap-s-2" role="group" aria-label="거래유형 선택">
@@ -409,6 +458,7 @@ export default function DiagnosisPage() {
                   [
                     { key: "jeonse", label: "전세" },
                     { key: "maemae", label: "매매" },
+                    { key: "wolse", label: "월세" },
                   ] as const
                 ).map((opt) => {
                   const active = dealType === opt.key;
@@ -430,47 +480,77 @@ export default function DiagnosisPage() {
                     </button>
                   );
                 })}
-                <button
-                  type="button"
-                  disabled
-                  aria-disabled="true"
-                  title="월세는 준비 중입니다"
-                  className="cursor-not-allowed rounded-sm border border-card-border bg-surface px-s-3 py-s-1 text-body-sm font-bold text-ink-3 opacity-60"
-                >
-                  월세{" "}
-                  <span className="text-caption font-normal">준비중</span>
-                </button>
               </div>
             </div>
-            <label className="flex flex-wrap items-center gap-s-2 text-body-sm text-ink-2">
-              {dealType === "maemae" ? "매매가" : "전세 보증금"}
-              <input
-                type="number"
-                min={1}
-                value={budgetMinInput}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setBudgetMinInput(v);
-                  syncBudget(v, budgetMaxInput);
-                }}
-                placeholder="3"
-                className="w-16 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              />
-              억 ~
-              <input
-                type="number"
-                min={1}
-                value={budgetMaxInput}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setBudgetMaxInput(v);
-                  syncBudget(budgetMinInput, v);
-                }}
-                placeholder="5"
-                className="w-16 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              />
-              억
-            </label>
+            {dealType === "wolse" ? (
+              <div className="space-y-s-2">
+                <label className="flex flex-wrap items-center gap-s-2 text-body-sm text-ink-2">
+                  보증금
+                  <input
+                    type="number"
+                    min={0}
+                    value={depositMaxInput}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setDepositMaxInput(v);
+                      syncWolse(v, monthlyMaxInput);
+                    }}
+                    placeholder="1"
+                    className="w-16 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  />
+                  억 이하
+                </label>
+                <label className="flex flex-wrap items-center gap-s-2 text-body-sm text-ink-2">
+                  월세
+                  <input
+                    type="number"
+                    min={1}
+                    value={monthlyMaxInput}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setMonthlyMaxInput(v);
+                      syncWolse(depositMaxInput, v);
+                    }}
+                    placeholder="100"
+                    className="w-20 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  />
+                  만원 이하
+                </label>
+                <p className="text-caption text-ink-3">
+                  동네 시세는 전월세전환율 기준 추정값입니다.
+                </p>
+              </div>
+            ) : (
+              <label className="flex flex-wrap items-center gap-s-2 text-body-sm text-ink-2">
+                {dealType === "maemae" ? "매매가" : "전세 보증금"}
+                <input
+                  type="number"
+                  min={1}
+                  value={budgetMinInput}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setBudgetMinInput(v);
+                    syncBudget(v, budgetMaxInput);
+                  }}
+                  placeholder="3"
+                  className="w-16 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                />
+                억 ~
+                <input
+                  type="number"
+                  min={1}
+                  value={budgetMaxInput}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setBudgetMaxInput(v);
+                    syncBudget(budgetMinInput, v);
+                  }}
+                  placeholder="5"
+                  className="w-16 rounded-sm border border-card-border bg-surface px-s-2 py-s-1 text-body-sm font-bold text-ink tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                />
+                억
+              </label>
+            )}
           </div>
         </section>
 
