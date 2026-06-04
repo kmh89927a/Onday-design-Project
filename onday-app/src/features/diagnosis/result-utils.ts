@@ -1,7 +1,10 @@
 import type { CommuteMode as ChipMode } from "@/components/data/commute-chip";
-import type { CandidateArea, CommuteMode } from "@/lib/types";
+import type { CandidateArea, CommuteMode, DealType } from "@/lib/types";
 
 export type SortKey = "score" | "commute" | "price";
+
+// 거래유형 표시 라벨 — undefined(레거시 데이터)는 전세로 간주(avgPrice=전세 추정).
+const DEAL_LABEL: Record<DealType, string> = { jeonse: "전세", maemae: "매매" };
 
 const SORT_KEYS: ReadonlySet<SortKey> = new Set(["score", "commute", "price"]);
 
@@ -37,13 +40,16 @@ export function toChipMode(mode: CommuteMode): ChipMode {
   return mode === "driving" ? "car" : "subway";
 }
 
-// priceRange (단위 만원) → "평균 9.2억"
+// priceRange (단위 만원) → "평균 9.2억" / 매매는 "평균 9.2억 (추정)"
+//   priceRange 는 dealType scale 로 계산됨(comparablePrice). 매매는 전세가율 환산이라 "추정" 명시.
 export function formatPrice(
   range: { min: number; max: number } | undefined,
+  dealType?: DealType,
 ): string {
   if (!range) return "시세 미공개";
   const avg = (range.min + range.max) / 2;
-  return `평균 ${(avg / 10000).toFixed(1)}억`;
+  const suffix = dealType === "maemae" ? " (추정)" : "";
+  return `평균 ${(avg / 10000).toFixed(1)}억${suffix}`;
 }
 
 export function formatCommuteFilter(maxMinutes: number | undefined): string {
@@ -51,12 +57,13 @@ export function formatCommuteFilter(maxMinutes: number | undefined): string {
 }
 
 export function formatBudgetFilter(
-  budget: { min: number; max: number } | undefined,
+  budget: { dealType?: DealType; min: number; max: number } | undefined,
 ): string {
   if (!budget) return "전체";
   const min = (budget.min / 10000).toFixed(0);
   const max = (budget.max / 10000).toFixed(0);
-  return `${min}-${max}억`;
+  const label = DEAL_LABEL[budget.dealType ?? "jeonse"];
+  return `${label} ${min}-${max}억`;
 }
 
 export function markerLabel(dong: string): string {

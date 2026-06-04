@@ -204,7 +204,11 @@ export function ResultContent({
       });
       return;
     }
-    const newFilters = { ...filters, budget: { min, max } };
+    // what-if 는 min/max 만 조정 — dealType(거래유형)은 진단 시점 값 보존.
+    const newFilters = {
+      ...filters,
+      budget: { dealType: filters.budget?.dealType, min, max },
+    };
     setFilters(newFilters);
     const next = recomputeWhatIf(
       baselineRef.current ?? candidates,
@@ -468,6 +472,7 @@ export function ResultContent({
           key={`${filters.budget.min}-${filters.budget.max}`}
           baseMin={filters.budget.min}
           baseMax={filters.budget.max}
+          dealType={filters.budget.dealType}
           onConfirm={handleBudgetWhatIf}
         />
       )}
@@ -556,7 +561,7 @@ export function ResultContent({
                     ]
                   : []),
               ]}
-              price={formatPrice(c.priceRange)}
+              price={formatPrice(c.priceRange, filters.budget?.dealType)}
               tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
               onClick={() => open(c.id)}
             />

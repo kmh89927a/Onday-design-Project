@@ -138,10 +138,14 @@ async function computeOneCandidate(
           : undefined,
       score,
       safetyGrade: mode === "single" ? neighborhood.safetyGrade : undefined,
-      priceRange: {
-        min: Math.round(neighborhood.avgPrice * 0.85),
-        max: Math.round(neighborhood.avgPrice * 1.15),
-      },
+      // priceRange 는 거래유형 scale — 매매는 전세가율 환산값 기준(추정). 전세=avgPrice 그대로(동일).
+      priceRange: (() => {
+        const base = comparablePrice(
+          neighborhood.avgPrice,
+          filters.budget?.dealType,
+        );
+        return { min: Math.round(base * 0.85), max: Math.round(base * 1.15) };
+      })(),
       facilities: neighborhood.facilities,
       lines: neighborhood.lines,
       listingsCount: neighborhood.listingsCount,

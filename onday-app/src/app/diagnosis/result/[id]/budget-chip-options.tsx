@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import type { DealType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 // Issue #112 — what-if 명시적 확인 UX (★ TimeChipOptions 답습 + 억 단위 2 number input + 내부 만원 변환).
@@ -13,6 +14,7 @@ interface BudgetChipOptionsProps {
   baseMax: number; // 만원 단위
   onConfirm: (min: number, max: number) => void; // 만원 단위
   disabled?: boolean;
+  dealType?: DealType; // 라벨용(읽기전용) — 거래유형은 진단 시점 고정, what-if 는 min/max 만 조정.
 }
 
 export function BudgetChipOptions({
@@ -20,7 +22,9 @@ export function BudgetChipOptions({
   baseMax,
   onConfirm,
   disabled,
+  dealType,
 }: BudgetChipOptionsProps) {
+  const budgetLabel = dealType === "maemae" ? "매매가" : "전세 보증금";
   // 내부 영역 = 억 단위 (★ UX 직관).
   const [pendingMin, setPendingMin] = React.useState(baseMin / 10000);
   const [pendingMax, setPendingMax] = React.useState(baseMax / 10000);
@@ -43,9 +47,9 @@ export function BudgetChipOptions({
   );
 
   return (
-    <div className="pt-s-2" role="group" aria-label="예산 범위 변경 입력">
+    <div className="pt-s-2" role="group" aria-label={`${budgetLabel} 범위 변경 입력`}>
       <label className="flex flex-wrap items-center gap-s-2 text-caption font-bold text-ink-2">
-        예산
+        {budgetLabel}
         <input
           type="number"
           min={1}

@@ -8,7 +8,7 @@ import { AddressInput } from "@/components/form/address-input";
 import { ModeSelector } from "@/components/form/mode-selector";
 // ★ DTO-COMMUTE-TIME (#98) — TimeRangeToggle 제거 + CommuteSchedulePicker 교체 (★ Mismatch ㊱).
 import { CommuteSchedulePicker } from "@/components/form/commute-schedule-picker";
-import type { CommuteSchedule, DiagnosisFilters } from "@/lib/types";
+import type { CommuteSchedule, DealType, DiagnosisFilters } from "@/lib/types";
 import { AppHeader } from "@/components/layout/app-header";
 import { StickyCTABar } from "@/components/layout/sticky-cta-bar";
 import { Button } from "@/components/ui/button";
@@ -99,18 +99,28 @@ export default function DiagnosisPage() {
   const [budgetMaxInput, setBudgetMaxInput] = React.useState(
     filters.budget ? String(filters.budget.max / 10000) : "",
   );
+  // 거래유형(전세/매매) — 월세는 Stage 2(준비중). budget 에 함께 박힘.
+  const [dealType, setDealType] = React.useState<DealType>(
+    filters.budget?.dealType ?? "jeonse",
+  );
 
-  const syncBudget = (minStr: string, maxStr: string) => {
+  const syncBudget = (minStr: string, maxStr: string, dt: DealType = dealType) => {
     const minNum = Number(minStr);
     const maxNum = Number(maxStr);
     if (minStr !== "" && maxStr !== "" && minNum > 0 && maxNum > 0) {
       setFilters({
         ...filters,
-        budget: { min: minNum * 10000, max: maxNum * 10000 },
+        budget: { dealType: dt, min: minNum * 10000, max: maxNum * 10000 },
       });
     } else {
       setFilters({ ...filters, budget: undefined });
     }
+  };
+
+  // 거래유형 변경 — dealType 즉시 반영 + 입력값 있으면 budget 재동기화(새 dealType 로).
+  const handleDealType = (dt: DealType) => {
+    setDealType(dt);
+    syncBudget(budgetMinInput, budgetMaxInput, dt);
   };
 
   const { suggestions: suggestionsA } = useAddressSuggest(queryA);
@@ -210,10 +220,11 @@ export default function DiagnosisPage() {
       setShowL2(Boolean(config.leisureB));
       // Issue #112 — budget local state sync (★ filters.budget 자가 치유와 별개 영역).
       const nextBudget = (config.filters?.budget ?? undefined) as
-        | { min: number; max: number }
+        | { dealType?: DealType; min: number; max: number }
         | undefined;
       setBudgetMinInput(nextBudget ? String(nextBudget.min / 10000) : "");
       setBudgetMaxInput(nextBudget ? String(nextBudget.max / 10000) : "");
+      setDealType(nextBudget?.dealType ?? "jeonse");
       pushToast({ variant: "default", message: "이전 조건을 불러왔습니다 ✨" });
     } catch {
       pushToast({ variant: "default", message: "이전 조건 불러오기 실패" });
@@ -390,8 +401,49 @@ export default function DiagnosisPage() {
               />
               분
             </label>
+            {/* 거래유형(전세/매매) — 월세는 Stage 2(준비중·disabled). 선택 시 예산 라벨도 전환. */}
+            <div className="space-y-s-2">
+              <p className="text-body-sm text-ink-2">거래유형</p>
+              <div className="flex gap-s-2" role="group" aria-label="거래유형 선택">
+                {(
+                  [
+                    { key: "jeonse", label: "전세" },
+                    { key: "maemae", label: "매매" },
+                  ] as const
+                ).map((opt) => {
+                  const active = dealType === opt.key;
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => handleDealType(opt.key)}
+                      aria-pressed={active}
+                      className={cn(
+                        "rounded-sm border px-s-3 py-s-1 text-body-sm font-bold transition-all",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2",
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-card-border bg-surface text-ink-2 hover:brightness-95",
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  title="월세는 준비 중입니다"
+                  className="cursor-not-allowed rounded-sm border border-card-border bg-surface px-s-3 py-s-1 text-body-sm font-bold text-ink-3 opacity-60"
+                >
+                  월세{" "}
+                  <span className="text-caption font-normal">준비중</span>
+                </button>
+              </div>
+            </div>
             <label className="flex flex-wrap items-center gap-s-2 text-body-sm text-ink-2">
-              예산
+              {dealType === "maemae" ? "매매가" : "전세 보증금"}
               <input
                 type="number"
                 min={1}
