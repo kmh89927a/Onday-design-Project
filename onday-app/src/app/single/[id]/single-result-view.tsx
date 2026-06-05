@@ -5,7 +5,6 @@ import Link from "next/link";
 import { AlertCircle, ChevronLeft, Filter, FileDown } from "lucide-react";
 
 import { SafetyCard } from "@/components/card/safety-card";
-import { DataSourceBadge } from "@/components/data/data-source-badge";
 import { LegendBar } from "@/components/data/legend-bar";
 import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
@@ -132,7 +131,7 @@ const LEGEND_META: Record<SingleLayer, { title: string; meta: string }> = {
     meta: "편의점 + 약국 + 24시간 매장 · 반경 1km",
   },
   community: {
-    // 출처("data.go.kr 표준데이터")는 LAYER_SOURCES → DataSourceBadge 로 이관(하드코딩 제거).
+    // 출처("data.go.kr 표준데이터")는 LAYER_SOURCES 캡션 한 줄로 이관(하드코딩 제거).
     title: "공원·공공도서관 (시군구 단위)",
     meta: "구 전체 등록 수",
   },
@@ -171,17 +170,9 @@ const LAYER_SOURCES: Record<SingleLayer, SourceMeta[]> = {
   ],
 };
 
-// 결측 지표 "준비중" 칩 (출처 없음) — DataSourceBadge on-light 톤과 정렬된 중립 회색.
-function PendingSourceChip({ label }: { label: string }) {
-  return (
-    <span className="inline-flex w-fit items-center gap-1.5 rounded-sm border border-line-2 bg-bg px-s-2 py-1 text-caption-xs font-bold text-ink-3">
-      <span aria-hidden className="size-1.5 rounded-full bg-line-2" />
-      <span>{label} · 준비중</span>
-    </span>
-  );
-}
-
-// 활성 레이어의 출처 배지 행. 표시 후보(candidates) 중 결측이 있으면 해당 지표는 출처 대신 "준비중".
+// 활성 레이어의 출처 — 공원·도서관 기존 캡션과 동일한 작은 회색 텍스트 한 줄(text-caption).
+//   지표 여러 개(야간안전 범죄/CCTV)는 가운뎃점(·)으로 연결. 표시 후보에 결측이 섞이면
+//   그 지표는 가짜 출처 대신 "준비중"(#59 결측 판정 공유 — 새 판정 로직 없음).
 function LayerSources({
   layer,
   candidates,
@@ -189,7 +180,6 @@ function LayerSources({
   layer: SingleLayer;
   candidates: CandidateArea[];
 }) {
-  // #59 와 동일한 결측 판정 공유 (새 판정 로직 만들지 않음).
   const someSafetyNoData = candidates.some(
     (c) => getSafetyByGu(c.gu).status !== "ok",
   );
@@ -197,29 +187,22 @@ function LayerSources({
     (c) => getCommunityByGu(c.gu).status !== "ok",
   );
 
+  const parts = LAYER_SOURCES[layer].map((m) => {
+    // 야간안전 CCTV: 결측(예: 수원)이 섞이면 출처 대신 "준비중". 범죄는 항상 표기.
+    if (layer === "safety" && m.indicator === "CCTV" && someSafetyNoData) {
+      return "CCTV: 준비중";
+    }
+    // 공원·도서관: 결측이면 출처 억제(가짜 출처 방지) → "준비중".
+    if (layer === "community" && someCommunityNoData) {
+      return `${m.indicator}: 준비중`;
+    }
+    return `${m.indicator}: ${m.source}`;
+  });
+
   return (
-    <div className="mt-s-2 flex flex-wrap gap-s-2" aria-label="데이터 출처">
-      {LAYER_SOURCES[layer].map((m) => {
-        // 야간안전 CCTV: 표시 후보에 결측(예: 수원)이 섞이면 출처 대신 "준비중".
-        //   (범죄는 수도권 전 시군구 보유 → 항상 표기. 한 줄로 묶지 않음.)
-        if (layer === "safety" && m.indicator === "CCTV" && someSafetyNoData) {
-          return <PendingSourceChip key={m.indicator} label="CCTV" />;
-        }
-        // 공원·도서관: 결측이면 출처 억제(가짜 출처 방지) → "준비중".
-        if (layer === "community" && someCommunityNoData) {
-          return <PendingSourceChip key={m.indicator} label={m.indicator} />;
-        }
-        return (
-          <DataSourceBadge
-            key={m.indicator}
-            kind={m.kind}
-            source={`${m.indicator} · ${m.source}`}
-            updatedAt={m.updatedAt}
-            tone="on-light"
-          />
-        );
-      })}
-    </div>
+    <p className="mt-1 text-caption text-ink-3" aria-label="데이터 출처">
+      {parts.join(" · ")}
+    </p>
   );
 }
 
