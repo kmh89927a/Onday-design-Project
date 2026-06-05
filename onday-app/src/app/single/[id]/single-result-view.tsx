@@ -149,14 +149,16 @@ interface SourceMeta {
 
 const LAYER_SOURCES: Record<SingleLayer, SourceMeta[]> = {
   safety: [
-    { indicator: "범죄", kind: "official", source: "행안부 지역안전지수", updatedAt: "2024" },
+    { indicator: "범죄", kind: "official", source: "행안부 지역안전지수", updatedAt: "2025" },
     { indicator: "CCTV", kind: "official", source: "공공데이터 CCTV현황", updatedAt: "2025" },
   ],
   convenience: [
     {
+      // ★ 출처 미검증(주석 1줄 근거뿐, 원본·집계 스크립트 repo 부재) → 단정 표기 금지(#59 정직성).
+      //   원본·집계 확보(값 재현성 트랙) 후 실 출처명으로 정정 예정.
       indicator: "편의점·카페",
       kind: "aggregated",
-      source: "소상공인 상가정보",
+      source: "자체 집계 (출처 확인 중)",
       updatedAt: "2026.03",
     },
   ],
