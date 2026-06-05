@@ -1,0 +1,364 @@
+{
+  "_meta": {
+    "description": "각 neighborhood 좌표 기준 최근접 초등학교 1곳 (Haversine). '배정'이 아니라 '인근' (학구도 폴리곤 미보유).",
+    "dataset": "학교알리미 전국초중등학교위치표준데이터 (data.go.kr)",
+    "source": "한국교육시설안전원",
+    "updatedAt": "2026-03-20",
+    "generatedFrom": "data-raw/schools.xls",
+    "note": "scripts/build-schools-index.ts 로 생성(결정론적). 원본 xls 는 git 미추적. 정확한 배정은 학구도(15021158)로 업그레이드 가능."
+  },
+  "byNeighborhood": {
+    "jong-3": {
+      "name": "서울교동초등학교",
+      "lat": 37.57500567,
+      "lng": 126.9881513,
+      "distanceKm": 0.55,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "mapo-gondeok": {
+      "name": "서울공덕초등학교",
+      "lat": 37.54580335,
+      "lng": 126.9548231,
+      "distanceKm": 0.34,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gangnam-station": {
+      "name": "서울서초초등학교",
+      "lat": 37.49904877,
+      "lng": 127.0248915,
+      "distanceKm": 0.27,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "yongsan-itaewon": {
+      "name": "서울이태원초등학교",
+      "lat": 37.53647771,
+      "lng": 126.9876727,
+      "distanceKm": 0.65,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "songpa-jamsil": {
+      "name": "서울신천초등학교",
+      "lat": 37.5140111,
+      "lng": 127.0950476,
+      "distanceKm": 0.45,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "yeongdeungpo-yeouido": {
+      "name": "서울윤중초등학교",
+      "lat": 37.51964164,
+      "lng": 126.9225908,
+      "distanceKm": 0.3,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "seodaemun-sinchon": {
+      "name": "이화여자대학교사범대학부속초등학교",
+      "lat": 37.56115022,
+      "lng": 126.9427504,
+      "distanceKm": 0.36,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "dongjak-sadang": {
+      "name": "서울이수초등학교",
+      "lat": 37.47837133,
+      "lng": 126.9844171,
+      "distanceKm": 0.32,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "nowon-junggye": {
+      "name": "서울청계초등학교",
+      "lat": 37.64503406,
+      "lng": 127.0661389,
+      "distanceKm": 0.16,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gwanak-bongcheon": {
+      "name": "서울원당초등학교",
+      "lat": 37.48128046,
+      "lng": 126.9562493,
+      "distanceKm": 0.29,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "seongdong-wangsimni": {
+      "name": "서울행당초등학교",
+      "lat": 37.55701913,
+      "lng": 127.0348734,
+      "distanceKm": 0.52,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "yangcheon-mokdong": {
+      "name": "서울목운초등학교",
+      "lat": 37.52700952,
+      "lng": 126.8730442,
+      "distanceKm": 0.2,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "guro-gasan": {
+      "name": "서울영일초등학교",
+      "lat": 37.48564539,
+      "lng": 126.8838134,
+      "distanceKm": 0.52,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "dobong-chang": {
+      "name": "서울창동초등학교",
+      "lat": 37.65536304,
+      "lng": 127.0448329,
+      "distanceKm": 0.35,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "jungnang-myeonmok": {
+      "name": "서울면동초등학교",
+      "lat": 37.58535152,
+      "lng": 127.0865922,
+      "distanceKm": 0.33,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gangseo-yeomchang": {
+      "name": "서울염동초등학교",
+      "lat": 37.55209548,
+      "lng": 126.8723509,
+      "distanceKm": 0.36,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "eunpyeong-bulgwang": {
+      "name": "서울불광초등학교",
+      "lat": 37.61342945,
+      "lng": 126.9307187,
+      "distanceKm": 0.37,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "seongbuk-seongshin": {
+      "name": "서울돈암초등학교",
+      "lat": 37.59371444,
+      "lng": 127.0131036,
+      "distanceKm": 0.31,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gwangjin-gundae": {
+      "name": "서울동자초등학교",
+      "lat": 37.53505821,
+      "lng": 127.0721792,
+      "distanceKm": 0.61,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gangbuk-mia": {
+      "name": "서울화계초등학교",
+      "lat": 37.62388498,
+      "lng": 127.0297162,
+      "distanceKm": 0.2,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "jongno-pyeongchang": {
+      "name": "서울세검정초등학교",
+      "lat": 37.60346883,
+      "lng": 126.9609387,
+      "distanceKm": 1.6,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "geumcheon-siheung": {
+      "name": "서울금나래초등학교",
+      "lat": 37.45823,
+      "lng": 126.8962417,
+      "distanceKm": 0.49,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gimpo-sau": {
+      "name": "사우초등학교",
+      "lat": 37.62052677,
+      "lng": 126.7239749,
+      "distanceKm": 0.93,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gimpo-janggi": {
+      "name": "가현초등학교",
+      "lat": 37.63807828,
+      "lng": 126.6740076,
+      "distanceKm": 0.27,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gimpo-pungmu": {
+      "name": "금란초등학교",
+      "lat": 37.60765405,
+      "lng": 126.7511726,
+      "distanceKm": 0.88,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "ilsan-madu": {
+      "name": "금계초등학교",
+      "lat": 37.649601,
+      "lng": 126.7843119,
+      "distanceKm": 0.22,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "ilsan-janghang": {
+      "name": "낙민초등학교",
+      "lat": 37.65392838,
+      "lng": 126.7801004,
+      "distanceKm": 1,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "bundang-seohyeon": {
+      "name": "서현초등학교",
+      "lat": 37.38257622,
+      "lng": 127.12855,
+      "distanceKm": 0.56,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "bundang-jeongja": {
+      "name": "백현초등학교",
+      "lat": 37.37219331,
+      "lng": 127.1111656,
+      "distanceKm": 0.37,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "bundang-pangyo": {
+      "name": "낙생초등학교",
+      "lat": 37.39430405,
+      "lng": 127.0989134,
+      "distanceKm": 0.55,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "suwon-yeongtong": {
+      "name": "신풍초등학교",
+      "lat": 37.28639813,
+      "lng": 127.0531872,
+      "distanceKm": 0.28,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "anyang-pyeongchon": {
+      "name": "달안초등학교",
+      "lat": 37.39460528,
+      "lng": 126.9500874,
+      "distanceKm": 0.45,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "hwaseong-dongtan": {
+      "name": "솔빛초등학교",
+      "lat": 37.1966888294,
+      "lng": 127.0737903,
+      "distanceKm": 0.47,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "seongnam-wirye": {
+      "name": "위례고운초등학교",
+      "lat": 37.47148964,
+      "lng": 127.1457743,
+      "distanceKm": 0.23,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gunpo-sanbon": {
+      "name": "군포양정초등학교",
+      "lat": 37.35930627,
+      "lng": 126.9406945,
+      "distanceKm": 0.42,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "bucheon-jung": {
+      "name": "중흥초등학교",
+      "lat": 37.50668196,
+      "lng": 126.7732474,
+      "distanceKm": 0.39,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "seongnam-sujeong": {
+      "name": "희망대초등학교",
+      "lat": 37.44749919,
+      "lng": 127.1491148,
+      "distanceKm": 0.33,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "incheon-cheongna": {
+      "name": "인천경명초등학교",
+      "lat": 37.5369986,
+      "lng": 126.6373144,
+      "distanceKm": 0.36,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "incheon-songdo": {
+      "name": "인천해송초등학교",
+      "lat": 37.3809103,
+      "lng": 126.6492847,
+      "distanceKm": 0.53,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "incheon-geomdan": {
+      "name": "인천금곡초등학교",
+      "lat": 37.6054434,
+      "lng": 126.65061,
+      "distanceKm": 0.27,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "incheon-bupyeong": {
+      "name": "인천부평서초등학교",
+      "lat": 37.49511249,
+      "lng": 126.7218358,
+      "distanceKm": 0.08,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "incheon-sinpo": {
+      "name": "인성초등학교",
+      "lat": 37.4739458,
+      "lng": 126.624248,
+      "distanceKm": 0.25,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "seongdong-seongsu": {
+      "name": "서울경동초등학교",
+      "lat": 37.5438253,
+      "lng": 127.050074,
+      "distanceKm": 0.53,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    },
+    "gwangjin-jayang": {
+      "name": "서울성자초등학교",
+      "lat": 37.53149357,
+      "lng": 127.0834083,
+      "distanceKm": 0.41,
+      "_source": "한국교육시설안전원",
+      "updatedAt": "2026-03-20"
+    }
+  }
+}

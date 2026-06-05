@@ -15,7 +15,8 @@
     "db:seed": "npx prisma db seed",
     "db:push": "npx prisma db push",
     "postinstall": "npx prisma generate",
-    "check:coverage": "npx tsx scripts/check-coverage.ts"
+    "check:coverage": "npx tsx scripts/check-coverage.ts",
+    "build:schools": "npx tsx scripts/build-schools-index.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
