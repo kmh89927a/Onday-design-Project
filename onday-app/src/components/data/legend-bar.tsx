@@ -14,6 +14,8 @@ import {
 interface LegendBarProps {
   title: string;
   meta?: string;
+  /** 레이어별 데이터 출처 배지 슬롯 (지표별 DataSourceBadge). meta 아래 렌더. */
+  sources?: React.ReactNode;
   grades?: SafetyGrade[];
   className?: string;
 }
@@ -21,6 +23,7 @@ interface LegendBarProps {
 export function LegendBar({
   title,
   meta,
+  sources,
   grades = ["A", "B", "C", "D"],
   className,
 }: LegendBarProps) {
@@ -35,6 +38,7 @@ export function LegendBar({
       <header className="mb-s-3">
         <h3 className="text-body-sm font-bold text-ink">{title}</h3>
         {meta && <p className="text-caption text-ink-3">{meta}</p>}
+        {sources}
       </header>
       <ul className="flex gap-s-2">
         {grades.map((g) => (
