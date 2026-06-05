@@ -16,7 +16,8 @@ import { cn } from "@/lib/utils";
 interface SafetyCardProps {
   name: string;
   sub: string;
-  grade: SafetyGrade;
+  /** null = no_data(미수집 시군구) → 배지/바 자리에 "준비중" (#59). metric·barPercent 무시. */
+  grade: SafetyGrade | null;
   gradeLabel: string;
   metric: { label: string; value: number; unit?: string };
   barPercent: number;
@@ -42,10 +43,13 @@ export function SafetyCard({
   className,
 }: SafetyCardProps) {
   const interactive = Boolean(href || onClick);
-  // 종합 aria-label (스크린리더): 동네 + 등급 + 핵심 지표
-  const ariaLabel = `${name}, ${gradeLabel}, ${metric.label} ${metric.value}${
-    metric.unit ?? ""
-  }`;
+  // 종합 aria-label (스크린리더): 동네 + 등급 + 핵심 지표. no_data 는 "준비중".
+  const ariaLabel =
+    grade === null
+      ? `${name}, 야간 안전 데이터 준비중`
+      : `${name}, ${gradeLabel}, ${metric.label} ${metric.value}${
+          metric.unit ?? ""
+        }`;
 
   const inner = (
     <>
@@ -54,16 +58,23 @@ export function SafetyCard({
           <h3 className="text-title font-bold text-ink">{name}</h3>
           <p className="mt-0.5 text-caption text-ink-3">{sub}</p>
         </div>
-        <SafetyGradeBadge grade={grade} label={gradeLabel} />
+        <SafetyGradeBadge grade={grade} label={grade ? gradeLabel : undefined} />
       </header>
 
-      <SafetyBar
-        label={metric.label}
-        value={metric.value}
-        unit={metric.unit ?? ""}
-        percent={barPercent}
-        grade={grade}
-      />
+      {grade === null ? (
+        // no_data → 막대/수치 날조 대신 회색 안내 (CCTV 미수집 시군구).
+        <p className="text-caption text-ink-3">
+          야간 안전 데이터 준비중 — CCTV 미수집 시군구
+        </p>
+      ) : (
+        <SafetyBar
+          label={metric.label}
+          value={metric.value}
+          unit={metric.unit ?? ""}
+          percent={barPercent}
+          grade={grade}
+        />
+      )}
 
       <div className="grid grid-cols-3 gap-s-2">
         {stats.map((s) => (
