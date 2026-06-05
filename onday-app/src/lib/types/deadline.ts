@@ -11,6 +11,7 @@ export interface ListingFilters {
 
 export interface ListingItem {
   id: string;
+  neighborhoodId: string; // 후보 동네 id — 인근 초등학교(getNearestSchool) 조회 키.
   areaName: string; // "강남구 역삼동"
   dealType: "매매" | "전세";
   priceLabel: string; // "4.5억"

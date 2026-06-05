@@ -17,3 +17,13 @@ export function buildNaverRealEstateUrl(
   }
   return `${NAVER_LAND_BASE}?${params.toString()}`;
 }
+
+// 학군 PR2 — 인근 초등학교명 → 네이버 통합검색 아웃링크.
+//   학교는 부동산(land.naver.com)이 아니라 search.naver.com. URLSearchParams 가 한글 인코딩 처리.
+//   ★ 좌표 최근접 "인근" 학교 — 정확한 배정 학군은 검색 결과에서 사용자가 확인하는 흐름.
+const NAVER_SEARCH_BASE = "https://search.naver.com/search.naver";
+
+export function buildSchoolSearchUrl(schoolName: string): string {
+  const params = new URLSearchParams({ query: schoolName });
+  return `${NAVER_SEARCH_BASE}?${params.toString()}`;
+}

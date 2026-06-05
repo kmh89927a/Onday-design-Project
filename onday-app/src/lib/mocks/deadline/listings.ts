@@ -19,6 +19,7 @@ function listingsForArea(c: CandidateArea): ListingItem[] {
     const discounted = basePrice * (1 - discountPercent / 100);
     return {
       id: `${c.id}-listing-${i}`,
+      neighborhoodId: c.id,
       areaName,
       dealType: DEAL_TYPES[(i + c.gu.length) % 2],
       priceLabel: `${Math.round(discounted / 1000) / 10}억`, // 만원 → 억 (1자리)
