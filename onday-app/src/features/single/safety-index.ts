@@ -5,8 +5,8 @@ import safetyIndexData from "@/lib/data/safety-index.json";
 //   ★ 명세 역방향 정합: 명세의 getNightSafetyGrade(coord) 좌표 반경 검색 대신
 //   getSafetyByGu(gu) 구 룩업으로 대체 (동단위 데이터 미수집 → 시군구 단위 채택).
 //   소스: 행안부 지역안전지수(범죄) ×0.7 + 시군구 CCTV 밀집도 ×0.3.
-//   ★ couple 모드 scoring(scoring.ts safetyBonus)은 neighborhoods.ts 의 hardcoded
-//   safetyGrade 를 계속 사용 — 본 모듈은 single 모드 표시용 데이터 소스 (영향 없음).
+//   ★ scoring.ts safetyBonus 는 neighborhoods.ts 의 hardcoded safetyGrade 로 가산하되,
+//   getSafetyByGu(gu) 가 no_data 인 시군구는 가산 0 (#59 옵션2 — 표시 "준비중"과 일관, 날조 금지).
 
 interface SafetyIndexEntry {
   sigungu: string;
