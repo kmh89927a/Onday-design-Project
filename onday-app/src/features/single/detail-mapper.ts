@@ -18,11 +18,14 @@ interface MetricItem {
 export function buildSinglePills(
   c: CandidateArea,
   rank: number,
-  grade: SafetyGrade,
+  grade: SafetyGrade | null,
 ): PillItem[] {
   const pills: PillItem[] = [];
   if (rank === 1) pills.push({ variant: "solid", label: "BEST 매칭" });
-  pills.push({ variant: "neutral", label: `야간안전 ${grade}등급` });
+  pills.push({
+    variant: "neutral",
+    label: grade ? `야간안전 ${grade}등급` : "야간안전 준비중",
+  });
   if (c.listingsCount != null)
     pills.push({ variant: "neutral", label: `매물 ${c.listingsCount}건` });
   return pills;
@@ -32,13 +35,13 @@ export function buildSinglePills(
 //   여가거점 미입력 시 통근(직장A)로 대체 → 3칸 항상 채움.
 export function buildSingleMetrics(
   c: CandidateArea,
-  grade: SafetyGrade,
+  grade: SafetyGrade | null,
 ): MetricItem[] {
   const metrics: MetricItem[] = [
     {
       label: "야간 범죄율",
-      value: `${getNightCrimeRate(grade)}건`,
-      sub: "10만명당",
+      value: grade ? `${getNightCrimeRate(grade)}건` : "준비중",
+      sub: grade ? "10만명당" : "데이터 준비중",
     },
   ];
   if (c.priceRange) {

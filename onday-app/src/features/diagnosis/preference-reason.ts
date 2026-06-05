@@ -3,7 +3,7 @@ import { getCommunityByGu } from "@/lib/diagnosis/community-index";
 import type { CandidateArea } from "@/lib/types";
 
 // 선호 태그(⑥) 데이터별 정직 근거 — 카드/시트에 "왜 이 동네"를 그 후보의 실제 지표로.
-//   safety = #57 종합 야간안전 지수(getSafetyByGu, 부부·싱글 공통) → 등급. no_data 시 mock grade.
+//   safety = #57 종합 야간안전 지수(getSafetyByGu, 부부·싱글 공통) → 등급. no_data 시 "준비중"(날조 금지, #59).
 //   convenience/hotplace/quiet = facilities(파생 포함) 실측 수치 기반 티어.
 
 const SAFETY_REASON: Record<string, string> = {
@@ -19,10 +19,10 @@ export function buildPreferenceReason(
 ): string | null {
   switch (key) {
     case "safety": {
+      // no_data(미수집 시군구)는 mock 등급으로 사유 날조 금지 → "준비중" (#59).
       const safety = getSafetyByGu(c.gu);
-      const grade = safety.status === "ok" ? safety.grade : c.safetyGrade;
-      if (!grade) return "야간 치안 반영";
-      return `${SAFETY_REASON[grade]} (${grade}등급)`;
+      if (safety.status !== "ok") return "야간 치안 데이터 준비중";
+      return `${SAFETY_REASON[safety.grade]} (${safety.grade}등급)`;
     }
     case "convenience": {
       const n = c.facilities?.convenience ?? 0;

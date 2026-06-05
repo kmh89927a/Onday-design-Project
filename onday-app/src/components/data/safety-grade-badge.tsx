@@ -25,7 +25,8 @@ const GRADE_LABELS: Record<SafetyGrade, string> = {
 };
 
 interface SafetyGradeBadgeProps {
-  grade: SafetyGrade;
+  /** null = no_data(미수집 시군구) → 등급 날조 대신 중립 "준비중" 배지 (#59, E-2 합의). */
+  grade: SafetyGrade | null;
   label?: string;
   className?: string;
 }
@@ -35,6 +36,25 @@ export function SafetyGradeBadge({
   label,
   className,
 }: SafetyGradeBadgeProps) {
+  // no_data → 중립 회색 "준비중" (letter 자리 "—"). letter+label+색 3중 표기 유지.
+  if (grade === null) {
+    return (
+      <span
+        role="img"
+        aria-label="야간 안전 데이터 준비중"
+        className={cn(
+          "grade-badge inline-flex w-fit items-center gap-1 rounded-sm px-s-2 py-1 text-caption-xs font-extrabold bg-bg text-ink-3",
+          className,
+        )}
+      >
+        <span aria-hidden className="font-black tracking-tight">
+          —
+        </span>
+        <span aria-hidden>·</span>
+        <span aria-hidden>준비중</span>
+      </span>
+    );
+  }
   const text = label ?? GRADE_LABELS[grade];
   return (
     <span

@@ -1,4 +1,5 @@
 import type { SafetyGrade } from "@/lib/types";
+import { getSafetyByGu } from "@/features/single/safety-index";
 
 import { getCommunityByGu } from "./community-index";
 
@@ -33,6 +34,8 @@ function priorityBonus(
 ): number {
   switch (priority) {
     case "safety": {
+      // no_data(미수집 시군구)는 mock 등급 가산 금지(#59 옵션2) — 표시 "준비중"과 일관.
+      if (getSafetyByGu(n.gu).status !== "ok") return 0;
       const b: Record<string, number> = { A: 10, B: 5, C: 0, D: -10 };
       return b[n.safetyGrade] ?? 0;
     }
@@ -74,9 +77,11 @@ export function scoreCandidate({
   const avgCommute = commuteB != null ? (commuteA + commuteB) / 2 : commuteA;
   score -= Math.min(40, avgCommute * 0.8);
 
-  // 안전등급 가산
+  // 안전등급 가산 — no_data(미수집 시군구)는 mock 등급 가산 금지(#59 옵션2, 표시 "준비중"과 일관).
   const safetyBonus: Record<string, number> = { A: 10, B: 5, C: 0, D: -10 };
-  score += safetyBonus[neighborhood.safetyGrade] ?? 0;
+  if (getSafetyByGu(neighborhood.gu).status === "ok") {
+    score += safetyBonus[neighborhood.safetyGrade] ?? 0;
+  }
 
   // 편의시설 가산 — 실데이터(편의점+카페 반경1km). 합 분포 ~12~828(중앙 213) → /40 으로 0~10.
   //   (구 /10 은 mock(합~70) 기준 — 실데이터선 전부 10 saturate → /40 재튜닝.)

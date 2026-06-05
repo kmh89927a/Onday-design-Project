@@ -36,7 +36,7 @@ export interface FavoriteItem {
 export function toFavoriteSnapshot(
   c: CandidateArea,
   mode: DiagnosisMode,
-  grade?: SafetyGrade,
+  grade?: SafetyGrade | null,
   dealType?: DealType,
   savedAt: number = Date.now(),
 ): FavoriteItem {
@@ -45,7 +45,9 @@ export function toFavoriteSnapshot(
     gu: c.gu,
     dong: c.dong,
     score: c.score,
-    safetyGrade: grade ?? c.safetyGrade,
+    // grade===null = no_data(준비중) → mock 폴백 금지(#59), 배지 없이 점수 표시.
+    //   grade 미전달(undefined, 부부)만 후보 mock 등급으로 폴백(레거시 유지).
+    safetyGrade: grade === null ? undefined : (grade ?? c.safetyGrade),
     commuteA: c.commuteA.time,
     commuteB: c.commuteB?.time,
     priceRange: c.priceRange,

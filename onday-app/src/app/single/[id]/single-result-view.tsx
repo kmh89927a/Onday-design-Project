@@ -47,14 +47,12 @@ interface SingleResultViewProps {
   id: string;
 }
 
-// #57 — 종합 야간안전 지수(getSafetyByGu)가 등급 소스.
-//   ★ 랜덤 id-해시 날조 제거 (실 데이터 전환 의미 정면 위배 방지).
-//   no_data(비수도권 or 미수집 시군구)는 등급 날조 대신 전환 브리지(기존 mock grade, 랜덤 아님).
-//   TODO(#59 UI-013): no_data → "데이터 준비중" 배지/회색 처리로 표현 (표현은 #59 범위).
-function resolveGrade(c: CandidateArea): SafetyGrade {
+// #57/#59 — 종합 야간안전 지수(getSafetyByGu)가 유일한 등급 소스.
+//   ★ no_data(비수도권 or CCTV 미수집 시군구)는 mock 등급 날조 금지(E-2 합의) → null 전파.
+//   UI(SafetyCard/배지/Stat)가 null 을 "준비중"으로 표현한다.
+function resolveGrade(c: CandidateArea): SafetyGrade | null {
   const safety = getSafetyByGu(c.gu);
-  if (safety.status === "ok") return safety.grade;
-  return c.safetyGrade ?? "C";
+  return safety.status === "ok" ? safety.grade : null;
 }
 
 // 거래유형별 시세 표시 — 부부 result-content 와 동일 패턴.
@@ -75,10 +73,14 @@ function sortByLayer(
 ): CandidateArea[] {
   const arr = [...list];
   switch (layer) {
-    case "safety":
-      return arr.sort(
-        (a, b) => GRADE_ORDER[resolveGrade(a)] - GRADE_ORDER[resolveGrade(b)],
-      );
+    case "safety": {
+      // no_data(준비중)는 등급이 없으므로 맨 뒤로 (Infinity). 점수 정렬과 무관.
+      const rank = (c: CandidateArea) => {
+        const g = resolveGrade(c);
+        return g ? GRADE_ORDER[g] : Infinity;
+      };
+      return arr.sort((a, b) => rank(a) - rank(b));
+    }
     case "convenience":
       return arr.sort(
         (a, b) =>
@@ -99,7 +101,10 @@ function buildLayerStat(c: CandidateArea, layer: SingleLayer) {
   switch (layer) {
     case "safety": {
       const grade = resolveGrade(c);
-      return { label: "범죄", value: `${getNightCrimeRate(grade)}건` };
+      return {
+        label: "범죄",
+        value: grade ? `${getNightCrimeRate(grade)}건` : "준비중",
+      };
     }
     case "convenience":
       return {
@@ -474,13 +479,13 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                       name={`${c.gu} ${c.dong}`}
                       sub={getRadiusSub(c.facilities)}
                       grade={grade}
-                      gradeLabel={getNightGradeLabel(grade)}
+                      gradeLabel={grade ? getNightGradeLabel(grade) : ""}
                       metric={{
                         label: "야간 범죄율 (10만명당)",
-                        value: getNightCrimeRate(grade),
+                        value: grade ? getNightCrimeRate(grade) : 0,
                         unit: "건",
                       }}
-                      barPercent={getCrimePercent(grade)}
+                      barPercent={grade ? getCrimePercent(grade) : 0}
                       stats={[
                         { label: "통근", value: `${c.commuteA.time}분` },
                         { label: "시세", value: priceText(c, dealType) },
