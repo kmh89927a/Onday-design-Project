@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertCircle, ChevronLeft, Filter, FileDown } from "lucide-react";
 
 import { SafetyCard } from "@/components/card/safety-card";
+import { DataSourceBadge } from "@/components/data/data-source-badge";
 import { LegendBar } from "@/components/data/legend-bar";
 import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
@@ -131,10 +132,96 @@ const LEGEND_META: Record<SingleLayer, { title: string; meta: string }> = {
     meta: "편의점 + 약국 + 24시간 매장 · 반경 1km",
   },
   community: {
+    // 출처("data.go.kr 표준데이터")는 LAYER_SOURCES → DataSourceBadge 로 이관(하드코딩 제거).
     title: "공원·공공도서관 (시군구 단위)",
-    meta: "구 전체 등록 수 · data.go.kr 표준데이터",
+    meta: "구 전체 등록 수",
   },
 };
+
+// 레이어별 데이터 출처 — 지표별로 분리(야간안전=범죄/CCTV). 출처 문자열은 실 소스명 그대로.
+//   ★ "표시 여부"는 LAYER_SOURCES 가 아니라 런타임 status(getSafetyByGu/getCommunityByGu)가 결정.
+//   결측 지표엔 출처를 붙이지 않고 "준비중"(#59 결측 판정 공유) — 가짜 출처 금지.
+interface SourceMeta {
+  indicator: string;
+  kind: "official" | "aggregated" | "estimate";
+  source: string;
+  updatedAt: string;
+}
+
+const LAYER_SOURCES: Record<SingleLayer, SourceMeta[]> = {
+  safety: [
+    { indicator: "범죄", kind: "official", source: "행안부 지역안전지수", updatedAt: "2024" },
+    { indicator: "CCTV", kind: "official", source: "공공데이터 CCTV현황", updatedAt: "2025" },
+  ],
+  convenience: [
+    {
+      indicator: "편의점·카페",
+      kind: "aggregated",
+      source: "소상공인 상가정보",
+      updatedAt: "2026.03",
+    },
+  ],
+  community: [
+    {
+      indicator: "공원·도서관",
+      kind: "official",
+      source: "data.go.kr 표준데이터",
+      updatedAt: "2026.04",
+    },
+  ],
+};
+
+// 결측 지표 "준비중" 칩 (출처 없음) — DataSourceBadge on-light 톤과 정렬된 중립 회색.
+function PendingSourceChip({ label }: { label: string }) {
+  return (
+    <span className="inline-flex w-fit items-center gap-1.5 rounded-sm border border-line-2 bg-bg px-s-2 py-1 text-caption-xs font-bold text-ink-3">
+      <span aria-hidden className="size-1.5 rounded-full bg-line-2" />
+      <span>{label} · 준비중</span>
+    </span>
+  );
+}
+
+// 활성 레이어의 출처 배지 행. 표시 후보(candidates) 중 결측이 있으면 해당 지표는 출처 대신 "준비중".
+function LayerSources({
+  layer,
+  candidates,
+}: {
+  layer: SingleLayer;
+  candidates: CandidateArea[];
+}) {
+  // #59 와 동일한 결측 판정 공유 (새 판정 로직 만들지 않음).
+  const someSafetyNoData = candidates.some(
+    (c) => getSafetyByGu(c.gu).status !== "ok",
+  );
+  const someCommunityNoData = candidates.some(
+    (c) => getCommunityByGu(c.gu).status !== "ok",
+  );
+
+  return (
+    <div className="mt-s-2 flex flex-wrap gap-s-2" aria-label="데이터 출처">
+      {LAYER_SOURCES[layer].map((m) => {
+        // 야간안전 CCTV: 표시 후보에 결측(예: 수원)이 섞이면 출처 대신 "준비중".
+        //   (범죄는 수도권 전 시군구 보유 → 항상 표기. 한 줄로 묶지 않음.)
+        if (layer === "safety" && m.indicator === "CCTV" && someSafetyNoData) {
+          return <PendingSourceChip key={m.indicator} label="CCTV" />;
+        }
+        // 공원·도서관: 결측이면 출처 억제(가짜 출처 방지) → "준비중".
+        if (layer === "community" && someCommunityNoData) {
+          return <PendingSourceChip key={m.indicator} label={m.indicator} />;
+        }
+        return (
+          <DataSourceBadge
+            key={m.indicator}
+            kind={m.kind}
+            source={`${m.indicator} · ${m.source}`}
+            updatedAt={m.updatedAt}
+            tone="on-light"
+          />
+        );
+      })}
+    </div>
+  );
+}
 
 export function SingleResultView({ id }: SingleResultViewProps) {
   const pushToast = useUIStore((s) => s.pushToast);
@@ -462,7 +549,11 @@ export function SingleResultView({ id }: SingleResultViewProps) {
               <LayerToggle value={layer} onChange={setLayer} />
             </div>
 
-            <LegendBar title={legend.title} meta={legend.meta} />
+            <LegendBar
+              title={legend.title}
+              meta={legend.meta}
+              sources={<LayerSources layer={layer} candidates={sorted} />}
+            />
 
             <section aria-label="후보 동네" className="space-y-s-3">
               {sorted.map((c) => {
