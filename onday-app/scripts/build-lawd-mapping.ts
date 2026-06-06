@@ -39,6 +39,24 @@ const SIDO_BY_PREFIX: Record<string, string> = {
   "41": "경기",
 };
 
+// ── 수동 lawdCd 보정 ──────────────────────────────────────────
+//   좌표가 구 경계라 카카오가 인접 구로 역지오코딩한 케이스. 좌표는 유지(학교·통근 등 다른 데이터 영향 방지),
+//   시세 조회용 lawdCd(시군구 코드)만 의도한 구로 정정. 5자리는 행정표준코드(code.go.kr) 기준 검증.
+//   ★ fullCode/kakaoLegalDong 은 좌표 원본(카카오가 준 인접 동) 그대로 보존 — lawdCd 만 사람이 고쳤음을 _override 로 명시.
+//   가산동(guro-gasan)은 카카오가 이미 금천구(11545)를 정확히 반환 → override 불필요. gu 라벨만 neighborhoods.ts 에서 정정.
+const LAWD_OVERRIDES: Record<string, { lawdCd: string; reason: string }> = {
+  "gangnam-station": {
+    lawdCd: "11680", // 강남구
+    reason:
+      "좌표가 강남역(서초동 경계) → 카카오가 서초구(11650)로 역지오코딩. 동네 의도 = 강남구 역삼동.",
+  },
+  "dongjak-sadang": {
+    lawdCd: "11590", // 동작구
+    reason:
+      "좌표가 사당역(남현동=관악구 경계) → 카카오가 관악구(11620)로 역지오코딩. 동네 의도 = 동작구 사당동.",
+  },
+};
+
 interface KakaoRegionDoc {
   region_type: "H" | "B"; // H=행정동, B=법정동
   code: string; // 10자리 코드
@@ -65,9 +83,15 @@ interface LawdEntry {
   lat: number;
   lng: number;
   mismatch: boolean; // 우리 dong ≠ 카카오 법정동명(행정동↔법정동 차이 검토 대상)
-  sigunguMismatch: boolean; // ★ 우리 gu ≠ 카카오 시군구 → lawdCd 가 다른 구를 가리킴(critical: 국토부 조회 정확도 직결)
+  sigunguMismatch: boolean; // ★ 우리 gu ≠ 최종 lawdCd 의 구. override 적용 시 false(보정으로 해소).
   _source: string;
   retrievedAt: string;
+  _override?: {
+    correctedBy: "manual";
+    reason: string;
+    originalKakaoLawdCd: string; // 카카오가 준 원래 시군구 코드(보정 전)
+    note: string; // lawdCd 만 보정. fullCode/kakaoLegalDong 은 좌표 원본(인접 동) 보존.
+  };
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -138,6 +162,20 @@ async function main() {
         _source: "Kakao coord2regioncode",
         retrievedAt: RETRIEVED_AT,
       };
+
+      // 수동 보정 — lawdCd 만 의도 시군구로 교체. fullCode/kakaoLegalDong(좌표 원본)은 보존, _override 로 흔적.
+      const ov = LAWD_OVERRIDES[n.id];
+      if (ov) {
+        entry._override = {
+          correctedBy: "manual",
+          reason: ov.reason,
+          originalKakaoLawdCd: entry.lawdCd,
+          note: "lawdCd 만 보정(시세 조회용 시군구). fullCode/kakaoLegalDong 은 좌표가 준 인접 동 원본 보존.",
+        };
+        entry.lawdCd = ov.lawdCd;
+        entry.sigunguMismatch = false; // 의도 시군구로 보정 완료 → 검토 대상 아님.
+      }
+
       byId[n.id] = entry;
       if (mismatch) mismatches.push(entry);
     } catch (err) {
@@ -158,7 +196,9 @@ async function main() {
   }
 
   // ★ critical = 시군구까지 다른 경우(lawdCd 가 다른 구를 가리킴). dong명만 다른 건 같은 구라 lawdCd 영향 없음.
+  //   수동 보정(override)된 항목은 sigunguMismatch=false 로 떨어져 여기서 제외됨(보정 완료).
   const sigunguMismatches = Object.values(byId).filter((e) => e.sigunguMismatch);
+  const overridden = Object.values(byId).filter((e) => e._override);
 
   const out = {
     _meta: {
@@ -175,11 +215,14 @@ async function main() {
       mapped: Object.keys(byId).length,
       distribution: dist,
       mismatchCount: mismatches.length,
-      sigunguMismatchCount: sigunguMismatches.length,
+      sigunguMismatchCount: sigunguMismatches.length, // 보정 후 잔여(동탄·상동 = 카카오 정답, 변경 없음)
+      overrideCount: overridden.length, // 수동 lawdCd 보정 건수
       mismatchNote:
         "mismatch=true 는 우리 dong(한글명) ≠ 카카오 법정동명(행정동↔법정동 차이). 매핑 오류가 아니라 후속 검토 대상 — 실거래는 법정동 기준이라 카카오 법정동명/코드가 정답에 가깝다.",
       sigunguMismatchNote:
-        "★ sigunguMismatch=true 는 우리 gu ≠ 카카오 시군구 → lawdCd 가 다른 구를 가리킴(좌표가 구 경계라 그렇다). 국토부 조회 정확도에 직결 — 우리 의도 동네의 시세를 받으려면 사람이 좌표/코드를 재확인해야 한다(역삼동→강남역 좌표=서초동 등).",
+        "★ sigunguMismatch=true 는 우리 gu ≠ 최종 lawdCd 의 구. 좌표가 구 경계라 카카오가 인접 구로 역지오코딩한 잔여 케이스(동탄→화성시 동탄구, 상동→부천시 원미구 — 카카오가 정답이라 변경 없음). 국토부 2단계 조회 전 사람 재확인 권장.",
+      overrideNote:
+        "_override 가 있는 항목은 lawdCd 를 사람이 의도 시군구로 수동 보정(역삼동→강남구 11680, 사당동→동작구 11590). 좌표는 유지(다른 데이터 영향 방지), fullCode/kakaoLegalDong 은 좌표 원본 보존. originalKakaoLawdCd 로 카카오 자동값과 구분.",
       note: "scripts/build-lawd-mapping.ts 로 생성(결정론적). 원본 카카오 응답 덤프 = data-raw/kakao-coord2regioncode-raw.json (git 미추적).",
     },
     byId,
@@ -208,7 +251,16 @@ async function main() {
   }
 
   console.log(
-    `\n── ★ 시군구 불일치 ${sigunguMismatches.length}건 (lawdCd 가 다른 구를 가리킴 — critical, 사람 재확인 필수) ──`,
+    `\n── 수동 lawdCd 보정 ${overridden.length}건 (좌표 유지, 시군구 코드만 정정) ──`,
+  );
+  for (const e of overridden) {
+    console.log(
+      `   "${e.gu} ${e.dong}": 카카오 ${e._override!.originalKakaoLawdCd}(${e.kakaoSigungu}) → ${e.lawdCd} (수동)`,
+    );
+  }
+
+  console.log(
+    `\n── ★ 시군구 불일치 잔여 ${sigunguMismatches.length}건 (카카오 정답, 변경 없음 — 2단계 전 재확인 권장) ──`,
   );
   for (const e of sigunguMismatches) {
     console.log(
@@ -216,18 +268,28 @@ async function main() {
     );
   }
 
+  const dongOnly = mismatches.filter((m) => !m.sigunguMismatch && !m._override);
   console.log(
-    `\n── 법정동명만 불일치(같은 구, lawdCd 영향 없음) ${mismatches.length - sigunguMismatches.length}건 ──`,
+    `\n── 법정동명만 불일치(같은 구, lawdCd 영향 없음) ${dongOnly.length}건 ──`,
   );
-  for (const e of mismatches.filter((m) => !m.sigunguMismatch)) {
+  for (const e of dongOnly) {
     console.log(
       `   우리 "${e.gu} ${e.dong}" → 카카오 법정동 "${e.kakaoLegalDong}" (lawdCd ${e.lawdCd})`,
     );
   }
 
+  // 2단계 실거래 조회에 그대로 쓸 최종 44/44 lawdCd 목록.
+  console.log(`\n── 최종 lawdCd 목록 (${Object.keys(byId).length}/${MOCK_NEIGHBORHOODS.length}, 2단계 실거래 조회용) ──`);
+  for (const n of MOCK_NEIGHBORHOODS) {
+    const e = byId[n.id];
+    if (!e) continue;
+    const mark = e._override ? " *수동보정" : e.sigunguMismatch ? " *시군구불일치" : "";
+    console.log(`   ${e.lawdCd}  ${e.gu} ${e.dong}${mark}`);
+  }
+
   if (errors.length) {
     console.error(
-      `\n❌ 매핑 실패 ${errors.length}건 — 49개 전부 매핑돼야 다음 단계(실거래 수집) 가능:`,
+      `\n❌ 매핑 실패 ${errors.length}건 — ${MOCK_NEIGHBORHOODS.length}개 전부 매핑돼야 다음 단계(실거래 수집) 가능:`,
     );
     for (const e of errors) console.error(`   ${e.id} (${e.dong}): ${e.reason}`);
     process.exitCode = 1;

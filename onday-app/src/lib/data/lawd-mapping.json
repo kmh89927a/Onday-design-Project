@@ -15,9 +15,11 @@
       "기타": 0
     },
     "mismatchCount": 20,
-    "sigunguMismatchCount": 5,
+    "sigunguMismatchCount": 2,
+    "overrideCount": 2,
     "mismatchNote": "mismatch=true 는 우리 dong(한글명) ≠ 카카오 법정동명(행정동↔법정동 차이). 매핑 오류가 아니라 후속 검토 대상 — 실거래는 법정동 기준이라 카카오 법정동명/코드가 정답에 가깝다.",
-    "sigunguMismatchNote": "★ sigunguMismatch=true 는 우리 gu ≠ 카카오 시군구 → lawdCd 가 다른 구를 가리킴(좌표가 구 경계라 그렇다). 국토부 조회 정확도에 직결 — 우리 의도 동네의 시세를 받으려면 사람이 좌표/코드를 재확인해야 한다(역삼동→강남역 좌표=서초동 등).",
+    "sigunguMismatchNote": "★ sigunguMismatch=true 는 우리 gu ≠ 최종 lawdCd 의 구. 좌표가 구 경계라 카카오가 인접 구로 역지오코딩한 잔여 케이스(동탄→화성시 동탄구, 상동→부천시 원미구 — 카카오가 정답이라 변경 없음). 국토부 2단계 조회 전 사람 재확인 권장.",
+    "overrideNote": "_override 가 있는 항목은 lawdCd 를 사람이 의도 시군구로 수동 보정(역삼동→강남구 11680, 사당동→동작구 11590). 좌표는 유지(다른 데이터 영향 방지), fullCode/kakaoLegalDong 은 좌표 원본 보존. originalKakaoLawdCd 로 카카오 자동값과 구분.",
     "note": "scripts/build-lawd-mapping.ts 로 생성(결정론적). 원본 카카오 응답 덤프 = data-raw/kakao-coord2regioncode-raw.json (git 미추적)."
   },
   "byId": {
@@ -54,14 +56,20 @@
       "gu": "강남구",
       "kakaoLegalDong": "서초동",
       "kakaoSigungu": "서초구",
-      "lawdCd": "11650",
+      "lawdCd": "11680",
       "fullCode": "1165010800",
       "lat": 37.4979,
       "lng": 127.0276,
       "mismatch": true,
-      "sigunguMismatch": true,
+      "sigunguMismatch": false,
       "_source": "Kakao coord2regioncode",
-      "retrievedAt": "2026-06-06"
+      "retrievedAt": "2026-06-06",
+      "_override": {
+        "correctedBy": "manual",
+        "reason": "좌표가 강남역(서초동 경계) → 카카오가 서초구(11650)로 역지오코딩. 동네 의도 = 강남구 역삼동.",
+        "originalKakaoLawdCd": "11650",
+        "note": "lawdCd 만 보정(시세 조회용 시군구). fullCode/kakaoLegalDong 은 좌표가 준 인접 동 원본 보존."
+      }
     },
     "yongsan-itaewon": {
       "dong": "이태원동",
@@ -124,14 +132,20 @@
       "gu": "동작구",
       "kakaoLegalDong": "남현동",
       "kakaoSigungu": "관악구",
-      "lawdCd": "11620",
+      "lawdCd": "11590",
       "fullCode": "1162010300",
       "lat": 37.4765,
       "lng": 126.9816,
       "mismatch": true,
-      "sigunguMismatch": true,
+      "sigunguMismatch": false,
       "_source": "Kakao coord2regioncode",
-      "retrievedAt": "2026-06-06"
+      "retrievedAt": "2026-06-06",
+      "_override": {
+        "correctedBy": "manual",
+        "reason": "좌표가 사당역(남현동=관악구 경계) → 카카오가 관악구(11620)로 역지오코딩. 동네 의도 = 동작구 사당동.",
+        "originalKakaoLawdCd": "11620",
+        "note": "lawdCd 만 보정(시세 조회용 시군구). fullCode/kakaoLegalDong 은 좌표가 준 인접 동 원본 보존."
+      }
     },
     "nowon-junggye": {
       "dong": "중계동",
@@ -191,7 +205,7 @@
     },
     "guro-gasan": {
       "dong": "가산동",
-      "gu": "구로구",
+      "gu": "금천구",
       "kakaoLegalDong": "가산동",
       "kakaoSigungu": "금천구",
       "lawdCd": "11545",
@@ -199,7 +213,7 @@
       "lat": 37.481,
       "lng": 126.883,
       "mismatch": false,
-      "sigunguMismatch": true,
+      "sigunguMismatch": false,
       "_source": "Kakao coord2regioncode",
       "retrievedAt": "2026-06-06"
     },

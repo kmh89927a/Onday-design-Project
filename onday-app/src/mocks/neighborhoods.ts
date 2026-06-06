@@ -152,7 +152,7 @@ export const MOCK_NEIGHBORHOODS: Neighborhood[] = [
   {
     id: "guro-gasan",
     dong: "가산동",
-    gu: "구로구",
+    gu: "금천구", // 데이터 정정 — 가산동(가산디지털단지)은 금천구 소재(구로구 오라벨). gu=safety/community 조인 키.
     coordinate: { lat: 37.4810, lng: 126.8830 },
     avgPrice: 50000,
     safetyGrade: "B",
