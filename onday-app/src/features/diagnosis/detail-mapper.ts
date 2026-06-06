@@ -1,7 +1,11 @@
 import { MODE_LABELS, type CommuteMode as ChipMode } from "@/components/data/commute-chip";
 import type { BadgeProps } from "@/components/ui/badge";
-import { toChipMode, formatWolse } from "@/features/diagnosis/result-utils";
-import type { CandidateArea, CommuteInfo } from "@/lib/types";
+import {
+  toChipMode,
+  formatDealValue,
+  priceFallbackCaption,
+} from "@/features/diagnosis/result-utils";
+import type { CandidateArea, CommuteInfo, DealType } from "@/lib/types";
 
 interface PillItem {
   variant: BadgeProps["variant"];
@@ -69,22 +73,15 @@ export function buildCommuteRows(
   return rows;
 }
 
-export function buildMetrics(c: CandidateArea): MetricItem[] {
+export function buildMetrics(c: CandidateArea, dealType?: DealType): MetricItem[] {
   const metrics: MetricItem[] = [];
-  // 월세 진단(wolseEstimate 채워짐)은 카드 요약과 동일하게 formatWolse(보증금/월) 표기.
-  //   priceRange 는 월세 시 전세 scale 라 "평균 시세"로 쓰면 카드 요약과 불일치 → wolse 우선 분기.
-  if (c.wolseEstimate) {
+  // 시세 — 거래유형 라벨 + 값(카드 요약과 동일 formatDealValue 소스). 폴백 동네는 sub="구 평균".
+  if (c.wolseEstimate || c.priceRange) {
+    const cap = priceFallbackCaption(c.id);
     metrics.push({
-      label: "월세",
-      value: formatWolse(c.wolseEstimate),
-      sub: c.avgArea != null ? `${c.avgArea}평` : undefined,
-    });
-  } else if (c.priceRange) {
-    const avg = (c.priceRange.min + c.priceRange.max) / 2;
-    metrics.push({
-      label: "평균 시세",
-      value: `${(avg / 10000).toFixed(1)}억`,
-      sub: c.avgArea != null ? `${c.avgArea}평` : undefined,
+      label: "시세",
+      value: formatDealValue(c, dealType),
+      sub: cap || (c.avgArea != null ? `${c.avgArea}평` : undefined),
     });
   }
   const total = c.commuteA.time + (c.commuteB?.time ?? 0);

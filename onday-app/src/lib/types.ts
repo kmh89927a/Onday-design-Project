@@ -38,7 +38,7 @@ export interface CandidateArea {
   score: number; // 0-100
   safetyGrade?: SafetyGrade;
   priceRange?: { min: number; max: number }; // KRW in 만원 (전세/매매 표시·정렬용)
-  // 월세 추정(만원) — dealType=wolse 시 채움. 표시는 보증금/월 (estimateWolse, 추정).
+  // 월세 실거래 median(만원) — dealType=wolse 시 채움(price-index). 표시는 보증금/월.
   wolseEstimate?: { deposit: number; monthly: number };
   facilities?: { convenience: number; cafes: number; schools?: number };
   lines?: string; // 지하철/버스 노선 요약 — step-10.5에서 22개 보강
@@ -122,7 +122,7 @@ export interface Neighborhood {
   dong: string;
   gu: string;
   coordinate: Coordinate;
-  avgPrice: number; // 만원 (전세 추정 보증금 — 매매가는 comparablePrice()로 파생)
+  avgPrice: number; // 만원 (구 전세 추정 보증금 — 시세는 price-index 실거래 median 으로 교체됨. 자동완성 등 일부 잔존)
   safetyGrade: SafetyGrade;
   facilities: { convenience: number; cafes: number; schools: number };
   lines?: string; // 지하철/버스 노선 요약 — step-10.5에서 보강

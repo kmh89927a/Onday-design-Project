@@ -30,7 +30,7 @@ import { getSafetyByGu } from "@/features/single/safety-index";
 import { getCommunityByGu } from "@/lib/diagnosis/community-index";
 import { buildSinglePills, buildSingleMetrics } from "@/features/single/detail-mapper";
 import {
-  formatWolse,
+  formatCardPrice,
   liftLegacyDealType,
   markerLabel,
 } from "@/features/diagnosis/result-utils";
@@ -39,7 +39,7 @@ import { latLngToPixel } from "@/lib/coordinate-transform";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { copyToClipboard } from "@/lib/utils/clipboard";
 import { cn } from "@/lib/utils";
-import type { CandidateArea, DealType, SafetyGrade } from "@/lib/types";
+import type { CandidateArea, SafetyGrade } from "@/lib/types";
 import { FavoritesMenu } from "@/components/favorites/favorites-menu";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
@@ -57,16 +57,6 @@ interface SingleResultViewProps {
 function resolveGrade(c: CandidateArea): SafetyGrade | null {
   const safety = getSafetyByGu(c.gu);
   return safety.status === "ok" ? safety.grade : null;
-}
-
-// 거래유형별 시세 표시 — 부부 result-content 와 동일 패턴.
-//   wolse: 보증금/월 추정 · maemae: 억 + (추정) · jeonse/미지정: 기존 bare 억 (회귀 0)
-function priceText(c: CandidateArea, dealType?: DealType): string {
-  if (dealType === "wolse") return formatWolse(c.wolseEstimate);
-  if (!c.priceRange) return "—";
-  const avg = (c.priceRange.min + c.priceRange.max) / 2;
-  const suffix = dealType === "maemae" ? " (추정)" : "";
-  return `${(avg / 10000).toFixed(1)}억${suffix}`;
 }
 
 const GRADE_ORDER: Record<SafetyGrade, number> = { A: 0, B: 1, C: 2, D: 3 };
@@ -547,6 +537,11 @@ export function SingleResultView({ id }: SingleResultViewProps) {
               sources={<LayerSources layer={layer} candidates={sorted} />}
             />
 
+            {/* 시세 출처(provenance) — 레이어 무관 공통. 폴백 동네는 카드 "구 평균" 캡션 별도. */}
+            <p className="text-caption text-ink-3" aria-label="시세 데이터 출처">
+              시세: 국토교통부 실거래가 · 60~85㎡ · 2025.12~2026.06
+            </p>
+
             <section aria-label="후보 동네" className="space-y-s-3">
               {sorted.map((c) => {
                 const grade = resolveGrade(c);
@@ -571,7 +566,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                       barPercent={grade ? getCrimePercent(grade) : 0}
                       stats={[
                         { label: "통근", value: `${c.commuteA.time}분` },
-                        { label: "시세", value: priceText(c, dealType) },
+                        { label: "시세", value: formatCardPrice(c, dealType) },
                         buildLayerStat(c, layer),
                       ]}
                       tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
@@ -631,6 +626,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                   metrics: buildSingleMetrics(
                     selectedCandidate,
                     resolveGrade(selectedCandidate),
+                    dealType,
                   ),
                 }}
                 liked={Boolean(favorites[selectedCandidate.id])}

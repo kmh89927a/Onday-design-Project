@@ -5,10 +5,11 @@ import type {
   DealType,
   DiagnosisFilters,
 } from "@/lib/types";
+import { priceSource } from "@/lib/diagnosis/price-index";
 
 export type SortKey = "score" | "commute" | "price";
 
-// 거래유형 표시 라벨 — undefined(레거시 데이터)는 전세로 간주(avgPrice=전세 추정).
+// 거래유형 표시 라벨 — undefined(레거시/미선택)는 전세로 간주.
 const DEAL_LABEL: Record<DealType, string> = {
   jeonse: "전세",
   maemae: "매매",
@@ -49,26 +50,56 @@ export function toChipMode(mode: CommuteMode): ChipMode {
   return mode === "driving" ? "car" : "subway";
 }
 
-// priceRange (단위 만원) → "평균 9.2억" / 매매는 "평균 9.2억 (추정)"
-//   priceRange 는 dealType scale 로 계산됨(comparablePrice). 매매는 전세가율 환산이라 "추정" 명시.
+// priceRange (단위 만원) → "전세 7.2억" / "매매 12.8억" — 실거래 median 이라 "(추정)" 없음(5단계).
+//   거래유형 라벨로 무슨 값인지 명확화(7.2억이 전세/매매 헷갈리던 문제 해소).
 export function formatPrice(
   range: { min: number; max: number } | undefined,
   dealType?: DealType,
 ): string {
   if (!range) return "시세 미공개";
   const avg = (range.min + range.max) / 2;
-  const suffix = dealType === "maemae" ? " (추정)" : "";
-  return `평균 ${(avg / 10000).toFixed(1)}억${suffix}`;
+  return `${DEAL_LABEL[dealType ?? "jeonse"]} ${(avg / 10000).toFixed(1)}억`;
 }
 
-// 월세 추정 { deposit, monthly }(만원) → "보증금 X억 / 월 Y만 (추정)"
-//   동네 데이터는 전세 추정뿐 → 전월세전환율 환산값이라 "추정" 명시(날조 X).
+// 월세 { deposit, monthly }(만원) → "월세 보증금 X억 · 월 Y만" — 실거래 median 이라 "(추정)" 없음.
 export function formatWolse(
   estimate: { deposit: number; monthly: number } | undefined,
 ): string {
   if (!estimate) return "시세 미공개";
   const deposit = (estimate.deposit / 10000).toFixed(1);
-  return `보증금 ${deposit}억 / 월 ${estimate.monthly}만 (추정)`;
+  return `월세 보증금 ${deposit}억 · 월 ${estimate.monthly}만`;
+}
+
+// 거래유형 라벨 + 값(캡션 제외). 카드 요약·상세 공용 — 같은 함수라 표기 일치.
+export function formatDealValue(
+  c: {
+    priceRange?: { min: number; max: number };
+    wolseEstimate?: { deposit: number; monthly: number };
+  },
+  dealType?: DealType,
+): string {
+  return dealType === "wolse"
+    ? formatWolse(c.wolseEstimate)
+    : formatPrice(c.priceRange, dealType);
+}
+
+// 폴백(시군구 평균) 동네는 "구 평균" 캡션. 동 데이터(legalDong)는 빈 문자열.
+export function priceFallbackCaption(id: string): string {
+  return priceSource(id) === "sigungu-fallback" ? "구 평균" : "";
+}
+
+// 카드 요약용 단일 문자열 — 거래유형 값 + 폴백 캡션 결합.
+export function formatCardPrice(
+  c: {
+    id: string;
+    priceRange?: { min: number; max: number };
+    wolseEstimate?: { deposit: number; monthly: number };
+  },
+  dealType?: DealType,
+): string {
+  const base = formatDealValue(c, dealType);
+  const cap = priceFallbackCaption(c.id);
+  return cap ? `${base} · ${cap}` : base;
 }
 
 export function formatCommuteFilter(maxMinutes: number | undefined): string {
