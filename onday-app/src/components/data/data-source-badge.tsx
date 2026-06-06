@@ -42,11 +42,11 @@ export function DataSourceBadge({
       className={cn(
         "inline-flex w-fit items-center gap-1.5",
         // on-dark(공유 hero): 기존 chip 스타일·크기(caption-xs 11px) 유지.
-        // on-light(결과 화면): 보조 정보라 조용히 — 테두리·배경 제거 + ink-3 + 일반 굵기 +
-        //   글씨 한 단계 더 작게(10px) 위계 더 낮춤. (caption-xs 아래 토큰 없어 scoped 10px.)
+        // on-light(결과 화면): 보조 정보 — 테두리·배경 제거 + ink-3 + 일반 굵기. 위계는 색/굵기로,
+        //   크기는 body-sm(13px)로(10px는 너무 작아 13px 조정). 싱글 출처 캡션과 동일 크기.
         tone === "on-dark"
           ? "rounded-sm bg-white/15 px-s-2 py-1 text-caption-xs font-bold text-white backdrop-blur-sm"
-          : "text-[10px] font-medium leading-[14px] text-ink-3",
+          : "text-body-sm font-medium text-ink-3",
         className,
       )}
     >

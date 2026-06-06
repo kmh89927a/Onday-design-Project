@@ -196,7 +196,7 @@ function LayerSources({
   });
 
   return (
-    <p className="mt-1 text-caption text-ink-3" aria-label="데이터 출처">
+    <p className="mt-1 text-body-sm text-ink-3" aria-label="데이터 출처">
       {parts.join(" · ")}
     </p>
   );
@@ -538,7 +538,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
             />
 
             {/* 시세 출처(provenance) — 레이어 무관 공통. 폴백 동네는 카드 "구 평균" 캡션 별도. */}
-            <p className="text-caption text-ink-3" aria-label="시세 데이터 출처">
+            <p className="text-body-sm text-ink-3" aria-label="시세 데이터 출처">
               시세: 국토교통부 실거래가 · 60~85㎡ · 2025.12~2026.06
             </p>
 
