@@ -79,6 +79,7 @@ export default function DiagnosisPage() {
   const setLoading = useDiagnosisStore((s) => s.setLoading);
   const setError = useDiagnosisStore((s) => s.setError);
   const setResult = useDiagnosisStore((s) => s.setResult);
+  const setCommutePool = useDiagnosisStore((s) => s.setCommutePool);
   const pushToast = useUIStore((s) => s.pushToast);
   const createDiagnosis = useCreateDiagnosis();
 
@@ -193,6 +194,9 @@ export default function DiagnosisPage() {
         filters,
       });
       setResult(data.diagnosisId, data.candidates);
+      // ★ 5-1: real 진단의 통근 풀(12개) 캐시 → 결과에서 거래유형/예산 토글 재필터에 재활용.
+      //   mock(POST 응답엔 pool 없음)·재오픈 시 빈 배열 → 토글은 runMockDiagnosis 재실행 fallback.
+      setCommutePool(data.pool ?? []);
       // MON-003 v1.4 부활 (Issue #127) — REQ-NF-008 funnel 시작점.
       trackDiagnosisStarted(data.diagnosisId);
       // ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — 진단 시작 성공 시 localStorage 저장 (★ "이전 조건 불러오기" 버튼 호출처).

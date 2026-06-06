@@ -13,7 +13,9 @@ import {
 } from "@/lib/haversine";
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
 // 시세 4-A — 예산 필터·priceRange 가 실거래 median(price-index)을 사용. price.ts 추정 환산 제거.
-import { comparableMedian, wolseMedian, priceRangeFor } from "@/lib/diagnosis/price-index";
+import { wolseMedian, priceRangeFor } from "@/lib/diagnosis/price-index";
+// 시세 5-1 — 예산/통근 필터를 공용 술어로(토글 재필터와 동일 의미론).
+import { passesFilters } from "@/lib/diagnosis/refilter";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 import { KakaoCarClient } from "@/lib/external/kakao-car";
 
@@ -117,10 +119,15 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
 
   // 2) 동네별 통근시간 (병렬). ★ 방향 = 동네(집) → 직장 (출퇴근 의미론, #3 정정).
   //    동네 내부 경로는 순차(동시 호출 부하 완화).
-  const settled = await mapWithConcurrency(
+  // 거래유형 — filters.dealType 단일 소스(budget 과 독립). 미지정=전세.
+  const dealType = filters.dealType ?? "jeonse";
+
+  // 2) prefilter 12개 풀 빌드 — 통근(transit/자차) 전부 계산, 예산/통근 필터는 적용 안 함(아래 후처리).
+  //    ★ 5-1: 이 12개 풀을 클라가 캐시 → 거래유형/예산 토글 시 재필터(통근 열화·API 재호출 0).
+  const pool = await mapWithConcurrency(
     prefiltered,
     ODSAY_CONCURRENCY,
-    async ({ n }): Promise<CandidateArea | null> => {
+    async ({ n }): Promise<CandidateArea> => {
       const depTime = filters.commuteSchedule?.departureTime;
       // ODsay 실패 → 후보 drop 대신 haversine 추정(빈 결과 방지, Vercel 무료 대응).
       const commuteA =
@@ -146,35 +153,8 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
           (await fetchCommute(n.coordinate, leisureCoordB)) ??
           estimateTransit(n.coordinate, leisureCoordB, depTime);
 
-      // 필터 — 통근 상한
-      if (filters.maxCommuteTime) {
-        const maxCommute = Math.max(commuteA.time, commuteB?.time ?? 0);
-        if (maxCommute > filters.maxCommuteTime) return null;
-      }
-      // 필터 — 예산 범위
-      // 거래유형 — filters.dealType 단일 소스(budget 과 독립). 미지정=전세.
-      const dealType = filters.dealType ?? "jeonse";
-      if (filters.budget) {
-        if (dealType === "wolse") {
-          // 월세 — 보증금(상한) + 월세(범위) 2축. 실거래 median 기준. 결측이면 제외(임의 통과 금지).
-          const w = wolseMedian(n.id);
-          if (!w) return null;
-          const depositOk = w.deposit <= (filters.budget.depositMax ?? Infinity);
-          const monthlyOk =
-            w.monthly >= filters.budget.min && w.monthly <= filters.budget.max;
-          if (!depositOk || !monthlyOk) return null;
-        } else {
-          // 전세/매매 — 실거래 median. 미지정=전세. median 결측이면 제외(임의 통과 금지).
-          const price = comparableMedian(n.id, dealType);
-          if (price == null) return null;
-          if (price < filters.budget.min || price > filters.budget.max) {
-            return null;
-          }
-        }
-      }
-
-      // ★ W2B 자차(카카오) — 필터 통과한 후보의 직장 경로만. best-effort 병렬.
-      //   대중교통이 주(필수)이므로 여기서 실패해도 후보·점수 불변.
+      // ★ W2B 자차(카카오) — (가) 12개 전부 계산(토글 캐시 완비, 예산 통과분만→전부로 확장).
+      //   best-effort: 실패/키없음 → undefined(차량 행만 생략, 후보·점수 무영향).
       const [commuteACar, commuteBCar] = await Promise.all([
         fetchCarCommute(n.coordinate, coordinateA),
         coordinateB
@@ -217,12 +197,13 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
     },
   );
 
-  const candidates = settled
-    .filter((c): c is CandidateArea => c !== null)
+  // 3) 예산/통근 필터 적용 + 점수순 top N → 저장·표시용 후보.
+  const candidates = pool
+    .filter((c) => passesFilters(c, filters))
     .sort((a, b) => b.score - a.score)
     .slice(0, RESULT_TOP_N);
 
-  // 3) 저장 — production 분기는 클라가 계산한 candidates 를 받아 저장만 (B2).
+  // 4) 저장 — production 분기는 클라가 계산한 candidates 를 받아 저장만 (B2). 저장은 8개만.
   const res = await fetch("/api/diagnosis", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -232,5 +213,7 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
     const err = await res.json();
     throw new Error(err.error ?? "진단 저장에 실패했습니다");
   }
-  return res.json();
+  // ★ 5-1: pool(12개, 통근 캐시)을 함께 반환 → 클라가 거래유형/예산 토글 재필터에 재활용.
+  const saved = await res.json();
+  return { ...saved, pool };
 }

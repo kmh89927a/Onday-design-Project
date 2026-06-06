@@ -19,6 +19,9 @@ interface DiagnosisState {
   // Result
   diagnosisId: string | null;
   candidates: CandidateArea[];
+  // ★ 거래유형/예산 토글 재필터용 통근 캐시 — real 진단의 prefilter 12개 풀(실 transit/자차 통근 보존,
+  //   예산필터 전). 토글 시 이 풀을 재필터해 통근 열화·API 재호출 0. mock·재오픈 시 빈 배열(재실행 fallback).
+  commutePool: CandidateArea[];
   isLoading: boolean;
   error: string | null;
 
@@ -31,6 +34,7 @@ interface DiagnosisState {
   setFilters: (filters: DiagnosisFilters) => void;
   setDeadlineDate: (date: string | null) => void;
   setResult: (id: string, candidates: CandidateArea[]) => void;
+  setCommutePool: (pool: CandidateArea[]) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
@@ -50,6 +54,7 @@ const initialState = {
   deadlineDate: null,
   diagnosisId: null,
   candidates: [],
+  commutePool: [],
   isLoading: false,
   error: null,
 };
@@ -75,6 +80,8 @@ export const useDiagnosisStore = create<DiagnosisState>((set) => ({
 
   setResult: (diagnosisId, candidates) =>
     set({ diagnosisId, candidates, isLoading: false, error: null }),
+
+  setCommutePool: (commutePool) => set({ commutePool }),
 
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error, isLoading: false }),
