@@ -248,10 +248,12 @@ export function ResultContent({
     if (diagnosisId) setResult(diagnosisId, next);
   };
 
-  // 거래유형 토글 — filters.dealType 갱신 후 재필터. 예산은 그대로.
+  // 거래유형 토글 — filters.dealType 갱신 후 재필터.
+  //   ★ 버그수정: 거래유형마다 예산 단위/의미가 달라(전세/매매=억, 월세=월세만원+보증금) 이월 무효 →
+  //   budget 리셋. (월세 토글 시 억 예산 이월로 전 후보 탈락→빈결과→롤백 버그 해소.)
   const handleDealTypeChange = (dealType: DealType) => {
     if (dealType === (filters.dealType ?? "jeonse")) return;
-    void applyDealBudget({ ...filters, dealType });
+    void applyDealBudget({ ...filters, dealType, budget: undefined });
   };
 
   // 예산 what-if — 금액만 조정(dealType 보존). ★ 5-1: 재필터로 전환(예산 넓히면 풀에서 새 동네 등장).
@@ -474,95 +476,95 @@ export function ResultContent({
   return (
     <div className="space-y-s-4">
       <PreferenceBanner priorityKey={priorityKey} />
-      <FilterPanel
-        // Issue #106 ㊘ — TimeTabs 미박힘 (★ "사용자 입력 → 결과" 자연 흐름 도달).
-        //   ㊔ 사용자 입력 X 필터는 chip 숨김 (★ "제한 없음"/"전체" 표시 X).
-        //   ㊒ 출근시간 chip = 사용자 입력값 박힘 (★ 진단 → 결과 데이터 흐름 정합).
-        filters={[
-          {
-            label: "출근시간",
-            value: filters.commuteSchedule?.departureTime ?? "08:00",
-            // Issue #111 — what-if 옵션 inline 박힘 토글 (★ #106 ㊒ notifyComingSoon 정정).
-            onClick: () => setShowTimeOptions((prev) => !prev),
-          },
-          filters.maxCommuteTime != null && {
-            label: "통근시간",
-            value: formatCommuteFilter(filters.maxCommuteTime),
-            // Issue #112 — what-if 옵션 inline 박힘 토글 (★ #111 답습).
-            onClick: () => setShowCommuteOptions((prev) => !prev),
-          },
-          {
-            // ★ 5-1: 예산 칩 항상 노출 — 결과에서 예산 설정/변경 가능(미설정 시 "전체"). 변경 시 재필터.
-            label: "예산",
-            value: formatBudgetFilter(filters.budget, filters.dealType),
-            onClick: () => setShowBudgetOptions((prev) => !prev),
-          },
-        ].filter(Boolean) as { label: string; value: string; onClick: () => void }[]}
-      />
 
-      {/* ★ 5-1 거래유형 토글 — 전세/매매/월세. 변경 시 추천 세트 재필터(real 통근 캐시 / mock 재실행). */}
-      <div
-        className="flex items-center gap-s-2"
-        role="group"
-        aria-label="거래유형 선택"
+      {/* ★ PR A — 통합 필터 바: 거래유형 세그먼트 + 출근시간/예산 칩 + 인라인 편집을 한 카드로 정돈. */}
+      <section
+        aria-label="검색 조건"
+        className="space-y-s-3 rounded-lg border border-card-border bg-surface p-s-3"
       >
-        <span className="text-caption font-bold text-ink-2">거래유형</span>
-        {(
-          [
-            ["jeonse", "전세"],
-            ["maemae", "매매"],
-            ["wolse", "월세"],
-          ] as const
-        ).map(([key, label]) => {
-          const active = (filters.dealType ?? "jeonse") === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => handleDealTypeChange(key)}
-              aria-pressed={active}
-              className={cn(
-                "rounded-sm px-s-3 py-s-1 text-body-sm font-bold transition-colors",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                active
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-card-border bg-surface text-ink-2 hover:text-ink",
-              )}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
+        {/* 거래유형 세그먼트 (전세/매매/월세) — 변경 시 추천 세트 재필터 + 예산 리셋. */}
+        <div role="group" aria-label="거래유형 선택" className="flex items-center gap-s-2">
+          <span className="w-12 shrink-0 text-caption font-bold text-ink-3">
+            거래유형
+          </span>
+          <div className="flex flex-1 gap-s-1">
+            {(
+              [
+                ["jeonse", "전세"],
+                ["maemae", "매매"],
+                ["wolse", "월세"],
+              ] as const
+            ).map(([key, label]) => {
+              const active = (filters.dealType ?? "jeonse") === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handleDealTypeChange(key)}
+                  aria-pressed={active}
+                  className={cn(
+                    "flex-1 rounded-sm border px-s-3 py-s-1 text-body-sm font-bold transition-all",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-card-border bg-surface text-ink-2 hover:brightness-95",
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      {/* Issue #111 β + #118 — what-if 시뮬레이션 입력 (★ <input type="time"> + "변경" 버튼 명시적 확인 + 시나리오 B handler fallback). */}
-      {/* key={currentDepartureTime} — baseTime 변경 시 컴포넌트 재마운트 (★ React 19 set-state-in-effect 규칙 답습). */}
-      {showTimeOptions && (
-        <TimeChipOptions
-          key={currentDepartureTime}
-          baseTime={currentDepartureTime}
-          onConfirm={handleTimeWhatIf}
+        {/* 출근시간 · (통근시간) · 예산 칩 — 클릭 시 아래 인라인 편집 토글. */}
+        <FilterPanel
+          filters={[
+            {
+              label: "출근시간",
+              value: filters.commuteSchedule?.departureTime ?? "08:00",
+              onClick: () => setShowTimeOptions((prev) => !prev),
+            },
+            filters.maxCommuteTime != null && {
+              label: "통근시간",
+              value: formatCommuteFilter(filters.maxCommuteTime),
+              onClick: () => setShowCommuteOptions((prev) => !prev),
+            },
+            {
+              // ★ 5-1: 예산 칩 항상 노출 — 결과에서 거래유형별 예산 설정/변경(미설정 "전체"). 변경 시 재필터.
+              label: "예산",
+              value: formatBudgetFilter(filters.budget, filters.dealType),
+              onClick: () => setShowBudgetOptions((prev) => !prev),
+            },
+          ].filter(Boolean) as { label: string; value: string; onClick: () => void }[]}
         />
-      )}
 
-      {/* Issue #112 — maxCommuteTime + budget what-if 입력 (★ #111+#118 답습). */}
-      {showCommuteOptions && filters.maxCommuteTime != null && (
-        <CommuteChipOptions
-          key={filters.maxCommuteTime}
-          baseValue={filters.maxCommuteTime}
-          onConfirm={handleCommuteWhatIf}
-        />
-      )}
-      {showBudgetOptions && (
-        <BudgetChipOptions
-          key={`${filters.budget?.min ?? 0}-${filters.budget?.max ?? 0}-${filters.budget?.depositMax ?? ""}`}
-          baseMin={filters.budget?.min ?? 0}
-          baseMax={filters.budget?.max ?? 0}
-          baseDepositMax={filters.budget?.depositMax}
-          dealType={filters.dealType}
-          onConfirm={handleBudgetWhatIf}
-        />
-      )}
+        {/* 인라인 편집 — 칩 클릭 시 해당 입력만 펼침. key=재마운트(React 19 규칙). */}
+        {showTimeOptions && (
+          <TimeChipOptions
+            key={currentDepartureTime}
+            baseTime={currentDepartureTime}
+            onConfirm={handleTimeWhatIf}
+          />
+        )}
+        {showCommuteOptions && filters.maxCommuteTime != null && (
+          <CommuteChipOptions
+            key={filters.maxCommuteTime}
+            baseValue={filters.maxCommuteTime}
+            onConfirm={handleCommuteWhatIf}
+          />
+        )}
+        {showBudgetOptions && (
+          <BudgetChipOptions
+            key={`${filters.dealType ?? "jeonse"}-${filters.budget?.min ?? 0}-${filters.budget?.max ?? 0}-${filters.budget?.depositMax ?? ""}`}
+            baseMin={filters.budget?.min ?? 0}
+            baseMax={filters.budget?.max ?? 0}
+            baseDepositMax={filters.budget?.depositMax}
+            dealType={filters.dealType}
+            onConfirm={handleBudgetWhatIf}
+          />
+        )}
+      </section>
 
       {/* Issue #45 (UI-007 v1.4) — REQ-FUNC-012 출처 배지 박힘 영역.
           share-report-view 인라인 3개 답습 = 공유 vs 개인 시각 일관성 100% 사수.

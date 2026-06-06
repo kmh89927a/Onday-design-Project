@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   AlertCircle,
   ChevronLeft,
+  Home,
   Loader2,
   Share2,
 } from "lucide-react";
@@ -16,6 +17,7 @@ import { FavoritesMenu } from "@/components/favorites/favorites-menu";
 import { EmptyState } from "@/components/diagnosis/empty-state";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { liftLegacyDealType } from "@/features/diagnosis/result-utils";
@@ -48,7 +50,9 @@ export function ResultView({ id }: ResultViewProps) {
   const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
   const pushToast = useUIStore((s) => s.pushToast);
 
-  const inSync = storeId === id && storeCandidates.length > 0;
+  // ★ 버그수정: length>0 제거 — 토글/필터로 결과가 0개가 돼도 "미로드"로 오판해 DB 원본을
+  //   재로드(dealType 롤백)하던 것 방지. 정당한 0개 결과는 EmptyState(완화 제안)로 처리.
+  const inSync = storeId === id;
   const query = useDiagnosis(inSync ? null : id);
 
   React.useEffect(() => {
@@ -149,6 +153,8 @@ export function ResultView({ id }: ResultViewProps) {
         title={headerTitle}
         trailing={
           <>
+            {/* PR A — 홈(진단 시작 입력) 이동 버튼. 기존 헤더 아이콘과 동일 IconButton 스타일. */}
+            <IconButton icon={<Home />} ariaLabel="진단 시작 화면으로" href="/diagnosis" />
             <FavoritesMenu />
             <DeadlineBell />
             <Button
