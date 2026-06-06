@@ -32,7 +32,7 @@ export interface FavoriteItem {
 }
 
 // 후보 → 찜 스냅샷. grade는 호출처가 모드별 소스로 넘김(싱글=resolveGrade).
-//   dealType은 진단 filters.budget?.dealType — 시세 표시용. wolseEstimate는 후보에 이미 박힘.
+//   dealType은 진단 filters.dealType(budget 과 독립) — 시세 표시용. wolseEstimate는 후보에 이미 박힘.
 export function toFavoriteSnapshot(
   c: CandidateArea,
   mode: DiagnosisMode,

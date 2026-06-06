@@ -18,6 +18,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
+import { liftLegacyDealType } from "@/features/diagnosis/result-utils";
 import { useDiagnosis } from "@/features/diagnosis/use-diagnosis";
 import { trackDiagnosisCompleted } from "@/lib/analytics/mixpanel";
 import { generateRelaxationSuggestions } from "@/lib/diagnosis/generate-suggestions";
@@ -53,7 +54,7 @@ export function ResultView({ id }: ResultViewProps) {
   React.useEffect(() => {
     if (!inSync && query.data) {
       setResult(query.data.id, query.data.candidates);
-      setFilters(query.data.filters);
+      setFilters(liftLegacyDealType(query.data.filters));
     }
   }, [inSync, query.data, setResult, setFilters]);
 

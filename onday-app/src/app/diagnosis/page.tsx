@@ -14,6 +14,7 @@ import { StickyCTABar } from "@/components/layout/sticky-cta-bar";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { useCreateDiagnosis } from "@/features/diagnosis/use-diagnosis";
+import { liftLegacyDealType } from "@/features/diagnosis/result-utils";
 // ★ UI-002: 사전 작업 444 lines ↔ CMD-DIAG-001 useGeocode 통합 (★ adapter Hook 패턴 § NEW).
 // ★ Mismatch ⑪/⑫/⑭ 정정: useDebounce + MOCK_NEIGHBORHOODS filter → useAddressSuggest adapter (★ adapter 내부 처리).
 import { useAddressSuggest } from "@/features/diagnosis/use-address-suggest";
@@ -94,7 +95,7 @@ export default function DiagnosisPage() {
   //   budget은 억 단위 input + 내부 만원 변환 (★ formatBudgetFilter "X-Y억" 표시 정합).
   //   min/max 둘 다 박힘 + > 0 시점 store budget 박힘. 그 외 = undefined.
   // 전세/매매 = 억~억 단일 금액. 월세는 별도 입력(아래) — 억 input 은 비전세 시 비움.
-  const isWolseBudget = filters.budget?.dealType === "wolse";
+  const isWolseBudget = filters.dealType === "wolse";
   const [budgetMinInput, setBudgetMinInput] = React.useState(
     filters.budget && !isWolseBudget ? String(filters.budget.min / 10000) : "",
   );
@@ -111,42 +112,36 @@ export default function DiagnosisPage() {
     isWolseBudget ? String(filters.budget!.max) : "",
   );
   const [dealType, setDealType] = React.useState<DealType>(
-    filters.budget?.dealType ?? "jeonse",
+    filters.dealType ?? "jeonse",
   );
 
-  // 전세/매매 — 억~억 단일 금액 범위.
+  // 전세/매매 — 억~억 단일 금액 범위. ★ dealType 은 budget 과 독립으로 항상 보존(예산 비워도 유실 X).
   const syncBudget = (minStr: string, maxStr: string, dt: DealType = dealType) => {
     const minNum = Number(minStr);
     const maxNum = Number(maxStr);
-    if (minStr !== "" && maxStr !== "" && minNum > 0 && maxNum > 0) {
-      setFilters({
-        ...filters,
-        budget: { dealType: dt, min: minNum * 10000, max: maxNum * 10000 },
-      });
-    } else {
-      setFilters({ ...filters, budget: undefined });
-    }
+    const hasBudget = minStr !== "" && maxStr !== "" && minNum > 0 && maxNum > 0;
+    setFilters({
+      ...filters,
+      dealType: dt,
+      budget: hasBudget ? { min: minNum * 10000, max: maxNum * 10000 } : undefined,
+    });
   };
 
   // 월세 — 월세 상한(만원, 必) + 보증금 상한(억→만원, 옵션). 월세 상한 없으면 budget 해제.
   //   Infinity 미저장(JSON null화 방지) — 보증금 미입력 시 depositMax=undefined(필터가 ??로 처리).
   const syncWolse = (depStr: string, monStr: string) => {
     const monNum = Number(monStr);
-    if (monStr !== "" && monNum > 0) {
-      const depNum = Number(depStr);
-      const hasDep = depStr !== "" && depNum > 0;
-      setFilters({
-        ...filters,
-        budget: {
-          dealType: "wolse",
-          min: 0,
-          max: monNum,
-          depositMax: hasDep ? depNum * 10000 : undefined,
-        },
-      });
-    } else {
-      setFilters({ ...filters, budget: undefined });
-    }
+    const depNum = Number(depStr);
+    const hasDep = depStr !== "" && depNum > 0;
+    const hasBudget = monStr !== "" && monNum > 0;
+    // ★ dealType="wolse" 는 항상 보존(월세 상한 비워도 유실 X). budget 은 월세 상한 있을 때만.
+    setFilters({
+      ...filters,
+      dealType: "wolse",
+      budget: hasBudget
+        ? { min: 0, max: monNum, depositMax: hasDep ? depNum * 10000 : undefined }
+        : undefined,
+    });
   };
 
   // 거래유형 변경 — dealType 반영 + 해당 입력값으로 budget 재동기화.
@@ -242,8 +237,8 @@ export default function DiagnosisPage() {
       setLeisureA(config.leisureA ?? "", config.leisureCoordA ?? undefined);
       setLeisureB(config.leisureB ?? "", config.leisureCoordB ?? undefined);
       setMode(config.mode ?? "couple");
-      // ★ Issue #102 ㊿ — legacy timeRange → commuteSchedule 자가 치유.
-      setFilters(migrateLegacyTimeRange(config.filters ?? {}));
+      // ★ Issue #102 ㊿ — legacy timeRange → commuteSchedule 자가 치유 + 레거시 budget.dealType → filters.dealType 승격.
+      setFilters(liftLegacyDealType(migrateLegacyTimeRange(config.filters ?? {})));
       // ★ local query state 동기화 (★ AddressInput value prop)
       setQueryA(config.addressA ?? "");
       setQueryB(config.addressB ?? "");
@@ -251,16 +246,13 @@ export default function DiagnosisPage() {
       setQueryL2(config.leisureB ?? "");
       // 불러온 조건에 여가거점2가 있으면 입력창 펼침(점진 공개 자동 해제).
       setShowL2(Boolean(config.leisureB));
-      // Issue #112 — budget local state sync (★ filters.budget 자가 치유와 별개 영역).
+      // Issue #112 — budget local state sync. ★ dealType 은 budget 과 독립(최상위), 레거시는 budget.dealType 폴백.
       const nextBudget = (config.filters?.budget ?? undefined) as
-        | {
-            dealType?: DealType;
-            min: number;
-            max: number;
-            depositMax?: number;
-          }
+        | { min: number; max: number; depositMax?: number; dealType?: DealType }
         | undefined;
-      const nextIsWolse = nextBudget?.dealType === "wolse";
+      const nextDealType: DealType =
+        config.filters?.dealType ?? nextBudget?.dealType ?? "jeonse";
+      const nextIsWolse = nextDealType === "wolse";
       setBudgetMinInput(
         nextBudget && !nextIsWolse ? String(nextBudget.min / 10000) : "",
       );
@@ -272,8 +264,8 @@ export default function DiagnosisPage() {
           ? String(nextBudget.depositMax / 10000)
           : "",
       );
-      setMonthlyMaxInput(nextIsWolse ? String(nextBudget!.max) : "");
-      setDealType(nextBudget?.dealType ?? "jeonse");
+      setMonthlyMaxInput(nextIsWolse && nextBudget ? String(nextBudget.max) : "");
+      setDealType(nextDealType);
       pushToast({ variant: "default", message: "이전 조건을 불러왔습니다 ✨" });
     } catch {
       pushToast({ variant: "default", message: "이전 조건 불러오기 실패" });

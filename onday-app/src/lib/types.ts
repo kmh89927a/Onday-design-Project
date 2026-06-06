@@ -56,11 +56,11 @@ export interface CommuteSchedule {
 
 export interface DiagnosisFilters {
   maxCommuteTime?: number; // minutes
-  // dealType 미지정 = 전세 (기존 {min,max} 하위호환). 단위 = 만원.
-  //   jeonse/maemae: min/max = 금액 범위 (maemae 비교가는 comparablePrice 환산).
-  //   wolse: min/max = 월세 범위, depositMin/Max = 보증금 범위 (상한만 입력 시 min=0).
+  // 거래유형 — ★ budget 과 독립(예산 미입력해도 유실 안 됨). 미지정 = 전세. 표시·median 선택의 단일 소스.
+  dealType?: DealType;
+  // 예산(금액)만. 거래유형 정보는 위 filters.dealType 단일 소스. 단위 = 만원.
+  //   jeonse/maemae: min/max = 금액 범위 / wolse: min/max = 월세 범위, depositMin/Max = 보증금 범위.
   budget?: {
-    dealType?: DealType;
     min: number;
     max: number;
     depositMin?: number;

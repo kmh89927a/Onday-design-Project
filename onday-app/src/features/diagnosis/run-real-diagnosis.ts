@@ -152,8 +152,10 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         if (maxCommute > filters.maxCommuteTime) return null;
       }
       // 필터 — 예산 범위
+      // 거래유형 — filters.dealType 단일 소스(budget 과 독립). 미지정=전세.
+      const dealType = filters.dealType ?? "jeonse";
       if (filters.budget) {
-        if (filters.budget.dealType === "wolse") {
+        if (dealType === "wolse") {
           // 월세 — 보증금(상한) + 월세(범위) 2축. 실거래 median 기준. 결측이면 제외(임의 통과 금지).
           const w = wolseMedian(n.id);
           if (!w) return null;
@@ -163,7 +165,7 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
           if (!depositOk || !monthlyOk) return null;
         } else {
           // 전세/매매 — 실거래 median. 미지정=전세. median 결측이면 제외(임의 통과 금지).
-          const price = comparableMedian(n.id, filters.budget.dealType);
+          const price = comparableMedian(n.id, dealType);
           if (price == null) return null;
           if (price < filters.budget.min || price > filters.budget.max) {
             return null;
@@ -202,13 +204,11 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         leisureB: leisureB ?? undefined,
         score,
         safetyGrade: mode === "single" ? n.safetyGrade : undefined,
-        // priceRange = 거래유형 median ±15%(만원). 실거래 median 기준(분위수 미보유 → 밴드 유지). 결측 시 undefined.
-        priceRange: priceRangeFor(n.id, filters.budget?.dealType),
+        // priceRange = 거래유형 median ±15%(만원). filters.dealType 기준(예산 미입력해도 거래유형 반영). 결측 시 undefined.
+        priceRange: priceRangeFor(n.id, dealType),
         // 월세 — dealType=wolse 시만 채움. 실거래 median, 결측 시 undefined.
         wolseEstimate:
-          filters.budget?.dealType === "wolse"
-            ? (wolseMedian(n.id) ?? undefined)
-            : undefined,
+          dealType === "wolse" ? (wolseMedian(n.id) ?? undefined) : undefined,
         facilities: n.facilities,
         lines: n.lines,
         listingsCount: n.listingsCount,

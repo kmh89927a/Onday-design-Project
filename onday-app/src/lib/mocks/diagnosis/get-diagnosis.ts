@@ -21,7 +21,8 @@ export const MOCK_DIAGNOSIS_ENTITY = {
   addressB: '서울 중구 세종대로 110',
   filters: {
     maxCommuteTime: 60,
-    budget: { dealType: 'jeonse', min: 8000, max: 15000 },
+    dealType: 'jeonse',
+    budget: { min: 8000, max: 15000 },
     commuteSchedule: { days: ['mon', 'tue', 'wed', 'thu', 'fri'], departureTime: '08:00' },
     priorities: ['safety', 'commute'],
   },

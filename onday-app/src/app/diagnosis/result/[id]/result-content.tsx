@@ -106,7 +106,7 @@ function recomputeWhatIf(
         if (maxC > filters.maxCommuteTime) return false;
       }
       if (filters.budget) {
-        if (filters.budget.dealType === "wolse") {
+        if (filters.dealType === "wolse") {
           // 월세 — 추정 보증금/월세로 재필터 (priceRange 는 전세 scale 라 부적합).
           const w = c.wolseEstimate;
           if (w) {
@@ -223,10 +223,10 @@ export function ResultContent({
       });
       return;
     }
-    // what-if 는 금액만 조정 — dealType(거래유형)은 진단 시점 값 보존. depositMax 는 월세 전용.
+    // what-if 는 금액만 조정 — dealType(거래유형)은 filters.dealType 에 보존(...filters). budget 은 금액만.
     const newFilters = {
       ...filters,
-      budget: { dealType: filters.budget?.dealType, min, max, depositMax },
+      budget: { min, max, depositMax },
     };
     setFilters(newFilters);
     const next = recomputeWhatIf(
@@ -433,7 +433,7 @@ export function ResultContent({
         selectedCandidate,
         "couple",
         undefined,
-        filters.budget?.dealType,
+        filters.dealType,
       ),
     );
     pushToast({
@@ -468,7 +468,7 @@ export function ResultContent({
           },
           filters.budget != null && {
             label: "예산",
-            value: formatBudgetFilter(filters.budget),
+            value: formatBudgetFilter(filters.budget, filters.dealType),
             // Issue #112 — what-if 옵션 inline 박힘 토글 (★ #111 답습).
             onClick: () => setShowBudgetOptions((prev) => !prev),
           },
@@ -499,7 +499,7 @@ export function ResultContent({
           baseMin={filters.budget.min}
           baseMax={filters.budget.max}
           baseDepositMax={filters.budget.depositMax}
-          dealType={filters.budget.dealType}
+          dealType={filters.dealType}
           onConfirm={handleBudgetWhatIf}
         />
       )}
@@ -589,9 +589,9 @@ export function ResultContent({
                   : []),
               ]}
               price={
-                filters.budget?.dealType === "wolse"
+                filters.dealType === "wolse"
                   ? formatWolse(c.wolseEstimate)
-                  : formatPrice(c.priceRange, filters.budget?.dealType)
+                  : formatPrice(c.priceRange, filters.dealType)
               }
               tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
               onClick={() => open(c.id)}

@@ -29,7 +29,11 @@ import {
 import { getSafetyByGu } from "@/features/single/safety-index";
 import { getCommunityByGu } from "@/lib/diagnosis/community-index";
 import { buildSinglePills, buildSingleMetrics } from "@/features/single/detail-mapper";
-import { formatWolse, markerLabel } from "@/features/diagnosis/result-utils";
+import {
+  formatWolse,
+  liftLegacyDealType,
+  markerLabel,
+} from "@/features/diagnosis/result-utils";
 import { buildCommuteRows, buildLines } from "@/features/diagnosis/detail-mapper";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
@@ -214,12 +218,13 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const storeCandidates = useDiagnosisStore((s) => s.candidates);
   const storeAddressA = useDiagnosisStore((s) => s.addressA);
   const setResult = useDiagnosisStore((s) => s.setResult);
+  const setFilters = useDiagnosisStore((s) => s.setFilters);
   // 지도 마커용 좌표 — 부부 모드와 동일하게 store 직접 참조(같은 세션에서만 표시).
   const coordinateA = useDiagnosisStore((s) => s.coordinateA);
   const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
   const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
   const priorityKey = useDiagnosisStore((s) => s.filters.priorities?.[0]);
-  const dealType = useDiagnosisStore((s) => s.filters.budget?.dealType);
+  const dealType = useDiagnosisStore((s) => s.filters.dealType);
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
@@ -229,8 +234,10 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   React.useEffect(() => {
     if (!inSync && query.data) {
       setResult(query.data.id, query.data.candidates);
+      // 재오픈 시 거래유형 복원(레거시 budget.dealType 승격 포함) — 시세 표시 dealType 보존.
+      setFilters(liftLegacyDealType(query.data.filters));
     }
-  }, [inSync, query.data, setResult]);
+  }, [inSync, query.data, setResult, setFilters]);
 
   const candidates = React.useMemo<CandidateArea[]>(
     () => (inSync ? storeCandidates : query.data?.candidates ?? []),

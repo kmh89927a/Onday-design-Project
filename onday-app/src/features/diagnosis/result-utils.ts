@@ -1,5 +1,10 @@
 import type { CommuteMode as ChipMode } from "@/components/data/commute-chip";
-import type { CandidateArea, CommuteMode, DealType } from "@/lib/types";
+import type {
+  CandidateArea,
+  CommuteMode,
+  DealType,
+  DiagnosisFilters,
+} from "@/lib/types";
 
 export type SortKey = "score" | "commute" | "price";
 
@@ -73,24 +78,32 @@ export function formatCommuteFilter(maxMinutes: number | undefined): string {
 export function formatBudgetFilter(
   budget:
     | {
-        dealType?: DealType;
         min: number;
         max: number;
         depositMin?: number;
         depositMax?: number;
       }
     | undefined,
+  dealType?: DealType, // 거래유형은 filters.dealType(budget 과 독립) 에서 전달
 ): string {
   if (!budget) return "전체";
-  if (budget.dealType === "wolse") {
+  if (dealType === "wolse") {
     // 월세 — 보증금 상한(억) + 월세 상한(만원).
     const dep = ((budget.depositMax ?? 0) / 10000).toFixed(1);
     return `월세 보증금 ${dep}억↓ / 월 ${budget.max}만↓`;
   }
   const min = (budget.min / 10000).toFixed(0);
   const max = (budget.max / 10000).toFixed(0);
-  const label = DEAL_LABEL[budget.dealType ?? "jeonse"];
+  const label = DEAL_LABEL[dealType ?? "jeonse"];
   return `${label} ${min}-${max}억`;
+}
+
+// 레거시 자가치유 — 구 데이터(budget.dealType, top-level dealType 없음)를 filters.dealType 으로 승격.
+//   localStorage '이전 조건'·기존 저장 진단 재오픈 시 거래유형 보존(읽기 단일 소스 = filters.dealType).
+export function liftLegacyDealType(filters: DiagnosisFilters): DiagnosisFilters {
+  if (filters.dealType) return filters;
+  const legacy = (filters.budget as { dealType?: DealType } | undefined)?.dealType;
+  return legacy ? { ...filters, dealType: legacy } : filters;
 }
 
 export function markerLabel(dong: string): string {
