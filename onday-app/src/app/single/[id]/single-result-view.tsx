@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { AlertCircle, ChevronLeft, Filter, FileDown } from "lucide-react";
+import { AlertCircle, ChevronLeft, FileDown, Home } from "lucide-react";
 
 import { SafetyCard } from "@/components/card/safety-card";
 import { LegendBar } from "@/components/data/legend-bar";
@@ -30,16 +30,26 @@ import { getSafetyByGu } from "@/features/single/safety-index";
 import { getCommunityByGu } from "@/lib/diagnosis/community-index";
 import { buildSinglePills, buildSingleMetrics } from "@/features/single/detail-mapper";
 import {
+  formatBudgetFilter,
   formatCardPrice,
   liftLegacyDealType,
   markerLabel,
 } from "@/features/diagnosis/result-utils";
+import { FilterPanel } from "@/components/form/filter-panel";
+import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
+import { refilterPool } from "@/lib/diagnosis/refilter";
+import { BudgetChipOptions } from "@/app/diagnosis/result/[id]/budget-chip-options";
 import { buildCommuteRows, buildLines } from "@/features/diagnosis/detail-mapper";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { copyToClipboard } from "@/lib/utils/clipboard";
 import { cn } from "@/lib/utils";
-import type { CandidateArea, SafetyGrade } from "@/lib/types";
+import type {
+  CandidateArea,
+  DealType,
+  DiagnosisFilters,
+  SafetyGrade,
+} from "@/lib/types";
 import { FavoritesMenu } from "@/components/favorites/favorites-menu";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
@@ -213,12 +223,17 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const coordinateA = useDiagnosisStore((s) => s.coordinateA);
   const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
   const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
-  const priorityKey = useDiagnosisStore((s) => s.filters.priorities?.[0]);
-  const dealType = useDiagnosisStore((s) => s.filters.dealType);
+  const filters = useDiagnosisStore((s) => s.filters);
+  // ★ PR B: 거래유형/예산 토글 재필터용 — real 통근 풀 캐시(있으면) / 없으면 runMockDiagnosis 재실행.
+  const commutePool = useDiagnosisStore((s) => s.commutePool);
+  const priorityKey = filters.priorities?.[0];
+  const dealType = filters.dealType;
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
-  const inSync = storeId === id && storeCandidates.length > 0;
+  // ★ PR B 버그수정(부부 #177 동일): length>0 제거 — 토글/필터로 0개가 돼도 DB 원본 재로드
+  //   (dealType 롤백)하지 않고 EmptyState 표시.
+  const inSync = storeId === id;
   const query = useDiagnosis(inSync ? null : id);
 
   React.useEffect(() => {
@@ -239,6 +254,43 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const showEmpty = !isLoading && !error && candidates.length === 0;
 
   const [layer, setLayer] = React.useState<SingleLayer>("safety");
+  const [showBudgetOptions, setShowBudgetOptions] = React.useState(false);
+
+  // ★ PR B 거래유형/예산 토글 재필터(부부 result-content applyDealBudget 이식, mode="single").
+  //   real: 통근 캐시 풀 재필터(통근 열화·API 0). mock/재오픈: runMockDiagnosis 재실행(전체 44, Haversine).
+  const applyDealBudget = async (newFilters: DiagnosisFilters) => {
+    if (!coordinateA) {
+      pushToast({
+        variant: "default",
+        message: "페이지 새로고침 후 다시 시도해주세요",
+      });
+      return;
+    }
+    setFilters(newFilters);
+    const next =
+      commutePool.length > 0
+        ? refilterPool(commutePool, newFilters)
+        : await runMockDiagnosis(
+            coordinateA,
+            null, // 싱글 = 배우자 없음
+            newFilters,
+            "single",
+            leisureCoordA,
+            leisureCoordB,
+          );
+    setResult(id, next);
+  };
+
+  // 거래유형 토글 — ★ 버그수정: 거래유형마다 예산 단위/의미가 달라 budget 리셋(월세 토글 빈결과→롤백 차단).
+  const handleDealTypeChange = (dt: DealType) => {
+    if (dt === (filters.dealType ?? "jeonse")) return;
+    void applyDealBudget({ ...filters, dealType: dt, budget: undefined });
+  };
+
+  // 예산 what-if — 금액만 조정(dealType 보존). 예산 넓히면 풀에서 새 동네 등장.
+  const handleBudgetWhatIf = (min: number, max: number, depositMax?: number) => {
+    void applyDealBudget({ ...filters, budget: { min, max, depositMax } });
+  };
 
   const sorted = React.useMemo(
     () => sortByLayer(candidates, layer),
@@ -462,6 +514,8 @@ export function SingleResultView({ id }: SingleResultViewProps) {
         title="싱글 모드 결과"
         trailing={
           <>
+            {/* PR B — 홈(진단 시작) 이동 버튼. 부부 결과와 동일. */}
+            <IconButton icon={<Home />} ariaLabel="진단 시작 화면으로" href="/diagnosis" />
             <FavoritesMenu />
             <DeadlineBell />
           </>
@@ -493,28 +547,82 @@ export function SingleResultView({ id }: SingleResultViewProps) {
               <DeadlineEntryCard />
               <PreferenceBanner priorityKey={priorityKey} />
             </div>
-            <header className="flex items-start justify-between gap-s-3 print:hidden">
-              <div>
-                <p className="text-caption-xs font-bold tracking-wider text-primary">
-                  싱글 모드 · {sorted.length}개 후보
-                </p>
-                <h1 className="mt-s-2 text-h3 font-extrabold leading-tight tracking-[-0.03em] text-ink">
-                  야간 안전이 기준이에요
-                </h1>
-                <p className="mt-s-1 text-caption text-ink-3">{addressA} 기준</p>
-              </div>
-              <IconButton
-                variant="bordered"
-                icon={<Filter />}
-                ariaLabel="필터"
-                onClick={() =>
-                  pushToast({
-                    variant: "default",
-                    message: "고급 필터는 다음 업데이트에 추가됩니다 ✨",
-                  })
-                }
-              />
+            <header className="print:hidden">
+              <p className="text-caption-xs font-bold tracking-wider text-primary">
+                싱글 모드 · {sorted.length}개 후보
+              </p>
+              <h1 className="mt-s-2 text-h3 font-extrabold leading-tight tracking-[-0.03em] text-ink">
+                야간 안전이 기준이에요
+              </h1>
+              <p className="mt-s-1 text-caption text-ink-3">{addressA} 기준</p>
             </header>
+
+            {/* ★ PR B — 통합 필터 바(부부 결과와 동일): 거래유형 세그먼트 + 예산. 변경 시 추천 세트 재필터. */}
+            <section
+              aria-label="검색 조건"
+              className="space-y-s-3 rounded-lg border border-card-border bg-surface p-s-3 print:hidden"
+            >
+              <div role="group" aria-label="거래유형 선택" className="flex items-center gap-s-2">
+                <span className="w-12 shrink-0 text-caption font-bold text-ink-3">
+                  거래유형
+                </span>
+                <div className="flex flex-1 gap-s-1">
+                  {(
+                    [
+                      ["jeonse", "전세"],
+                      ["maemae", "매매"],
+                      ["wolse", "월세"],
+                    ] as const
+                  ).map(([key, label]) => {
+                    const active = (filters.dealType ?? "jeonse") === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => handleDealTypeChange(key)}
+                        aria-pressed={active}
+                        className={cn(
+                          "flex-1 rounded-sm border px-s-3 py-s-1 text-body-sm font-bold transition-all",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
+                          active
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-card-border bg-surface text-ink-2 hover:brightness-95",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <FilterPanel
+                filters={[
+                  {
+                    label: "예산",
+                    value: formatBudgetFilter(filters.budget, filters.dealType),
+                    onClick: () => setShowBudgetOptions((prev) => !prev),
+                  },
+                ]}
+              />
+
+              {filters.commuteSchedule?.departureTime && (
+                <p className="text-caption text-ink-3">
+                  출근 {filters.commuteSchedule.departureTime} 기준
+                </p>
+              )}
+
+              {showBudgetOptions && (
+                <BudgetChipOptions
+                  key={`${filters.dealType ?? "jeonse"}-${filters.budget?.min ?? 0}-${filters.budget?.max ?? 0}-${filters.budget?.depositMax ?? ""}`}
+                  baseMin={filters.budget?.min ?? 0}
+                  baseMax={filters.budget?.max ?? 0}
+                  baseDepositMax={filters.budget?.depositMax}
+                  dealType={filters.dealType}
+                  onConfirm={handleBudgetWhatIf}
+                />
+              )}
+            </section>
 
             {/* 지도 — 직장 A(파랑) + 여가거점(녹색) + 후보(회색·순위) + 1위→직장 연결선.
                 SDK 캔버스는 인쇄 시 빈칸이라 print 숨김 (PDF 리포트는 카드 중심). */}
