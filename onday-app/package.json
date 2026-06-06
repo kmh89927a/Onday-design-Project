@@ -17,7 +17,8 @@
     "postinstall": "npx prisma generate",
     "check:coverage": "npx tsx scripts/check-coverage.ts",
     "build:schools": "npx tsx scripts/build-schools-index.ts",
-    "build:lawd": "npx tsx scripts/build-lawd-mapping.ts"
+    "build:lawd": "npx tsx scripts/build-lawd-mapping.ts",
+    "build:price": "npx tsx scripts/build-price-index.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
