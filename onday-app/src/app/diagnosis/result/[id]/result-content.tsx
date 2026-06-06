@@ -571,7 +571,7 @@ export function ResultContent({
           정상 결과 상태 한정 부착 = result-view.tsx showEmpty/error 분기에선 본 컴포넌트 미렌더링 = #125 EmptyState 충돌 회피. */}
       <section
         aria-label="진단 결과 데이터 출처"
-        className="flex flex-wrap gap-s-2"
+        className="flex flex-wrap items-center gap-x-s-3 gap-y-1"
       >
         {/* 시세 — 국토부 실거래 median(60~85㎡). 폴백 동네는 카드/상세에 "구 평균" 캡션 별도 표기. */}
         <DataSourceBadge

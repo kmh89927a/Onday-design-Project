@@ -40,14 +40,19 @@ export function DataSourceBadge({
       role="img"
       aria-label={`${KIND_LABELS[kind]}: ${source} 갱신일 ${updatedAt}`}
       className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-sm px-s-2 py-1 text-caption-xs font-bold",
+        "inline-flex w-fit items-center gap-1.5 text-caption-xs",
+        // on-dark(공유 hero): 기존 chip 스타일 유지. on-light(결과 화면): 보조 정보라 조용히 —
+        //   테두리·배경 제거 + ink-3(흐린 회색) + 일반 굵기로 메인 콘텐츠보다 위계 낮춤.
         tone === "on-dark"
-          ? "bg-white/15 text-white backdrop-blur-sm"
-          : "border border-line-2 bg-bg text-ink-2",
+          ? "rounded-sm bg-white/15 px-s-2 py-1 font-bold text-white backdrop-blur-sm"
+          : "font-medium text-ink-3",
         className,
       )}
     >
-      <span aria-hidden className={cn("size-1.5 rounded-full", DOT_COLORS[kind])} />
+      <span
+        aria-hidden
+        className={cn("size-1 rounded-full opacity-60", DOT_COLORS[kind])}
+      />
       <span>{source}</span>
       <span className="opacity-70">· {updatedAt}</span>
     </span>
