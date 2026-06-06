@@ -12,7 +12,8 @@ import {
   estimateTransfers,
 } from "@/lib/haversine";
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
-import { comparablePrice, estimateWolse } from "@/lib/diagnosis/price";
+// 시세 4-A — 예산 필터·priceRange 가 실거래 median(price-index)을 사용. price.ts 추정 환산 제거.
+import { comparableMedian, wolseMedian, priceRangeFor } from "@/lib/diagnosis/price-index";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 import { KakaoCarClient } from "@/lib/external/kakao-car";
 
@@ -153,15 +154,17 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
       // 필터 — 예산 범위
       if (filters.budget) {
         if (filters.budget.dealType === "wolse") {
-          // 월세 — 보증금(상한) + 월세(범위) 2축. 추정값 기준.
-          const { deposit, monthly } = estimateWolse(n.avgPrice);
-          const depositOk = deposit <= (filters.budget.depositMax ?? Infinity);
+          // 월세 — 보증금(상한) + 월세(범위) 2축. 실거래 median 기준. 결측이면 제외(임의 통과 금지).
+          const w = wolseMedian(n.id);
+          if (!w) return null;
+          const depositOk = w.deposit <= (filters.budget.depositMax ?? Infinity);
           const monthlyOk =
-            monthly >= filters.budget.min && monthly <= filters.budget.max;
+            w.monthly >= filters.budget.min && w.monthly <= filters.budget.max;
           if (!depositOk || !monthlyOk) return null;
         } else {
-          // 전세/매매 — 단일 금액. 매매 시 전세가율로 환산(추정). 미지정=전세(기존과 동일).
-          const price = comparablePrice(n.avgPrice, filters.budget.dealType);
+          // 전세/매매 — 실거래 median. 미지정=전세. median 결측이면 제외(임의 통과 금지).
+          const price = comparableMedian(n.id, filters.budget.dealType);
+          if (price == null) return null;
           if (price < filters.budget.min || price > filters.budget.max) {
             return null;
           }
@@ -199,15 +202,12 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         leisureB: leisureB ?? undefined,
         score,
         safetyGrade: mode === "single" ? n.safetyGrade : undefined,
-        // priceRange 는 거래유형 scale — 매매는 전세가율 환산값 기준(추정). 전세=avgPrice 그대로(동일).
-        priceRange: (() => {
-          const base = comparablePrice(n.avgPrice, filters.budget?.dealType);
-          return { min: Math.round(base * 0.85), max: Math.round(base * 1.15) };
-        })(),
-        // 월세 추정 — dealType=wolse 시만 채움. 그 외 undefined.
+        // priceRange = 거래유형 median ±15%(만원). 실거래 median 기준(분위수 미보유 → 밴드 유지). 결측 시 undefined.
+        priceRange: priceRangeFor(n.id, filters.budget?.dealType),
+        // 월세 — dealType=wolse 시만 채움. 실거래 median, 결측 시 undefined.
         wolseEstimate:
           filters.budget?.dealType === "wolse"
-            ? estimateWolse(n.avgPrice)
+            ? (wolseMedian(n.id) ?? undefined)
             : undefined,
         facilities: n.facilities,
         lines: n.lines,

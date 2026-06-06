@@ -12,7 +12,8 @@ import {
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 // ScoringEngine (#27) — 점수 로직은 공용 모듈로 추출. client(실 ODsay) + server(mock) 공유.
 import { scoreCandidate } from "@/lib/diagnosis/scoring";
-import { comparablePrice, estimateWolse } from "@/lib/diagnosis/price";
+// 시세 4-A — 예산 필터·priceRange 가 실거래 median(price-index)을 사용. price.ts 추정 환산 제거.
+import { comparableMedian, wolseMedian, priceRangeFor } from "@/lib/diagnosis/price-index";
 
 interface ComputeResult {
   status: "fulfilled";
@@ -90,24 +91,36 @@ async function computeOneCandidate(
   //   사용자 시각 검증 짚음: "예산 4~5억 박힘 + 결과 카드 4~5억 사이 X = 다양 박힘" → 범위 외 카드 제외 박힘.
   if (filters.budget) {
     if (filters.budget.dealType === "wolse") {
-      // 월세 — 보증금(상한) + 월세(범위) 2축. 추정값(estimateWolse) 기준.
-      const { deposit, monthly } = estimateWolse(neighborhood.avgPrice);
-      const depositOk = deposit <= (filters.budget.depositMax ?? Infinity);
+      // 월세 — 보증금(상한) + 월세(범위) 2축. 실거래 median(price-index) 기준.
+      //   median 결측이면 예산 충족 확인 불가 → 제외(임의 통과 금지, 가짜 결과 방지).
+      const w = wolseMedian(neighborhood.id);
+      if (!w) {
+        return {
+          status: "rejected",
+          neighborhoodId: neighborhood.id,
+          reason: "Wolse median 결측(price-index)",
+        };
+      }
+      const depositOk = w.deposit <= (filters.budget.depositMax ?? Infinity);
       const monthlyOk =
-        monthly >= filters.budget.min && monthly <= filters.budget.max;
+        w.monthly >= filters.budget.min && w.monthly <= filters.budget.max;
       if (!depositOk || !monthlyOk) {
         return {
           status: "rejected",
           neighborhoodId: neighborhood.id,
-          reason: `Wolse deposit ${deposit}/monthly ${monthly} outside budget`,
+          reason: `Wolse deposit ${w.deposit}/monthly ${w.monthly} outside budget`,
         };
       }
     } else {
-      // 전세/매매 — 단일 금액. 매매 시 전세가율로 환산(추정). 미지정=전세(기존과 동일).
-      const price = comparablePrice(
-        neighborhood.avgPrice,
-        filters.budget.dealType,
-      );
+      // 전세/매매 — 실거래 median. 미지정=전세. median 결측이면 제외(임의 통과 금지).
+      const price = comparableMedian(neighborhood.id, filters.budget.dealType);
+      if (price == null) {
+        return {
+          status: "rejected",
+          neighborhoodId: neighborhood.id,
+          reason: "Price median 결측(price-index)",
+        };
+      }
       if (price < filters.budget.min || price > filters.budget.max) {
         return {
           status: "rejected",
@@ -156,18 +169,12 @@ async function computeOneCandidate(
           : undefined,
       score,
       safetyGrade: mode === "single" ? neighborhood.safetyGrade : undefined,
-      // priceRange 는 거래유형 scale — 매매는 전세가율 환산값 기준(추정). 전세=avgPrice 그대로(동일).
-      priceRange: (() => {
-        const base = comparablePrice(
-          neighborhood.avgPrice,
-          filters.budget?.dealType,
-        );
-        return { min: Math.round(base * 0.85), max: Math.round(base * 1.15) };
-      })(),
-      // 월세 추정 — dealType=wolse 시만 채움(표시는 보증금/월). 그 외 undefined.
+      // priceRange = 거래유형 median ±15%(만원). 실거래 median 기준(분위수 미보유 → 밴드 유지). 결측 시 undefined.
+      priceRange: priceRangeFor(neighborhood.id, filters.budget?.dealType),
+      // 월세 — dealType=wolse 시만 채움(표시는 보증금/월). 실거래 median, 결측 시 undefined.
       wolseEstimate:
         filters.budget?.dealType === "wolse"
-          ? estimateWolse(neighborhood.avgPrice)
+          ? (wolseMedian(neighborhood.id) ?? undefined)
           : undefined,
       facilities: neighborhood.facilities,
       lines: neighborhood.lines,

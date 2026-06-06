@@ -1,5 +1,9 @@
 import type { DealType } from "@/lib/types";
 
+// ⚠️ DEPRECATED (시세 4-A) — 예산 필터·priceRange 가 실거래 median(@/lib/diagnosis/price-index)으로 교체됨.
+//   아래 추정 환산(JEONSE_RATIO/comparablePrice/estimateWolse)은 현재 어떤 모듈도 import 하지 않음(격하).
+//   결측 안전망/참고로만 잔존. 완전 삭제는 4-B 이후. 신규 코드는 price-index 접근자를 쓸 것.
+
 // 전세가율 추정치 — 매매가 ≈ 전세 ÷ 0.55 (서울 아파트 대략치).
 //   동네 데이터는 avgPrice(전세 추정 보증금) 단일값만 보유 → 매매 시세를 보유하지 않아
 //   이 상수로 파생(추정)한다. 표시 시 "추정" 명시 필수(날조 금지).
