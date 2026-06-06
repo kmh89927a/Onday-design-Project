@@ -38,7 +38,9 @@ import {
 import { FilterPanel } from "@/components/form/filter-panel";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { refilterPool } from "@/lib/diagnosis/refilter";
+import { recomputeWhatIf } from "@/lib/diagnosis/whatif";
 import { BudgetChipOptions } from "@/app/diagnosis/result/[id]/budget-chip-options";
+import { TimeChipOptions } from "@/app/diagnosis/result/[id]/time-chip-options";
 import { buildCommuteRows, buildLines } from "@/features/diagnosis/detail-mapper";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
@@ -255,6 +257,16 @@ export function SingleResultView({ id }: SingleResultViewProps) {
 
   const [layer, setLayer] = React.useState<SingleLayer>("safety");
   const [showBudgetOptions, setShowBudgetOptions] = React.useState(false);
+  const [showTimeOptions, setShowTimeOptions] = React.useState(false);
+  const currentDepartureTime = filters.commuteSchedule?.departureTime ?? "08:00";
+
+  // ★ 출근시간 what-if 용 baseline — 첫 결과 1회 캡처(부부 result-content 동일). 통근 '분' 재추정 기준.
+  const baselineRef = React.useRef<CandidateArea[] | null>(null);
+  React.useEffect(() => {
+    if (baselineRef.current === null && candidates.length > 0) {
+      baselineRef.current = candidates;
+    }
+  }, [candidates]);
 
   // ★ PR B 거래유형/예산 토글 재필터(부부 result-content applyDealBudget 이식, mode="single").
   //   real: 통근 캐시 풀 재필터(통근 열화·API 0). mock/재오픈: runMockDiagnosis 재실행(전체 44, Haversine).
@@ -290,6 +302,33 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   // 예산 what-if — 금액만 조정(dealType 보존). 예산 넓히면 풀에서 새 동네 등장.
   const handleBudgetWhatIf = (min: number, max: number, depositMax?: number) => {
     void applyDealBudget({ ...filters, budget: { min, max, depositMax } });
+  };
+
+  // ★ 출근시간 변경 — 통근 '분' 재추정(recomputeWhatIf, baseline 기준). 거래유형/예산 토글(통근 캐시
+  //   재활용)과 다른 경로(출발시각이 바뀌면 통근 재계산 필요). 싱글=직장 1개라 coordB=null.
+  const handleTimeWhatIf = (time: string) => {
+    if (!coordinateA) {
+      pushToast({
+        variant: "default",
+        message: "페이지 새로고침 후 다시 시도해주세요",
+      });
+      return;
+    }
+    const newFilters: DiagnosisFilters = {
+      ...filters,
+      commuteSchedule: {
+        days: filters.commuteSchedule?.days ?? [],
+        departureTime: time,
+      },
+    };
+    setFilters(newFilters);
+    const next = recomputeWhatIf(
+      baselineRef.current ?? candidates,
+      newFilters,
+      coordinateA,
+      null,
+    );
+    setResult(id, next);
   };
 
   const sorted = React.useMemo(
@@ -596,8 +635,14 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                 </div>
               </div>
 
+              {/* 출근시간(변경 가능) + 예산 칩 — 부부 결과와 동일. 클릭 시 아래 인라인 편집. */}
               <FilterPanel
                 filters={[
+                  {
+                    label: "출근시간",
+                    value: currentDepartureTime,
+                    onClick: () => setShowTimeOptions((prev) => !prev),
+                  },
                   {
                     label: "예산",
                     value: formatBudgetFilter(filters.budget, filters.dealType),
@@ -606,10 +651,13 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                 ]}
               />
 
-              {filters.commuteSchedule?.departureTime && (
-                <p className="text-caption text-ink-3">
-                  출근 {filters.commuteSchedule.departureTime} 기준
-                </p>
+              {/* 출근시간 변경 — recomputeWhatIf 로 통근 재추정. key=재마운트(React 19). */}
+              {showTimeOptions && (
+                <TimeChipOptions
+                  key={currentDepartureTime}
+                  baseTime={currentDepartureTime}
+                  onConfirm={handleTimeWhatIf}
+                />
               )}
 
               {showBudgetOptions && (
