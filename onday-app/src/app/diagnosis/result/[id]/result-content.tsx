@@ -27,11 +27,7 @@ import {
   sortCandidates,
   toChipMode,
 } from "@/features/diagnosis/result-utils";
-import {
-  estimateCommuteMinutes,
-  haversineDistance,
-  rushHourFactor,
-} from "@/lib/haversine";
+import { recomputeWhatIf } from "@/lib/diagnosis/whatif";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
@@ -63,75 +59,7 @@ interface ResultContentProps {
   onShare: () => void | Promise<void>;
 }
 
-// what-if(시간/통근/예산) 재계산 — ★ 후보 재선정 대신 고정 baseline 세트를 in-place 갱신.
-//   기존 runMockDiagnosis 는 풀에서 top-N 을 다시 뽑아(mock 점수) 세트가 바뀌고 → 새 후보엔
-//   routePath/자동차 없음(버그1) + 자동차 시간 미반영(버그2). 본 함수는 세트·순위·routePath 고정,
-//   통근 '분'만 재계산해 두 버그 동시 해소.
-//   · 대중교통: estimateCommuteMinutes(거리, 출발시각) — 러시아워 계수 반영
-//   · 자동차: 실 Kakao 기준시간 × rushHourFactor (거리추정은 도로보다 짧아 부정확 → 기준값 보존)
-//   · routePath(정거장/도로선)·순위(점수)·여가는 baseline 그대로 유지, 필터만 재적용.
-function recomputeWhatIf(
-  baseline: CandidateArea[],
-  filters: DiagnosisFilters,
-  coordA: { lat: number; lng: number },
-  coordB: { lat: number; lng: number } | null | undefined,
-): CandidateArea[] {
-  const depTime = filters.commuteSchedule?.departureTime;
-  const carFactor = rushHourFactor(depTime);
-  return baseline
-    .map((c) => {
-      const distA = haversineDistance(coordA, c.coordinate);
-      const next: CandidateArea = {
-        ...c,
-        commuteA: { ...c.commuteA, time: estimateCommuteMinutes(distA, depTime) },
-      };
-      if (coordB && c.commuteB) {
-        const distB = haversineDistance(coordB, c.coordinate);
-        next.commuteB = {
-          ...c.commuteB,
-          time: estimateCommuteMinutes(distB, depTime),
-        };
-      }
-      if (c.commuteACar) {
-        next.commuteACar = {
-          ...c.commuteACar,
-          time: Math.round(c.commuteACar.time * carFactor),
-        };
-      }
-      if (c.commuteBCar) {
-        next.commuteBCar = {
-          ...c.commuteBCar,
-          time: Math.round(c.commuteBCar.time * carFactor),
-        };
-      }
-      return next;
-    })
-    .filter((c) => {
-      if (filters.maxCommuteTime) {
-        const maxC = Math.max(c.commuteA.time, c.commuteB?.time ?? 0);
-        if (maxC > filters.maxCommuteTime) return false;
-      }
-      if (filters.budget) {
-        if (filters.dealType === "wolse") {
-          // 월세 — 추정 보증금/월세로 재필터 (priceRange 는 전세 scale 라 부적합).
-          const w = c.wolseEstimate;
-          if (w) {
-            if (w.monthly > filters.budget.max) return false;
-            if (
-              filters.budget.depositMax != null &&
-              w.deposit > filters.budget.depositMax
-            ) {
-              return false;
-            }
-          }
-        } else if (c.priceRange) {
-          const avg = (c.priceRange.min + c.priceRange.max) / 2;
-          if (avg < filters.budget.min || avg > filters.budget.max) return false;
-        }
-      }
-      return true;
-    });
-}
+// what-if 재계산(출근시간 변경 시 통근 '분' 재추정)은 lib/diagnosis/whatif.ts 로 공통화(부부·싱글 공용).
 
 export function ResultContent({
   candidates,
