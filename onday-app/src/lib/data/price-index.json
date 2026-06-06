@@ -1,0 +1,1054 @@
+{
+  "_meta": {
+    "description": "동네별 아파트 거래유형(매매/전세/월세) 중앙값 — 국토부 실거래 사전계산. 시세 실데이터 3단계(데이터).",
+    "source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+    "period": "2025-12 ~ 2026-06",
+    "areaFilter": "전용 60-85㎡(국민주택규모) 한정",
+    "method": "PRICE_DONG_MAPPING(3-A 사람 큐레이션)으로 (시군구+법정동) 텍스트 조인 후 중앙값. 숫자 LAWD 미존재.",
+    "threshold": "법정동 표본 매매<20 또는 전월세<30 이면 자동 시군구 폴백",
+    "fallbackTotal": 10,
+    "fallbackThresholdTriggered": 5,
+    "generatedFrom": "scripts/build-price-index.ts + scripts/price-dong-mapping.ts",
+    "retrievedAt": "2026-06-06",
+    "note": "동 단위 중앙값(단지·평형별 편차 있음). 60~85㎡ 한정. 폴백=구 평균(동 데이터 부족). 결측은 null(추정 환산 없음)."
+  },
+  "byId": {
+    "jong-3": {
+      "maemae": {
+        "median": 112000,
+        "count": 134
+      },
+      "jeonse": {
+        "median": 75800,
+        "count": 190
+      },
+      "wolse": {
+        "depositMedian": 25000,
+        "monthlyMedian": 178,
+        "count": 153
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "종로구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "mapo-gondeok": {
+      "maemae": {
+        "median": 203500,
+        "count": 28
+      },
+      "jeonse": {
+        "median": 81000,
+        "count": 107
+      },
+      "wolse": {
+        "depositMedian": 40000,
+        "monthlyMedian": 170,
+        "count": 92
+      },
+      "source": "legalDong",
+      "matchedSigungu": "마포구",
+      "matchedLegalDong": [
+        "공덕동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gangnam-station": {
+      "maemae": {
+        "median": 238250,
+        "count": 40
+      },
+      "jeonse": {
+        "median": 120000,
+        "count": 118
+      },
+      "wolse": {
+        "depositMedian": 45000,
+        "monthlyMedian": 290,
+        "count": 171
+      },
+      "source": "legalDong",
+      "matchedSigungu": "강남구",
+      "matchedLegalDong": [
+        "역삼동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "yongsan-itaewon": {
+      "maemae": {
+        "median": 180000,
+        "count": 151
+      },
+      "jeonse": {
+        "median": 73500,
+        "count": 475
+      },
+      "wolse": {
+        "depositMedian": 20000,
+        "monthlyMedian": 200,
+        "count": 334
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "용산구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "songpa-jamsil": {
+      "maemae": {
+        "median": 327000,
+        "count": 187
+      },
+      "jeonse": {
+        "median": 113825,
+        "count": 610
+      },
+      "wolse": {
+        "depositMedian": 35000,
+        "monthlyMedian": 205,
+        "count": 546
+      },
+      "source": "legalDong",
+      "matchedSigungu": "송파구",
+      "matchedLegalDong": [
+        "잠실동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "yeongdeungpo-yeouido": {
+      "maemae": {
+        "median": 262500,
+        "count": 30
+      },
+      "jeonse": {
+        "median": 40450,
+        "count": 72
+      },
+      "wolse": {
+        "depositMedian": 10000,
+        "monthlyMedian": 135,
+        "count": 47
+      },
+      "source": "legalDong",
+      "matchedSigungu": "영등포구",
+      "matchedLegalDong": [
+        "여의도동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "seodaemun-sinchon": {
+      "maemae": {
+        "median": 95650,
+        "count": 740
+      },
+      "jeonse": {
+        "median": 64000,
+        "count": 957
+      },
+      "wolse": {
+        "depositMedian": 23000,
+        "monthlyMedian": 130,
+        "count": 495
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "서대문구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "dongjak-sadang": {
+      "maemae": {
+        "median": 145000,
+        "count": 143
+      },
+      "jeonse": {
+        "median": 69000,
+        "count": 295
+      },
+      "wolse": {
+        "depositMedian": 40000,
+        "monthlyMedian": 100,
+        "count": 137
+      },
+      "source": "legalDong",
+      "matchedSigungu": "동작구",
+      "matchedLegalDong": [
+        "사당동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "nowon-junggye": {
+      "maemae": {
+        "median": 83000,
+        "count": 241
+      },
+      "jeonse": {
+        "median": 56000,
+        "count": 337
+      },
+      "wolse": {
+        "depositMedian": 26500,
+        "monthlyMedian": 130,
+        "count": 132
+      },
+      "source": "legalDong",
+      "matchedSigungu": "노원구",
+      "matchedLegalDong": [
+        "중계동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gwanak-bongcheon": {
+      "maemae": {
+        "median": 109000,
+        "count": 317
+      },
+      "jeonse": {
+        "median": 59000,
+        "count": 366
+      },
+      "wolse": {
+        "depositMedian": 25000,
+        "monthlyMedian": 126,
+        "count": 208
+      },
+      "source": "legalDong",
+      "matchedSigungu": "관악구",
+      "matchedLegalDong": [
+        "봉천동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "seongdong-wangsimni": {
+      "maemae": {
+        "median": 180000,
+        "count": 45
+      },
+      "jeonse": {
+        "median": 75000,
+        "count": 152
+      },
+      "wolse": {
+        "depositMedian": 25000,
+        "monthlyMedian": 187,
+        "count": 120
+      },
+      "source": "legalDong",
+      "matchedSigungu": "성동구",
+      "matchedLegalDong": [
+        "행당동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "yangcheon-mokdong": {
+      "maemae": {
+        "median": 153250,
+        "count": 216
+      },
+      "jeonse": {
+        "median": 68000,
+        "count": 454
+      },
+      "wolse": {
+        "depositMedian": 35000,
+        "monthlyMedian": 123,
+        "count": 268
+      },
+      "source": "legalDong",
+      "matchedSigungu": "양천구",
+      "matchedLegalDong": [
+        "목동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "guro-gasan": {
+      "maemae": {
+        "median": 70500,
+        "count": 266
+      },
+      "jeonse": {
+        "median": 42640,
+        "count": 244
+      },
+      "wolse": {
+        "depositMedian": 15000,
+        "monthlyMedian": 100,
+        "count": 137
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "금천구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "dobong-chang": {
+      "maemae": {
+        "median": 85500,
+        "count": 225
+      },
+      "jeonse": {
+        "median": 42000,
+        "count": 269
+      },
+      "wolse": {
+        "depositMedian": 18500,
+        "monthlyMedian": 93,
+        "count": 128
+      },
+      "source": "legalDong",
+      "matchedSigungu": "도봉구",
+      "matchedLegalDong": [
+        "창동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "jungnang-myeonmok": {
+      "maemae": {
+        "median": 76500,
+        "count": 211
+      },
+      "jeonse": {
+        "median": 53250,
+        "count": 158
+      },
+      "wolse": {
+        "depositMedian": 29000,
+        "monthlyMedian": 100,
+        "count": 65
+      },
+      "source": "legalDong",
+      "matchedSigungu": "중랑구",
+      "matchedLegalDong": [
+        "면목동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gangseo-yeomchang": {
+      "maemae": {
+        "median": 105000,
+        "count": 200
+      },
+      "jeonse": {
+        "median": 58000,
+        "count": 214
+      },
+      "wolse": {
+        "depositMedian": 30000,
+        "monthlyMedian": 110,
+        "count": 85
+      },
+      "source": "legalDong",
+      "matchedSigungu": "강서구",
+      "matchedLegalDong": [
+        "염창동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "eunpyeong-bulgwang": {
+      "maemae": {
+        "median": 93000,
+        "count": 122
+      },
+      "jeonse": {
+        "median": 44000,
+        "count": 128
+      },
+      "wolse": {
+        "depositMedian": 20000,
+        "monthlyMedian": 100,
+        "count": 45
+      },
+      "source": "legalDong",
+      "matchedSigungu": "은평구",
+      "matchedLegalDong": [
+        "불광동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "seongbuk-seongshin": {
+      "maemae": {
+        "median": 93500,
+        "count": 929
+      },
+      "jeonse": {
+        "median": 55650,
+        "count": 950
+      },
+      "wolse": {
+        "depositMedian": 20000,
+        "monthlyMedian": 130,
+        "count": 455
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "성북구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gwangjin-gundae": {
+      "maemae": {
+        "median": 169000,
+        "count": 204
+      },
+      "jeonse": {
+        "median": 71400,
+        "count": 639
+      },
+      "wolse": {
+        "depositMedian": 35500,
+        "monthlyMedian": 131,
+        "count": 362
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "광진구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gangbuk-mia": {
+      "maemae": {
+        "median": 77450,
+        "count": 341
+      },
+      "jeonse": {
+        "median": 53000,
+        "count": 222
+      },
+      "wolse": {
+        "depositMedian": 10000,
+        "monthlyMedian": 145,
+        "count": 152
+      },
+      "source": "legalDong",
+      "matchedSigungu": "강북구",
+      "matchedLegalDong": [
+        "미아동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "jongno-pyeongchang": {
+      "maemae": {
+        "median": 112000,
+        "count": 134
+      },
+      "jeonse": {
+        "median": 75800,
+        "count": 190
+      },
+      "wolse": {
+        "depositMedian": 25000,
+        "monthlyMedian": 178,
+        "count": 153
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "종로구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "geumcheon-siheung": {
+      "maemae": {
+        "median": 57000,
+        "count": 118
+      },
+      "jeonse": {
+        "median": 38000,
+        "count": 102
+      },
+      "wolse": {
+        "depositMedian": 10000,
+        "monthlyMedian": 100,
+        "count": 57
+      },
+      "source": "legalDong",
+      "matchedSigungu": "금천구",
+      "matchedLegalDong": [
+        "시흥동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gimpo-sau": {
+      "maemae": {
+        "median": 46900,
+        "count": 47
+      },
+      "jeonse": {
+        "median": 30450,
+        "count": 51
+      },
+      "wolse": {
+        "depositMedian": 3500,
+        "monthlyMedian": 130,
+        "count": 10
+      },
+      "source": "legalDong",
+      "matchedSigungu": "김포시",
+      "matchedLegalDong": [
+        "사우동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gimpo-janggi": {
+      "maemae": {
+        "median": 44500,
+        "count": 244
+      },
+      "jeonse": {
+        "median": 31000,
+        "count": 347
+      },
+      "wolse": {
+        "depositMedian": 4550,
+        "monthlyMedian": 130,
+        "count": 145
+      },
+      "source": "legalDong",
+      "matchedSigungu": "김포시",
+      "matchedLegalDong": [
+        "장기동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gimpo-pungmu": {
+      "maemae": {
+        "median": 60000,
+        "count": 282
+      },
+      "jeonse": {
+        "median": 39175,
+        "count": 232
+      },
+      "wolse": {
+        "depositMedian": 5000,
+        "monthlyMedian": 120,
+        "count": 76
+      },
+      "source": "legalDong",
+      "matchedSigungu": "김포시",
+      "matchedLegalDong": [
+        "풍무동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "ilsan-madu": {
+      "maemae": {
+        "median": 57000,
+        "count": 79
+      },
+      "jeonse": {
+        "median": 42000,
+        "count": 129
+      },
+      "wolse": {
+        "depositMedian": 5000,
+        "monthlyMedian": 120,
+        "count": 39
+      },
+      "source": "legalDong",
+      "matchedSigungu": "고양시 일산동구",
+      "matchedLegalDong": [
+        "마두동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "ilsan-janghang": {
+      "maemae": {
+        "median": 95500,
+        "count": 88
+      },
+      "jeonse": {
+        "median": 57000,
+        "count": 166
+      },
+      "wolse": {
+        "depositMedian": 10000,
+        "monthlyMedian": 160,
+        "count": 65
+      },
+      "source": "legalDong",
+      "matchedSigungu": "고양시 일산동구",
+      "matchedLegalDong": [
+        "장항동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "bundang-seohyeon": {
+      "maemae": {
+        "median": 195500,
+        "count": 85
+      },
+      "jeonse": {
+        "median": 67500,
+        "count": 187
+      },
+      "wolse": {
+        "depositMedian": 30000,
+        "monthlyMedian": 138,
+        "count": 102
+      },
+      "source": "legalDong",
+      "matchedSigungu": "성남시 분당구",
+      "matchedLegalDong": [
+        "서현동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "bundang-jeongja": {
+      "maemae": {
+        "median": 171000,
+        "count": 72
+      },
+      "jeonse": {
+        "median": 71400,
+        "count": 193
+      },
+      "wolse": {
+        "depositMedian": 30000,
+        "monthlyMedian": 133,
+        "count": 118
+      },
+      "source": "legalDong",
+      "matchedSigungu": "성남시 분당구",
+      "matchedLegalDong": [
+        "정자동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "bundang-pangyo": {
+      "maemae": {
+        "median": 167000,
+        "count": 24
+      },
+      "jeonse": {
+        "median": 75000,
+        "count": 108
+      },
+      "wolse": {
+        "depositMedian": 32843,
+        "monthlyMedian": 67,
+        "count": 151
+      },
+      "source": "legalDong",
+      "matchedSigungu": "성남시 분당구",
+      "matchedLegalDong": [
+        "판교동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "suwon-yeongtong": {
+      "maemae": {
+        "median": 127500,
+        "count": 131
+      },
+      "jeonse": {
+        "median": 72000,
+        "count": 155
+      },
+      "wolse": {
+        "depositMedian": 30000,
+        "monthlyMedian": 168,
+        "count": 80
+      },
+      "source": "legalDong",
+      "matchedSigungu": "수원시 영통구",
+      "matchedLegalDong": [
+        "이의동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "anyang-pyeongchon": {
+      "maemae": {
+        "median": 109050,
+        "count": 232
+      },
+      "jeonse": {
+        "median": 54550,
+        "count": 312
+      },
+      "wolse": {
+        "depositMedian": 25000,
+        "monthlyMedian": 120,
+        "count": 104
+      },
+      "source": "legalDong",
+      "matchedSigungu": "안양시 동안구",
+      "matchedLegalDong": [
+        "평촌동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "hwaseong-dongtan": {
+      "maemae": {
+        "median": 70800,
+        "count": 3517
+      },
+      "jeonse": {
+        "median": 39000,
+        "count": 2293
+      },
+      "wolse": {
+        "depositMedian": 10000,
+        "monthlyMedian": 76,
+        "count": 1729
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "화성시 동탄구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "seongnam-wirye": {
+      "maemae": {
+        "median": 178000,
+        "count": 25
+      },
+      "jeonse": {
+        "median": 78725,
+        "count": 132
+      },
+      "wolse": {
+        "depositMedian": 35000,
+        "monthlyMedian": 179,
+        "count": 74
+      },
+      "source": "legalDong",
+      "matchedSigungu": "성남시 수정구",
+      "matchedLegalDong": [
+        "창곡동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gunpo-sanbon": {
+      "maemae": {
+        "median": 74750,
+        "count": 146
+      },
+      "jeonse": {
+        "median": 48300,
+        "count": 108
+      },
+      "wolse": {
+        "depositMedian": 20000,
+        "monthlyMedian": 100,
+        "count": 31
+      },
+      "source": "legalDong",
+      "matchedSigungu": "군포시",
+      "matchedLegalDong": [
+        "산본동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "bucheon-jung": {
+      "maemae": {
+        "median": 68000,
+        "count": 269
+      },
+      "jeonse": {
+        "median": 45575,
+        "count": 236
+      },
+      "wolse": {
+        "depositMedian": 10000,
+        "monthlyMedian": 120,
+        "count": 84
+      },
+      "source": "legalDong",
+      "matchedSigungu": "부천시 원미구",
+      "matchedLegalDong": [
+        "상동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "seongnam-sujeong": {
+      "maemae": {
+        "median": 133000,
+        "count": 210
+      },
+      "jeonse": {
+        "median": 59850,
+        "count": 320
+      },
+      "wolse": {
+        "depositMedian": 25000,
+        "monthlyMedian": 157,
+        "count": 163
+      },
+      "source": "legalDong",
+      "matchedSigungu": "성남시 수정구",
+      "matchedLegalDong": [
+        "신흥동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "incheon-cheongna": {
+      "maemae": {
+        "median": 67000,
+        "count": 321
+      },
+      "jeonse": {
+        "median": 36000,
+        "count": 410
+      },
+      "wolse": {
+        "depositMedian": 5000,
+        "monthlyMedian": 150,
+        "count": 159
+      },
+      "source": "legalDong",
+      "matchedSigungu": "인천 서구",
+      "matchedLegalDong": [
+        "청라동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "incheon-songdo": {
+      "maemae": {
+        "median": 70000,
+        "count": 1013
+      },
+      "jeonse": {
+        "median": 38850,
+        "count": 1339
+      },
+      "wolse": {
+        "depositMedian": 5000,
+        "monthlyMedian": 165,
+        "count": 791
+      },
+      "source": "legalDong",
+      "matchedSigungu": "인천 연수구",
+      "matchedLegalDong": [
+        "송도동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "incheon-geomdan": {
+      "maemae": {
+        "median": 55000,
+        "count": 2201
+      },
+      "jeonse": {
+        "median": 33500,
+        "count": 2235
+      },
+      "wolse": {
+        "depositMedian": 4600,
+        "monthlyMedian": 100,
+        "count": 1249
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "인천 서구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "incheon-bupyeong": {
+      "maemae": {
+        "median": 52500,
+        "count": 199
+      },
+      "jeonse": {
+        "median": 29000,
+        "count": 145
+      },
+      "wolse": {
+        "depositMedian": 4000,
+        "monthlyMedian": 110,
+        "count": 85
+      },
+      "source": "legalDong",
+      "matchedSigungu": "인천 부평구",
+      "matchedLegalDong": [
+        "부평동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "incheon-sinpo": {
+      "maemae": {
+        "median": 40000,
+        "count": 439
+      },
+      "jeonse": {
+        "median": 27000,
+        "count": 805
+      },
+      "wolse": {
+        "depositMedian": 3000,
+        "monthlyMedian": 110,
+        "count": 664
+      },
+      "source": "sigungu-fallback",
+      "matchedSigungu": "인천 중구",
+      "matchedLegalDong": [],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "seongdong-seongsu": {
+      "maemae": {
+        "median": 172500,
+        "count": 50
+      },
+      "jeonse": {
+        "median": 75000,
+        "count": 213
+      },
+      "wolse": {
+        "depositMedian": 35000,
+        "monthlyMedian": 210,
+        "count": 141
+      },
+      "source": "legalDong",
+      "matchedSigungu": "성동구",
+      "matchedLegalDong": [
+        "성수동1가",
+        "성수동2가"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    },
+    "gwangjin-jayang": {
+      "maemae": {
+        "median": 153000,
+        "count": 53
+      },
+      "jeonse": {
+        "median": 68000,
+        "count": 248
+      },
+      "wolse": {
+        "depositMedian": 31500,
+        "monthlyMedian": 138,
+        "count": 138
+      },
+      "source": "legalDong",
+      "matchedSigungu": "광진구",
+      "matchedLegalDong": [
+        "자양동"
+      ],
+      "_source": "국토교통부 실거래가공개시스템 아파트 매매/전월세",
+      "period": "2025-12 ~ 2026-06",
+      "areaFilter": "60-85㎡",
+      "retrievedAt": "2026-06-06"
+    }
+  }
+}
