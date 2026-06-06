@@ -28,8 +28,8 @@ export interface SearchParams {
   coordinateB?: { lat: number; lng: number };
   filters?: {
     maxCommuteTime?: number;
+    dealType?: "jeonse" | "maemae" | "wolse"; // 거래유형 — budget 과 독립 최상위(미지정=전세)
     budget?: {
-      dealType?: "jeonse" | "maemae" | "wolse";
       min: number;
       max: number;
       depositMin?: number;

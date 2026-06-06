@@ -16,9 +16,10 @@ export const diagnosisInputSchema = z.object({
   leisureCoordB: coordinateSchema.optional(),
   filters: z.object({
     maxCommuteTime: z.number().min(10).max(120).optional(),
+    // 거래유형 — budget 과 독립 최상위. 미지정 = 전세. (서버 왕복 시 strip 방지 위해 스키마 포함 필수)
+    dealType: z.enum(["jeonse", "maemae", "wolse"]).optional(),
     budget: z
       .object({
-        dealType: z.enum(["jeonse", "maemae", "wolse"]).optional(), // 미지정 = 전세 (하위호환)
         min: z.number().min(0),
         max: z.number().min(0),
         depositMin: z.number().min(0).optional(), // 월세 전용 — 보증금 범위(만원)

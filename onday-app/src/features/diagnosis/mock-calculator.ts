@@ -89,8 +89,10 @@ async function computeOneCandidate(
 
   // Issue #123 — 예산 범위 외 제외 (★ maxCommuteTime 답습 정합).
   //   사용자 시각 검증 짚음: "예산 4~5억 박힘 + 결과 카드 4~5억 사이 X = 다양 박힘" → 범위 외 카드 제외 박힘.
+  // 거래유형 — filters.dealType 단일 소스(budget 과 독립). 미지정=전세.
+  const dealType = filters.dealType ?? "jeonse";
   if (filters.budget) {
-    if (filters.budget.dealType === "wolse") {
+    if (dealType === "wolse") {
       // 월세 — 보증금(상한) + 월세(범위) 2축. 실거래 median(price-index) 기준.
       //   median 결측이면 예산 충족 확인 불가 → 제외(임의 통과 금지, 가짜 결과 방지).
       const w = wolseMedian(neighborhood.id);
@@ -113,7 +115,7 @@ async function computeOneCandidate(
       }
     } else {
       // 전세/매매 — 실거래 median. 미지정=전세. median 결측이면 제외(임의 통과 금지).
-      const price = comparableMedian(neighborhood.id, filters.budget.dealType);
+      const price = comparableMedian(neighborhood.id, dealType);
       if (price == null) {
         return {
           status: "rejected",
@@ -169,11 +171,11 @@ async function computeOneCandidate(
           : undefined,
       score,
       safetyGrade: mode === "single" ? neighborhood.safetyGrade : undefined,
-      // priceRange = 거래유형 median ±15%(만원). 실거래 median 기준(분위수 미보유 → 밴드 유지). 결측 시 undefined.
-      priceRange: priceRangeFor(neighborhood.id, filters.budget?.dealType),
+      // priceRange = 거래유형 median ±15%(만원). filters.dealType 기준(예산 미입력해도 거래유형 반영). 결측 시 undefined.
+      priceRange: priceRangeFor(neighborhood.id, dealType),
       // 월세 — dealType=wolse 시만 채움(표시는 보증금/월). 실거래 median, 결측 시 undefined.
       wolseEstimate:
-        filters.budget?.dealType === "wolse"
+        dealType === "wolse"
           ? (wolseMedian(neighborhood.id) ?? undefined)
           : undefined,
       facilities: neighborhood.facilities,
