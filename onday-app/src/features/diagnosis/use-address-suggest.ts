@@ -31,7 +31,7 @@ function neighborhoodToSuggestion(n: (typeof MOCK_NEIGHBORHOODS)[number]): Addre
   // 4-B: 기존 "매가 X억"은 avgPrice(전세 추정)를 매매가로 오라벨 → price-index 실거래 매매 median 으로 정정.
   //   결측(id 없음)이면 가격 라벨 생략(거짓값 금지).
   const maemae = comparableMedian(n.id, "maemae");
-  const pricePart = maemae != null ? `매가 ${(maemae / 10000).toFixed(1)}억 · ` : "";
+  const pricePart = maemae != null ? `매매가 ${(maemae / 10000).toFixed(1)}억 · ` : "";
   return {
     id: n.id,
     title: `${n.gu} ${n.dong}`,

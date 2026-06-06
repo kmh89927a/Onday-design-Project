@@ -30,6 +30,11 @@ export function getPriceEntry(id: string): PriceEntry | null {
   return BY_ID[id] ?? null;
 }
 
+/** 시세 출처 — "legalDong"(동 단위) | "sigungu-fallback"(구 평균) | null(결측). 표시 라벨 분기용. */
+export function priceSource(id: string): PriceEntry["source"] | null {
+  return BY_ID[id]?.source ?? null;
+}
+
 /**
  * 전세/매매 비교 점값(만원). dealType 미지정·wolse → 전세 median(기존 avgPrice 자리 대체).
  *   결측(id 없음 / 해당 median null)이면 null — 호출부는 예산 필터에서 통과시키지 말 것.

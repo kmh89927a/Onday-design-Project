@@ -6,7 +6,7 @@ import { Heart, X, ExternalLink } from "lucide-react";
 import { SafetyGradeBadge } from "@/components/data/safety-grade-badge";
 import { BottomSheet } from "@/components/sheet/bottom-sheet";
 import { IconButton } from "@/components/ui/icon-button";
-import { formatPrice, formatWolse } from "@/features/diagnosis/result-utils";
+import { formatCardPrice } from "@/features/diagnosis/result-utils";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { cn } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites";
@@ -159,9 +159,7 @@ export function FavoritesMenu() {
                     <p className="mt-1 truncate text-caption text-ink-3">
                       통근 {it.commuteA}분
                       {it.commuteB != null && ` · 배우자 ${it.commuteB}분`} ·{" "}
-                      {it.dealType === "wolse"
-                        ? formatWolse(it.wolseEstimate)
-                        : formatPrice(it.priceRange, it.dealType)}
+                      {formatCardPrice(it, it.dealType)}
                     </p>
                   </div>
 

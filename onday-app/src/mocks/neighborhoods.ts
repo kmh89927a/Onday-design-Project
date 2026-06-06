@@ -1,6 +1,6 @@
 import type { Neighborhood } from "@/lib/types";
 
-// avgPrice = 전세 추정 보증금(만원). 매매가는 미보유 → comparablePrice()로 전세가율 환산(추정).
+// avgPrice = 구 전세 추정 보증금(만원). 시세(매매/전세/월세)는 price-index 실거래 median 으로 교체됨(4-A~5단계).
 // facilities.convenience/cafes = 실데이터 — 소상공인시장진흥공단 상가(상권)정보(2026.03)에서
 //   각 동 좌표 반경 1km 내 편의점/카페 실집계(오프라인). schools 는 아직 mock.
 export const MOCK_NEIGHBORHOODS: Neighborhood[] = [

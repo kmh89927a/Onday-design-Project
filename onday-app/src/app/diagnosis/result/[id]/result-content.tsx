@@ -20,9 +20,8 @@ import {
 } from "@/features/diagnosis/detail-mapper";
 import {
   formatBudgetFilter,
+  formatCardPrice,
   formatCommuteFilter,
-  formatPrice,
-  formatWolse,
   markerLabel,
   parseSortKey,
   sortCandidates,
@@ -511,6 +510,13 @@ export function ResultContent({
         aria-label="진단 결과 데이터 출처"
         className="flex flex-wrap gap-s-2"
       >
+        {/* 시세 — 국토부 실거래 median(60~85㎡). 폴백 동네는 카드/상세에 "구 평균" 캡션 별도 표기. */}
+        <DataSourceBadge
+          kind="official"
+          source="국토교통부 실거래가 · 60~85㎡"
+          updatedAt="2025.12~2026.06"
+          tone="on-light"
+        />
         {/* 안전 — 실 데이터(공공데이터)는 W3 야간안전. 현재는 mock. */}
         <DataSourceBadge
           kind="official"
@@ -588,11 +594,7 @@ export function ResultContent({
                     ]
                   : []),
               ]}
-              price={
-                filters.dealType === "wolse"
-                  ? formatWolse(c.wolseEstimate)
-                  : formatPrice(c.priceRange, filters.dealType)
-              }
+              price={formatCardPrice(c, filters.dealType)}
               tagReason={buildPreferenceReason(priorityKey, c) ?? undefined}
               onClick={() => open(c.id)}
             />
@@ -622,7 +624,7 @@ export function ResultContent({
             ],
             lines: buildLines(selectedCandidate),
             commutes: buildCommuteRows(selectedCandidate, addressA, addressB),
-            metrics: buildMetrics(selectedCandidate),
+            metrics: buildMetrics(selectedCandidate, filters.dealType),
           }}
           liked={Boolean(favorites[selectedCandidate.id])}
           onLike={handleLike}
