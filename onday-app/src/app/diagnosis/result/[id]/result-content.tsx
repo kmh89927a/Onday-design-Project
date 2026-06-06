@@ -34,7 +34,14 @@ import {
 } from "@/lib/haversine";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { latLngToPixel } from "@/lib/coordinate-transform";
-import type { CandidateArea, CommuteInfo, DiagnosisFilters } from "@/lib/types";
+import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
+import { refilterPool } from "@/lib/diagnosis/refilter";
+import type {
+  CandidateArea,
+  CommuteInfo,
+  DealType,
+  DiagnosisFilters,
+} from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
@@ -144,6 +151,11 @@ export function ResultContent({
   const diagnosisId = useDiagnosisStore((s) => s.diagnosisId);
   const coordinateA = useDiagnosisStore((s) => s.coordinateA);
   const coordinateB = useDiagnosisStore((s) => s.coordinateB);
+  // ★ 5-1 거래유형/예산 토글 재필터 — real 통근 풀 캐시(있으면) / 없으면 runMockDiagnosis 재실행.
+  const commutePool = useDiagnosisStore((s) => s.commutePool);
+  const mode = useDiagnosisStore((s) => s.mode);
+  const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
+  const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
 
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
@@ -210,11 +222,10 @@ export function ResultContent({
     if (diagnosisId) setResult(diagnosisId, next);
   };
 
-  const handleBudgetWhatIf = (
-    min: number,
-    max: number,
-    depositMax?: number,
-  ) => {
+  // ★ 5-1 거래유형/예산 토글 재필터 — 추천 세트가 바뀜(표시전환 아님).
+  //   real: 캐시 풀(통근 보존) 재필터(통근 열화·API 0). mock/재오픈: runMockDiagnosis 재실행(전체 44, Haversine).
+  //   (출발시각/통근상한 what-if 는 기존 recomputeWhatIf 경로 유지 — 이번 범위 밖.)
+  const applyDealBudget = async (newFilters: DiagnosisFilters) => {
     if (!coordinateA) {
       pushToast({
         variant: "default",
@@ -222,19 +233,34 @@ export function ResultContent({
       });
       return;
     }
-    // what-if 는 금액만 조정 — dealType(거래유형)은 filters.dealType 에 보존(...filters). budget 은 금액만.
-    const newFilters = {
-      ...filters,
-      budget: { min, max, depositMax },
-    };
     setFilters(newFilters);
-    const next = recomputeWhatIf(
-      baselineRef.current ?? candidates,
-      newFilters,
-      coordinateA,
-      coordinateB,
-    );
+    const next =
+      commutePool.length > 0
+        ? refilterPool(commutePool, newFilters)
+        : await runMockDiagnosis(
+            coordinateA,
+            coordinateB,
+            newFilters,
+            mode,
+            leisureCoordA,
+            leisureCoordB,
+          );
     if (diagnosisId) setResult(diagnosisId, next);
+  };
+
+  // 거래유형 토글 — filters.dealType 갱신 후 재필터. 예산은 그대로.
+  const handleDealTypeChange = (dealType: DealType) => {
+    if (dealType === (filters.dealType ?? "jeonse")) return;
+    void applyDealBudget({ ...filters, dealType });
+  };
+
+  // 예산 what-if — 금액만 조정(dealType 보존). ★ 5-1: 재필터로 전환(예산 넓히면 풀에서 새 동네 등장).
+  const handleBudgetWhatIf = (
+    min: number,
+    max: number,
+    depositMax?: number,
+  ) => {
+    void applyDealBudget({ ...filters, budget: { min, max, depositMax } });
   };
 
   const sorted = React.useMemo(
@@ -465,14 +491,49 @@ export function ResultContent({
             // Issue #112 — what-if 옵션 inline 박힘 토글 (★ #111 답습).
             onClick: () => setShowCommuteOptions((prev) => !prev),
           },
-          filters.budget != null && {
+          {
+            // ★ 5-1: 예산 칩 항상 노출 — 결과에서 예산 설정/변경 가능(미설정 시 "전체"). 변경 시 재필터.
             label: "예산",
             value: formatBudgetFilter(filters.budget, filters.dealType),
-            // Issue #112 — what-if 옵션 inline 박힘 토글 (★ #111 답습).
             onClick: () => setShowBudgetOptions((prev) => !prev),
           },
         ].filter(Boolean) as { label: string; value: string; onClick: () => void }[]}
       />
+
+      {/* ★ 5-1 거래유형 토글 — 전세/매매/월세. 변경 시 추천 세트 재필터(real 통근 캐시 / mock 재실행). */}
+      <div
+        className="flex items-center gap-s-2"
+        role="group"
+        aria-label="거래유형 선택"
+      >
+        <span className="text-caption font-bold text-ink-2">거래유형</span>
+        {(
+          [
+            ["jeonse", "전세"],
+            ["maemae", "매매"],
+            ["wolse", "월세"],
+          ] as const
+        ).map(([key, label]) => {
+          const active = (filters.dealType ?? "jeonse") === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleDealTypeChange(key)}
+              aria-pressed={active}
+              className={cn(
+                "rounded-sm px-s-3 py-s-1 text-body-sm font-bold transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-card-border bg-surface text-ink-2 hover:text-ink",
+              )}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Issue #111 β + #118 — what-if 시뮬레이션 입력 (★ <input type="time"> + "변경" 버튼 명시적 확인 + 시나리오 B handler fallback). */}
       {/* key={currentDepartureTime} — baseTime 변경 시 컴포넌트 재마운트 (★ React 19 set-state-in-effect 규칙 답습). */}
@@ -492,12 +553,12 @@ export function ResultContent({
           onConfirm={handleCommuteWhatIf}
         />
       )}
-      {showBudgetOptions && filters.budget != null && (
+      {showBudgetOptions && (
         <BudgetChipOptions
-          key={`${filters.budget.min}-${filters.budget.max}-${filters.budget.depositMax ?? ""}`}
-          baseMin={filters.budget.min}
-          baseMax={filters.budget.max}
-          baseDepositMax={filters.budget.depositMax}
+          key={`${filters.budget?.min ?? 0}-${filters.budget?.max ?? 0}-${filters.budget?.depositMax ?? ""}`}
+          baseMin={filters.budget?.min ?? 0}
+          baseMax={filters.budget?.max ?? 0}
+          baseDepositMax={filters.budget?.depositMax}
           dealType={filters.dealType}
           onConfirm={handleBudgetWhatIf}
         />
