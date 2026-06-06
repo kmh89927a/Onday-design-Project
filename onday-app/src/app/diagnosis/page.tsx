@@ -109,7 +109,8 @@ export default function DiagnosisPage() {
       : "",
   );
   const [monthlyMaxInput, setMonthlyMaxInput] = React.useState(
-    isWolseBudget ? String(filters.budget!.max) : "",
+    // ★ dealType="wolse" 라도 budget 은 undefined 일 수 있음(#171 분리) → 옵셔널 가드(옆줄 패턴).
+    isWolseBudget && filters.budget ? String(filters.budget.max) : "",
   );
   const [dealType, setDealType] = React.useState<DealType>(
     filters.dealType ?? "jeonse",
