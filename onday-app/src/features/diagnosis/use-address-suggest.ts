@@ -19,6 +19,7 @@ import type { GeocodedAddress } from "@/lib/diagnosis";
 import type { AddressSuggestion } from "@/components/form/suggest-list";
 import { useDebounce } from "@/lib/use-debounce";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
+import { comparableMedian } from "@/lib/diagnosis/price-index";
 
 const SUGGESTION_LIMIT = 5;
 const DEBOUNCE_MS = 300;
@@ -27,10 +28,14 @@ const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
 /** ★ Neighborhood → AddressSuggestion 변환 (★ REFACTOR-UI-002-FEEDBACK 헬퍼 추출, 중복 제거) */
 function neighborhoodToSuggestion(n: (typeof MOCK_NEIGHBORHOODS)[number]): AddressSuggestion {
+  // 4-B: 기존 "매가 X억"은 avgPrice(전세 추정)를 매매가로 오라벨 → price-index 실거래 매매 median 으로 정정.
+  //   결측(id 없음)이면 가격 라벨 생략(거짓값 금지).
+  const maemae = comparableMedian(n.id, "maemae");
+  const pricePart = maemae != null ? `매가 ${(maemae / 10000).toFixed(1)}억 · ` : "";
   return {
     id: n.id,
     title: `${n.gu} ${n.dong}`,
-    sub: `매가 ${(n.avgPrice / 10000).toFixed(1)}억 · 안전등급 ${n.safetyGrade}`,
+    sub: `${pricePart}안전등급 ${n.safetyGrade}`,
     kind: "지역" as const,
     coordinate: n.coordinate,
   };
