@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 import type {
   CandidateArea,
+  Coordinate,
   DealType,
   DiagnosisMode,
   SafetyGrade,
@@ -17,6 +18,8 @@ export interface FavoriteItem {
   id: string;
   gu: string;
   dong: string;
+  // 네이버 부동산 좌표 기반 아웃링크용 — 레거시 스냅샷은 미보유(optional) → 링크만 생략.
+  coordinate?: Coordinate;
   score: number;
   /** 싱글=야간안전 등급(resolveGrade). 부부는 없을 수 있음 → 목록은 점수로 fallback. */
   safetyGrade?: SafetyGrade;
@@ -44,6 +47,7 @@ export function toFavoriteSnapshot(
     id: c.id,
     gu: c.gu,
     dong: c.dong,
+    coordinate: c.coordinate,
     score: c.score,
     // grade===null = no_data(준비중) → mock 폴백 금지(#59), 배지 없이 점수 표시.
     //   grade 미전달(undefined, 부부)만 후보 mock 등급으로 폴백(레거시 유지).

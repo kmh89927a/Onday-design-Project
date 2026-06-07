@@ -1,21 +1,47 @@
-import type { ListingFilters } from "@/lib/types/deadline";
+import type { Coordinate, DealType } from "@/lib/types";
+import type { RoomType } from "@/lib/types/deadline";
 
-// QRY-DL-001 / CMD-DL-002 — 네이버 부동산 검색 아웃링크 URL 조합 (단일 수정점).
-// 자체 매물 DB 없이 조건을 URL 파라미터로 위임 (REQ-FUNC-016).
-// 네이버 부동산 검색 URL 스펙은 비공식이라 본 함수를 단일 변경점으로 둔다 (스펙 변경 시 여기만 수정).
-const NAVER_LAND_BASE = "https://land.naver.com/";
+// QRY-DL-001 / CMD-DL-002 — 네이버 부동산 아웃링크 URL 조합 (단일 수정점, REQ-FUNC-016).
+// ★ 구 land.naver.com/?query= 는 동작 안 함(403→포털 홈, 파라미터 무시) → 좌표 기반 new.land 로 교체.
+//   형식: new.land.naver.com/complexes?ms={lat},{lng},{zoom}&a={매물종류}&b={거래유형}&e=RETAIL
+//   - ms = 지도중심 좌표+줌 (법정동코드 불필요 → 폴백 동네 포함 전 동네 커버)
+//   - a  = 매물종류 (APT/OPST/VL), 미지정 = APT
+//   - b  = 거래유형 (매매=A1 / 전세=B1 / 월세=B2), 미지정 시 생략
+//   - e  = RETAIL (네이버 고정 카테고리)
+//   가격·면적은 new.land URL 스킴에 없음(내부 API 전용) → 싣지 않는다(거짓 param 금지).
+const NAVER_LAND_BASE = "https://new.land.naver.com/complexes";
+const NAVER_MAP_ZOOM = 16;
+
+// 거래유형 → 네이버 b= 코드.
+const NAVER_TRADE_CODE: Record<DealType, string> = {
+  maemae: "A1",
+  jeonse: "B1",
+  wolse: "B2",
+};
+
+// 매물종류 → 네이버 a= 코드. all/미지정 = APT (우리 시세·면적이 아파트 60~85㎡ 실거래 기준).
+const NAVER_ARTICLE_CODE: Record<RoomType, string> = {
+  apartment: "APT",
+  officetel: "OPST",
+  villa: "VL",
+  all: "APT",
+};
+
+export interface NaverRealEstateOptions {
+  dealType?: DealType; // 거래유형 → b= (미지정 시 b 생략)
+  roomType?: RoomType; // 매물종류 → a= (기본 APT)
+}
 
 export function buildNaverRealEstateUrl(
-  area: string,
-  filters: ListingFilters = {},
+  coordinate: Coordinate,
+  options: NaverRealEstateOptions = {},
 ): string {
-  const params = new URLSearchParams({ query: area });
-  if (filters.priceMin != null) params.set("priceMin", String(filters.priceMin));
-  if (filters.priceMax != null) params.set("priceMax", String(filters.priceMax));
-  if (filters.roomType && filters.roomType !== "all") {
-    params.set("type", filters.roomType);
-  }
-  return `${NAVER_LAND_BASE}?${params.toString()}`;
+  const { lat, lng } = coordinate;
+  const article = NAVER_ARTICLE_CODE[options.roomType ?? "apartment"];
+  const trade = options.dealType ? NAVER_TRADE_CODE[options.dealType] : null;
+  // 좌표(숫자)·코드(ASCII) 모두 인코딩 불필요 → 수동 조립으로 ms 콤마를 리터럴 유지(네이버 정규 형식).
+  const tradeParam = trade ? `&b=${trade}` : "";
+  return `${NAVER_LAND_BASE}?ms=${lat},${lng},${NAVER_MAP_ZOOM}&a=${article}${tradeParam}&e=RETAIL`;
 }
 
 // 학군 PR2 — 인근 초등학교명 → 네이버 통합검색 아웃링크.
