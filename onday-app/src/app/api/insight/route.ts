@@ -11,7 +11,8 @@ export const maxDuration = 10;
 
 const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? "";
 // CON-14 — 모델은 env 만으로 교체 가능. 미설정 시 비용 효율 Flash 기본.
-const MODEL_ID = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+// ★ gemini-2.0-flash 는 free tier 쿼터 0(limit:0)인 키가 있어 2.5-flash 기본(무료 동작 확인).
+const MODEL_ID = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
 
 // POST /api/insight  { dong: string }  → { insight: string }
 export async function POST(request: Request) {
@@ -40,6 +41,8 @@ export async function POST(request: Request) {
       model: google(MODEL_ID),
       // ★ Phase 1 최소 프롬프트 — 실제 동선 데이터는 Phase 2~3 에서 주입. 거짓 수치 방지 가드만.
       prompt: `"${dong}" 동네에 사는 하루를 한 문장으로 친근하게 묘사해줘. 추측성 구체 수치나 사실은 넣지 말고 분위기만.`,
+      // ★ thinking 비활성 — 한 문장 인사이트엔 추론 불필요, 지연만 늘어 Vercel 10초 한도 위협.
+      providerOptions: { google: { thinkingConfig: { thinkingBudget: 0 } } },
     });
     return NextResponse.json({ insight: text });
   } catch (error) {
