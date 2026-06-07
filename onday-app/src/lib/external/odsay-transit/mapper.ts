@@ -37,7 +37,8 @@ export function mapOdsayResponseToCommuteInfo(
     throw new OdsayTransitError("ODsay: 대중교통 경로 없음");
   }
 
-  const { totalTime, subwayTransitCount, busTransitCount } = path.info;
+  const { totalTime, subwayTransitCount, busTransitCount, firstStartStation } =
+    path.info;
   const transfers = Math.max(0, subwayTransitCount + busTransitCount - 1);
   const stationPath = extractStationPath(path);
 
@@ -47,6 +48,8 @@ export function mapOdsayResponseToCommuteInfo(
     transfers,
     // A-3 — 거쳐가는 정거장 좌표 (2개 이상일 때만). 출발·도착 연결은 화면단에서 보강.
     ...(stationPath.length >= 2 ? { routePath: stationPath } : {}),
+    // 하루 미리보기 — 첫 탑승역 이름(있을 때만, 거짓값 금지). 기존 로직 무영향(필드 추가만).
+    ...(firstStartStation ? { departureStation: firstStartStation } : {}),
     // totalWalk / payment 는 현재 CommuteInfo 미보유 — 정보 손실 수용 (차후 모델 확장 시).
   } satisfies CommuteInfo;
 }
