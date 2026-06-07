@@ -641,12 +641,10 @@ export function ResultContent({
               ? `매물 ${selectedCandidate.listingsCount}건 보기`
               : "매물 보기",
             onClick: () => {
-              const url = buildNaverRealEstateUrl(
-                `${selectedCandidate.gu} ${selectedCandidate.dong}`,
-                selectedCandidate.priceRange
-                  ? { priceMax: selectedCandidate.priceRange.max }
-                  : {},
-              );
+              // 좌표 기반 new.land + 거래유형(토글 후 filters.dealType, 기본 전세). 매물종류=APT.
+              const url = buildNaverRealEstateUrl(selectedCandidate.coordinate, {
+                dealType: filters.dealType ?? "jeonse",
+              });
               window.open(url, "_blank", "noopener,noreferrer");
             },
           }}

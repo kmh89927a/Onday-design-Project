@@ -803,12 +803,10 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                     ? `매물 ${selectedCandidate.listingsCount}건 보기`
                     : "매물 보기",
                   onClick: () => {
+                    // 좌표 기반 new.land + 거래유형(월세=B2 포함, 기본 전세). 매물종류=APT.
                     const url = buildNaverRealEstateUrl(
-                      `${selectedCandidate.gu} ${selectedCandidate.dong}`,
-                      // 월세는 priceRange(전세 scale)를 가격 상한으로 쓰면 오값 → 생략(사용자가 네이버에서 월세 필터).
-                      dealType === "wolse" || !selectedCandidate.priceRange
-                        ? {}
-                        : { priceMax: selectedCandidate.priceRange.max },
+                      selectedCandidate.coordinate,
+                      { dealType: dealType ?? "jeonse" },
                     );
                     window.open(url, "_blank", "noopener,noreferrer");
                   },

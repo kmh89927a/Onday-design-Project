@@ -17,7 +17,11 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing }: ListingCardProps) {
-  const url = buildNaverRealEstateUrl(listing.areaName, { roomType: "apartment" });
+  // 좌표 기반 new.land + 거래유형(매매/전세 → A1/B1) + 아파트.
+  const url = buildNaverRealEstateUrl(listing.coordinate, {
+    dealType: listing.dealType === "매매" ? "maemae" : "jeonse",
+    roomType: "apartment",
+  });
   // 좌표 최근접 초등학교 (PR1 사전계산). 없으면 학교 줄 미렌더 (빈 값/에러 표시 금지).
   const school = getNearestSchool(listing.neighborhoodId);
 

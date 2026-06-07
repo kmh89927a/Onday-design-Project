@@ -163,21 +163,20 @@ export function FavoritesMenu() {
                     </p>
                   </div>
 
-                  <a
-                    href={buildNaverRealEstateUrl(
-                      `${it.gu} ${it.dong}`,
-                      // 월세는 priceRange(전세 scale)를 가격 상한으로 쓰면 오값 → 생략.
-                      it.dealType === "wolse" || !it.priceRange
-                        ? {}
-                        : { priceMax: it.priceRange.max },
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${it.gu} ${it.dong} 매물 보기`}
-                    className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm text-ink-3 hover:text-ink"
-                  >
-                    <ExternalLink aria-hidden className="size-4" />
-                  </a>
+                  {/* 좌표 기반 new.land + 거래유형(기본 전세). 레거시 스냅샷(좌표 미보유)은 링크 생략. */}
+                  {it.coordinate && (
+                    <a
+                      href={buildNaverRealEstateUrl(it.coordinate, {
+                        dealType: it.dealType ?? "jeonse",
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${it.gu} ${it.dong} 매물 보기`}
+                      className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm text-ink-3 hover:text-ink"
+                    >
+                      <ExternalLink aria-hidden className="size-4" />
+                    </a>
+                  )}
                   <button
                     type="button"
                     onClick={() => remove(it.id)}
