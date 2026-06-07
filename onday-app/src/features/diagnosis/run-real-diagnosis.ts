@@ -18,10 +18,19 @@ import { wolseMedian, priceRangeFor } from "@/lib/diagnosis/price-index";
 import { passesFilters } from "@/lib/diagnosis/refilter";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 import { KakaoCarClient } from "@/lib/external/kakao-car";
+import { OdsayTransitClient } from "@/lib/external/odsay-transit";
 
-// ★ W2B 자차 — 카카오 모빌리티 브라우저 직접 (NEXT_PUBLIC, 도메인 제한). ODsay 프록시와 병렬.
+// ★ W2B 자차 — 카카오 모빌리티 브라우저 직접 (NEXT_PUBLIC, 도메인 제한). ODsay 와 병렬.
 const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY ?? "";
 const kakaoCar = KAKAO_KEY ? new KakaoCarClient({ apiKey: KAKAO_KEY }) : null;
+
+// ★ 대중교통 — ODsay 브라우저 직접 (NEXT_PUBLIC Web 키, 도메인 인증). 자차(Kakao)와 동일 패턴.
+//   서버 프록시(/api/commute, Server 키) 폐지: Vercel 고정 IP 화이트리스트 막힘 회피.
+//   ODsay 는 CORS 허용(Access-Control-Allow-Origin: *) → 브라우저 직접 호출 정상.
+const ODSAY_KEY = process.env.NEXT_PUBLIC_ODSAY_API_KEY ?? "";
+const odsayTransit = ODSAY_KEY
+  ? new OdsayTransitClient({ apiKey: ODSAY_KEY })
+  : null;
 
 // ODsay(대중교통) 실패 시 haversine 추정 fallback — 후보 drop 대신 추정값 유지.
 //   ★ Vercel 무료(ODsay 공인 IP 화이트리스트 불가) 환경에서도 결과가 비지 않게.
@@ -57,7 +66,7 @@ async function fetchCarCommute(
 
 // ★ B2 클라 오케스트레이션 (production 모드 = USE_MOCK=false).
 //   1) Haversine 사전필터 top N (가까운 동네만) → ODsay 호출 수 감축 (10~12)
-//   2) /api/commute 프록시 Promise.all (각 함수 1 호출 → Vercel 10초 무관)
+//   2) ODsay(대중교통)·Kakao(자차) 둘 다 브라우저 직접 Promise.all (Vercel 함수/10초 무관)
 //   3) 필터 + 점수(transit) → 후보 → /api/diagnosis 저장(POST)
 //   후보 풀 = 22 mock 동네 유지 (행정동/실 데이터 = v1.5+).
 
@@ -81,21 +90,20 @@ async function mapWithConcurrency<T, R>(
   return results;
 }
 
-/** /api/commute 1회 — 경로 없음/에러면 null (해당 동네 제외). */
+/** ODsay 대중교통 1회 — best-effort. 실패/타임아웃/CORS/키없음 → null (호출부 Haversine 추정 fallback). */
 async function fetchCommute(
   origin: Coordinate,
   destination: Coordinate,
 ): Promise<CommuteInfo | null> {
-  const params = new URLSearchParams({
-    olat: String(origin.lat),
-    olng: String(origin.lng),
-    dlat: String(destination.lat),
-    dlng: String(destination.lng),
-  });
-  const res = await fetch(`/api/commute?${params.toString()}`);
-  if (!res.ok) return null;
-  const data = (await res.json()) as { commute: CommuteInfo };
-  return data.commute;
+  if (!odsayTransit) return null;
+  try {
+    return await odsayTransit.getTransitCommute(
+      { lat: origin.lat, lng: origin.lng },
+      { lat: destination.lat, lng: destination.lng },
+    );
+  } catch {
+    return null;
+  }
 }
 
 export async function runRealDiagnosis(input: DiagnosisInput) {

@@ -10,7 +10,7 @@ import { mapKakaoCarResponseToCommuteInfo } from "./mapper";
 
 /**
  * 카카오 모빌리티 자동차 길찾기 클라이언트 — 브라우저 직접 호출 (CORS 허용, 도메인 제한).
- * ★ W2B: runRealDiagnosis(클라)에서 직장 경로마다 호출. ODsay(/api/commute 프록시)와 병렬.
+ * ★ W2B: runRealDiagnosis(클라)에서 직장 경로마다 호출. ODsay(대중교통, 브라우저 직접)와 병렬.
  *   카카오는 일 50만급 + 브라우저 직접이라 Vercel 함수/10초/IP 화이트리스트 무관.
  */
 export class KakaoCarClient implements IKakaoCarClient {

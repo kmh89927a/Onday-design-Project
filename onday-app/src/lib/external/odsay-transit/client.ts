@@ -9,9 +9,10 @@ import { DEFAULT_ODSAY_CONFIG, OdsayTransitError } from "./types";
 import { mapOdsayResponseToCommuteInfo } from "./mapper";
 
 /**
- * ODsay 대중교통 길찾기 클라이언트 — 서버 전용 (#33 QRY-DIAG-002 / #30 timeout).
- * ★ B2 아키텍처: /api/commute 프록시가 동네별로 1회씩 호출 (함수당 1 호출 → Vercel 10초 무관).
- * ★ ODsay Server key 는 서버에서만 사용 (브라우저 직접 = CORS 차단).
+ * ODsay 대중교통 길찾기 클라이언트 — 브라우저 직접 호출 (#33 QRY-DIAG-002 / #30 timeout).
+ * ★ B2 아키텍처: runRealDiagnosis(클라)가 동네별로 1회씩 호출 (Vercel 함수/10초 무관).
+ * ★ Web 키(NEXT_PUBLIC_ODSAY_API_KEY) = 도메인 인증. ODsay 는 CORS 허용(ACAO: *) → 브라우저 직접 정상.
+ *   (구: Server 키 + /api/commute 프록시는 Vercel 고정 IP 화이트리스트 막힘 → 폐지.)
  */
 export class OdsayTransitClient implements IOdsayTransitClient {
   private readonly apiKey: string;
