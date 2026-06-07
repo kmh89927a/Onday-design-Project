@@ -45,6 +45,8 @@ interface DetailSheetProps {
   map?: React.ReactNode;
   /** commute rows와 metrics 사이 inject (예: TimeSlotSelector) */
   commuteExtra?: React.ReactNode;
+  /** metrics와 primary CTA 사이 inject (예: 동네 하루 미리보기 AI 섹션) */
+  dayPreview?: React.ReactNode;
   primaryCta: {
     label: string;
     href?: string;
@@ -62,6 +64,7 @@ export function DetailSheet({
   onShare,
   map,
   commuteExtra,
+  dayPreview,
   primaryCta,
 }: DetailSheetProps) {
   return (
@@ -207,6 +210,8 @@ export function DetailSheet({
             ))}
           </div>
         )}
+
+        {dayPreview}
 
         {primaryCta.href ? (
           <Button

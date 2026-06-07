@@ -29,6 +29,7 @@ import {
 } from "@/features/diagnosis/result-utils";
 import { recomputeWhatIf } from "@/lib/diagnosis/whatif";
 import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
+import { DayPreview } from "@/components/insight/day-preview";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { refilterPool } from "@/lib/diagnosis/refilter";
@@ -634,6 +635,13 @@ export function ResultContent({
             <TimeSlotSelector
               value={currentDepartureTime}
               onChange={handleTimeSlotChange}
+            />
+          }
+          dayPreview={
+            <DayPreview
+              key={selectedCandidate.id}
+              candidate={selectedCandidate}
+              mode={mode}
             />
           }
           primaryCta={{
