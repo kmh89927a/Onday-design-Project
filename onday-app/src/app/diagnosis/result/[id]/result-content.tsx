@@ -516,31 +516,31 @@ export function ResultContent({
           tone="on-light"
         />
         {IS_MOCK ? (
+          /* mock = Haversine 직선거리 추정 (외부 통근 API 미연동 — 카카오/ODsay 모두 미사용) */
+          <DataSourceBadge
+            kind="estimate"
+            source="통근 추정 (Haversine)"
+            updatedAt="—"
+            tone="on-light"
+          />
+        ) : (
           <>
-            {/* mock = Haversine 추정 (실 통근 데이터 미연동) */}
+            {/* production = 대중교통 ODsay + 자차 카카오 모빌리티 (둘 다 브라우저 직접). */}
+            {/* ★ ODsay "추정": 시간표 기반 평균(실시간 교통 아님) → 실시간 표기는 과장. */}
             <DataSourceBadge
               kind="aggregated"
-              source="카카오 모빌리티"
-              updatedAt="2026.04.01"
+              source="ODsay 대중교통"
+              updatedAt="추정"
               tone="on-light"
             />
+            {/* ★ 카카오 자차: 실시간 교통 반영 도로 경로 → "실시간" 정직. */}
             <DataSourceBadge
-              kind="estimate"
-              source="통근 추정"
-              updatedAt="—"
+              kind="aggregated"
+              source="카카오 모빌리티 (자차)"
+              updatedAt="실시간"
               tone="on-light"
             />
           </>
-        ) : (
-          /* production = 실 ODsay 대중교통 (자차=카카오는 후속) */
-          /* ★ "실시간" → "추정": ODsay 는 시간표 기반 평균(실시간 교통 아님) +
-             시간대 혼잡은 계수 추정 → 실시간이라 표기하면 과장. */
-          <DataSourceBadge
-            kind="aggregated"
-            source="ODsay 대중교통"
-            updatedAt="추정"
-            tone="on-light"
-          />
         )}
       </section>
 

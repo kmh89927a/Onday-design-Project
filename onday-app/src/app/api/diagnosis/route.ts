@@ -58,8 +58,8 @@ export async function POST(request: Request) {
       });
     }
 
-    // Production (B2): 클라가 ODsay 로 계산한 candidates 를 받아 저장만 한다
-    //   (외부 API 반복 호출은 클라 /api/commute Promise.all — Vercel 10초 timeout 회피).
+    // Production (B2): 클라가 ODsay/Kakao 브라우저 직접으로 계산한 candidates 를 받아 저장만 한다
+    //   (외부 API 반복 호출은 클라 Promise.all — Vercel 함수/10초 timeout 회피).
     const candidates = body.candidates;
     if (!Array.isArray(candidates)) {
       return NextResponse.json(
