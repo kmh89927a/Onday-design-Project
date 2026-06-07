@@ -19,6 +19,7 @@ export interface OdsayPathInfo {
   payment: number; // 총 요금
   busTransitCount: number; // 버스 환승 카운트
   subwayTransitCount: number; // 지하철 환승 카운트
+  firstStartStation?: string; // 첫 탑승역 이름 (하루 미리보기 출발역용, 없을 수 있음)
 }
 
 /** subPath[].passStopList.stations[] — 거쳐가는 정거장 좌표 (x=lng, y=lat). */

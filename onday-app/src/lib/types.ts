@@ -19,6 +19,8 @@ export interface CommuteInfo {
   // A-2 (#졸업 지도) — 실 이동 경로 좌표열. 자동차=Kakao 도로 vertexes.
   //   없으면(mock·실패·transit) 화면에서 직선 추정으로 fallback.
   routePath?: Coordinate[];
+  // 하루 미리보기 — 첫 탑승역 이름(ODsay firstStartStation). transit 실데이터만, 없으면 생략.
+  departureStation?: string;
 }
 
 export interface CandidateArea {
