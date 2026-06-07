@@ -54,8 +54,10 @@ export interface OdsayTransitClientConfig {
 export const DEFAULT_ODSAY_CONFIG: Omit<OdsayTransitClientConfig, "apiKey"> = {
   baseUrl: "https://api.odsay.com/v1/api",
   timeoutMs: 5000, // REQ-FUNC-007 정합 (단일 호출 — B2 라 함수당 1회)
-  maxRetries: 1,
-  retryDelayMs: 500,
+  // ★ 429(Too Many Requests) 대응 — ODsay 동시호출 한계가 낮아 재시도 필수.
+  //   429 는 지수 backoff(600→1200→2400ms)로, 그 외 에러는 retryDelayMs 고정(client.ts).
+  maxRetries: 3,
+  retryDelayMs: 600,
 };
 
 export interface IOdsayTransitClient {

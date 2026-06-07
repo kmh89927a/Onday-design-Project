@@ -73,9 +73,12 @@ async function fetchCarCommute(
 const PREFILTER_TOP_N = 12;
 const RESULT_TOP_N = 8;
 
-// ★ ODsay 초당 호출 제한(미공개) 회피 — 동네를 배치로 처리(동시 ODsay 호출 cap).
-//   Promise.all 전량 동시(~20+)는 429(Too Many Requests) 유발 → 배치 N개씩.
-const ODSAY_CONCURRENCY = 4;
+// ★ ODsay 동시 호출 제한 회피 — 동네를 배치로 처리(동시 ODsay 호출 cap).
+//   실측: 4 동시도 429(Too Many Requests) 다수 → 2 로 낮춤(2 동시 + 간격이 최저 429율).
+//   동네 fn 내부는 A→B 순차라 실 동시 ODsay = 최대 limit 개.
+const ODSAY_CONCURRENCY = 2;
+// 배치 사이 간격 — ODsay 순간 동시성 429 완화(실측: spacing 시 429 급감).
+const ODSAY_BATCH_DELAY_MS = 250;
 
 async function mapWithConcurrency<T, R>(
   items: T[],
@@ -86,6 +89,10 @@ async function mapWithConcurrency<T, R>(
   for (let i = 0; i < items.length; i += limit) {
     const batch = items.slice(i, i + limit);
     results.push(...(await Promise.all(batch.map(fn))));
+    // 마지막 배치 뒤에는 대기 불필요.
+    if (i + limit < items.length) {
+      await new Promise((r) => setTimeout(r, ODSAY_BATCH_DELAY_MS));
+    }
   }
   return results;
 }
