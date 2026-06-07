@@ -9,6 +9,7 @@ import { LegendBar } from "@/components/data/legend-bar";
 import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
+import { DayPreview } from "@/components/insight/day-preview";
 import { TradeOffSection } from "@/components/diagnosis/trade-off-section";
 import { PreferenceBanner } from "@/components/diagnosis/preference-banner";
 import { buildPreferenceReason } from "@/features/diagnosis/preference-reason";
@@ -796,6 +797,13 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                     topRightSlot={mapModeToggle}
                     fitAll
                     height={180}
+                  />
+                }
+                dayPreview={
+                  <DayPreview
+                    key={selectedCandidate.id}
+                    candidate={selectedCandidate}
+                    mode="single"
                   />
                 }
                 primaryCta={{
