@@ -1,4 +1,3 @@
-import type { SafetyGrade } from "@/lib/types";
 import { getSafetyByGu } from "@/features/single/safety-index";
 
 import { getCommunityByGu } from "./community-index";
@@ -9,8 +8,7 @@ import { getCommunityByGu } from "./community-index";
 
 /** 점수 계산에 필요한 동네 속성만 (MOCK_NEIGHBORHOODS 항목이 구조적으로 할당 가능). */
 export interface ScoringNeighborhood {
-  gu: string; // #조용한동네 가중 — getCommunityByGu(gu) 조회
-  safetyGrade: SafetyGrade;
+  gu: string; // 안전(getSafetyByGu)·#조용한동네(getCommunityByGu) 가중 조회 키
   facilities: { convenience: number; cafes: number; schools?: number };
 }
 
@@ -34,10 +32,12 @@ function priorityBonus(
 ): number {
   switch (priority) {
     case "safety": {
-      // no_data(미수집 시군구)는 mock 등급 가산 금지(#59 옵션2) — 표시 "준비중"과 일관.
-      if (getSafetyByGu(n.gu).status !== "ok") return 0;
+      // ★ 종합 야간안전 지수(getSafetyByGu, 표시·SSoT 동일) 등급으로 가산 — stale mock 등급 안 씀.
+      //   no_data(미수집 시군구)는 가산 금지(#59 옵션2) — 표시 "준비중"과 일관.
+      const safety = getSafetyByGu(n.gu);
+      if (safety.status !== "ok") return 0;
       const b: Record<string, number> = { A: 10, B: 5, C: 0, D: -10 };
-      return b[n.safetyGrade] ?? 0;
+      return b[safety.grade] ?? 0;
     }
     case "convenience":
       return Math.min(10, Math.max(0, (n.facilities.convenience - 15) / 10));
@@ -77,10 +77,12 @@ export function scoreCandidate({
   const avgCommute = commuteB != null ? (commuteA + commuteB) / 2 : commuteA;
   score -= Math.min(40, avgCommute * 0.8);
 
-  // 안전등급 가산 — no_data(미수집 시군구)는 mock 등급 가산 금지(#59 옵션2, 표시 "준비중"과 일관).
+  // 안전등급 가산 — 종합 야간안전 지수(#57/#59, 표시·SSoT 동일) 등급 기준. stale mock 안 씀(화면 등급과 순위 정합).
+  //   no_data(미수집 시군구)는 가산 제외(#59 옵션2, 표시 "준비중"과 일관).
   const safetyBonus: Record<string, number> = { A: 10, B: 5, C: 0, D: -10 };
-  if (getSafetyByGu(neighborhood.gu).status === "ok") {
-    score += safetyBonus[neighborhood.safetyGrade] ?? 0;
+  const safety = getSafetyByGu(neighborhood.gu);
+  if (safety.status === "ok") {
+    score += safetyBonus[safety.grade] ?? 0;
   }
 
   // 편의시설 가산 — 실데이터(편의점+카페 반경1km). 합 분포 ~12~828(중앙 213) → /40 으로 0~10.
