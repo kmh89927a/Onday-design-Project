@@ -4,10 +4,13 @@ import type {
   DiagnosisMode,
   SafetyGrade,
 } from "@/lib/types";
+import { getSafetyByGu } from "@/features/single/safety-index";
 
 // 동네 하루 미리보기 (Phase 2) — CandidateArea 에서 3시간대(출근/여가/야간) 스토리 재료 추출.
 // ★ 외부 API 없음, 기존 데이터 구조화만. 없는 필드는 null/생략 — 거짓값 금지(채우지 않음).
 //   프롬프트(Phase 3)·UI(Phase 4)는 본 구조만 소비. 통근/캐싱/점수 로직과 무관.
+//   ★ 야간 등급은 종합 야간안전 지수(getSafetyByGu) 단일 소스 — 화면(resolveGrade)과 동일.
+//     낡은 mock 필드 c.safetyGrade 는 읽지 않음(화면과 불일치 방지). no_data 면 생략(거짓값 금지).
 
 /** 한 구간(출근/여가) 통근 재료 — 있는 값만 채움. */
 export interface DayCommuteSlot {
@@ -53,8 +56,10 @@ export function extractDayData(
   c: CandidateArea,
   mode: DiagnosisMode,
 ): DayPreviewData {
+  // 싱글 한정 — 부부 모드는 등급 미포함(기존 동작 보존). 싱글은 종합 지수 ok 일 때만 grade 채움.
+  const safety = mode === "single" ? getSafetyByGu(c.gu) : null;
   const night: DayNight = {
-    ...(c.safetyGrade ? { grade: c.safetyGrade } : {}),
+    ...(safety && safety.status === "ok" ? { grade: safety.grade } : {}),
     ...(c.facilities?.convenience != null
       ? { convenience: c.facilities.convenience }
       : {}),
