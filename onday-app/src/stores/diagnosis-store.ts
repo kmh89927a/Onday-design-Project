@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { CandidateArea, Coordinate, DiagnosisFilters, DiagnosisMode } from "@/lib/types";
+import type { DayStory } from "@/lib/insight/story";
 
 interface DiagnosisState {
   // Input
@@ -22,6 +23,9 @@ interface DiagnosisState {
   // ★ 거래유형/예산 토글 재필터용 통근 캐시 — real 진단의 prefilter 12개 풀(실 transit/자차 통근 보존,
   //   예산필터 전). 토글 시 이 풀을 재필터해 통근 열화·API 재호출 0. mock·재오픈 시 빈 배열(재실행 fallback).
   commutePool: CandidateArea[];
+  // 동네 하루 미리보기 세션 캐시 — candidateId → Gemini 스토리. 시트 close/reopen·탭 이동 시 재호출 0.
+  //   진단 스코프(맵 전체가 현재 진단 것)라 키=candidate.id 로 충분. setResult/reset 시 비움(다른 통근데이터 → 재생성).
+  stories: Record<string, DayStory>;
   isLoading: boolean;
   error: string | null;
 
@@ -34,6 +38,7 @@ interface DiagnosisState {
   setFilters: (filters: DiagnosisFilters) => void;
   setDeadlineDate: (date: string | null) => void;
   setResult: (id: string, candidates: CandidateArea[]) => void;
+  setStory: (candidateId: string, story: DayStory) => void;
   setCommutePool: (pool: CandidateArea[]) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -55,6 +60,7 @@ const initialState = {
   diagnosisId: null,
   candidates: [],
   commutePool: [],
+  stories: {},
   isLoading: false,
   error: null,
 };
@@ -78,8 +84,12 @@ export const useDiagnosisStore = create<DiagnosisState>((set) => ({
   setFilters: (filters) => set({ filters }),
   setDeadlineDate: (deadlineDate) => set({ deadlineDate }),
 
+  // 새 진단 결과 = 통근데이터 달라짐 → 옛 스토리 무효(stories 비움 → 재생성).
   setResult: (diagnosisId, candidates) =>
-    set({ diagnosisId, candidates, isLoading: false, error: null }),
+    set({ diagnosisId, candidates, stories: {}, isLoading: false, error: null }),
+
+  setStory: (candidateId, story) =>
+    set((s) => ({ stories: { ...s.stories, [candidateId]: story } })),
 
   setCommutePool: (commutePool) => set({ commutePool }),
 
