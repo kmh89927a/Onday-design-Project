@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { extractDayData } from "@/lib/insight/extract-day-data";
 import type { DayStory, StorySlot } from "@/lib/insight/story";
+import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import type { CandidateArea, DiagnosisMode } from "@/lib/types";
 
 // 동네 하루 미리보기 (Phase 4 UI) — 버튼 클릭 시 extractDayData → /api/insight → story 렌더.
-//   클릭 전엔 호출 안 함(비용·속도). 한 번 생성하면 상태에 보관(같은 동네 재요청 방지).
-//   ★ key={candidate.id} 로 마운트 → 동네 바뀌면 자연 초기화.
+//   클릭 전엔 호출 안 함(비용·속도).
+//   ★ Phase 5 세션 캐시 — 생성한 story 는 diagnosis-store 에 보관(candidate.id 키). 시트 close/reopen·
+//     탭 이동에도 재호출 0(Gemini 절약). 진단 스코프라 setResult/reset 시 비워짐(다른 통근데이터 → 재생성).
+//   ★ key={candidate.id} 유지(방어) — 캐시는 store 가 담당, 새로고침 시 소멸(의도).
 
 const SLOTS = [
   { key: "morning", emoji: "🚌", label: "아침" },
@@ -70,7 +73,8 @@ function DayPreviewSkeleton() {
   );
 }
 
-type Status = "idle" | "loading" | "done" | "error";
+// done 데이터(story)는 store, 생성 중 전이(loading/error)는 로컬. story 캐시 있으면 status 무관하게 표시.
+type Status = "idle" | "loading" | "error";
 
 interface DayPreviewProps {
   candidate: CandidateArea;
@@ -79,7 +83,9 @@ interface DayPreviewProps {
 
 export function DayPreview({ candidate, mode }: DayPreviewProps) {
   const [status, setStatus] = React.useState<Status>("idle");
-  const [story, setStory] = React.useState<DayStory | null>(null);
+  // ★ 세션 캐시 — 캐시된 story 가 있으면 재호출 없이 바로 렌더(시트 close/reopen 비용 0).
+  const story = useDiagnosisStore((s) => s.stories[candidate.id]) ?? null;
+  const setStory = useDiagnosisStore((s) => s.setStory);
 
   const generate = React.useCallback(async () => {
     setStatus("loading");
@@ -93,12 +99,12 @@ export function DayPreview({ candidate, mode }: DayPreviewProps) {
       if (!res.ok) throw new Error(String(res.status));
       const json = (await res.json()) as { story?: DayStory };
       if (!json.story) throw new Error("no story");
-      setStory(json.story);
-      setStatus("done");
+      setStory(candidate.id, json.story); // store 보관 → 캐시 hit 시 idle 스킵.
+      setStatus("idle"); // story 존재가 done 표시를 주도(아래 렌더 우선순위).
     } catch {
       setStatus("error"); // 503/502/400/네트워크 모두 graceful (크래시·빈 화면 금지).
     }
-  }, [candidate, mode]);
+  }, [candidate, mode, setStory]);
 
   return (
     <section aria-label="동네 하루 미리보기" className="space-y-s-3">
@@ -107,7 +113,7 @@ export function DayPreview({ candidate, mode }: DayPreviewProps) {
         <p className="text-caption font-bold text-ink-2">동네 하루 미리보기</p>
       </div>
 
-      {status === "idle" && (
+      {!story && status === "idle" && (
         <Button variant="outline" fullWidth onClick={generate}>
           AI로 이 동네 하루 미리보기 ✨
         </Button>
@@ -115,7 +121,7 @@ export function DayPreview({ candidate, mode }: DayPreviewProps) {
 
       {status === "loading" && <DayPreviewSkeleton />}
 
-      {status === "error" && (
+      {!story && status === "error" && (
         <div className="space-y-s-2 rounded-lg border border-card-border bg-surface px-s-4 py-s-3 text-center">
           <p className="text-body-sm text-ink-3">
             지금은 미리보기를 불러올 수 없어요
@@ -127,7 +133,7 @@ export function DayPreview({ candidate, mode }: DayPreviewProps) {
         </div>
       )}
 
-      {status === "done" && story && (
+      {story && (
         <ol className="space-y-s-3">
           {SLOTS.map(({ key, emoji, label }) => {
             const slot = story[key] as StorySlot | null;
