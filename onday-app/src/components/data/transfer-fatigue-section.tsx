@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { Badge, type BadgeProps } from "@/components/ui/badge";
 import {
   computeTransferFatigue,
   type TransferFatigue,
@@ -10,13 +11,16 @@ import type { CommuteInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 // 스트레스 지수 지표1 — 환승 피로도 표시. detail-sheet commuteExtra slot 에 inject(부부/싱글 공용).
-//   레벨은 라벨("낮음/보통/높음") + 색 토큰 + emoji 3중 표기(색 단독 의존 금지, 안전등급 규칙 답습).
-//   색은 status 토큰보다 muted·deep 한 fatigue 전용 토큰(흰 카드 위 가독성·앱 톤 융화, dark lighten).
+//   레벨은 라벨("낮음/보통/높음") 텍스트 + 색 배지 2중 표기(색 단독 의존 금지). "BEST 매칭" 배지 패턴 답습:
+//   Badge size="xs"(헤더 pill 동일) + soft bg + deep 텍스트(fatigue-* variant). "환승 N회·도보 Nm"은 본문 텍스트.
 
-const TONE_CLASS: Record<TransferFatigue["tone"], string> = {
-  success: "text-fatigue-low",
-  warning: "text-fatigue-medium",
-  danger: "text-fatigue-high",
+const TONE_VARIANT: Record<
+  TransferFatigue["tone"],
+  Extract<BadgeProps["variant"], `fatigue-${string}`>
+> = {
+  success: "fatigue-low",
+  warning: "fatigue-medium",
+  danger: "fatigue-high",
 };
 
 interface FatigueItem {
@@ -55,20 +59,23 @@ export function TransferFatigueSection({ items }: { items: FatigueItem[] }) {
             </span>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-body-sm text-ink">
-              <span className="font-bold">{fatigue.label}</span>
-              {fatigue.levelLabel ? (
-                <span
-                  className={cn("ml-s-2 font-bold", TONE_CLASS[fatigue.tone])}
-                >
-                  피로도 {fatigue.levelLabel} {fatigue.emoji}
-                </span>
-              ) : (
-                <span className="ml-s-2">{fatigue.emoji}</span>
-              )}
-            </p>
+            {fatigue.level === "none" ? (
+              // 직통 — 긍정 강조를 배지 하나로.
+              <Badge variant={TONE_VARIANT[fatigue.tone]} size="xs">
+                {fatigue.label}
+              </Badge>
+            ) : (
+              <p className="flex flex-wrap items-center gap-s-2 text-body-sm text-ink">
+                <span className="font-bold">{fatigue.label}</span>
+                {fatigue.levelLabel && (
+                  <Badge variant={TONE_VARIANT[fatigue.tone]} size="xs">
+                    피로도 {fatigue.levelLabel}
+                  </Badge>
+                )}
+              </p>
+            )}
             {fatigue.quip && (
-              <p className="text-caption text-ink-3">{fatigue.quip}</p>
+              <p className="mt-s-1 text-caption text-ink-3">{fatigue.quip}</p>
             )}
           </div>
         </div>
