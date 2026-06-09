@@ -28,8 +28,20 @@ export interface OdsayStation {
   y: number | string; // 위도(lat)
   stationName?: string;
 }
+/** subPath[].lane[] — 탑승 노선. 지하철=name/subwayCode, 버스=busNo. 도보 구간엔 없음. */
+export interface OdsayLane {
+  name?: string; // 노선명/호선 (지하철)
+  busNo?: string; // 버스 번호
+  subwayCode?: number; // 지하철 노선 코드
+}
 export interface OdsaySubPath {
   trafficType: number; // 1=지하철, 2=버스, 3=도보
+  // 스트레스 지수 P1 — 원응답 보유 필드(미추출이던 것). 전부 optional.
+  distance?: number; // 구간 이동 거리(m). 도보 구간이면 환승 도보거리.
+  sectionTime?: number; // 구간 소요시간(분)
+  lane?: OdsayLane[]; // 탑승 노선(지하철/버스만)
+  startName?: string; // 승차역 이름
+  endName?: string; // 하차역 이름
   passStopList?: { stations?: OdsayStation[] };
 }
 

@@ -1,4 +1,4 @@
-import type { Coordinate, CommuteInfo } from "@/lib/types";
+import type { Coordinate, CommuteInfo, RouteLine } from "@/lib/types";
 import type { OdsayPath, OdsayTransitResponse } from "./types";
 import { OdsayTransitError } from "./types";
 
@@ -11,6 +11,41 @@ function extractStationPath(path: OdsayPath): Coordinate[] {
   for (const sp of path.subPath ?? []) {
     for (const st of sp.passStopList?.stations ?? []) {
       out.push({ lat: Number(st.y), lng: Number(st.x) });
+    }
+  }
+  return out;
+}
+
+// ── 스트레스 지수 P1 — 룰 엔진(후속 P3)용 파생 데이터 추출. 전부 additive. ──
+
+/** 도보 구간(trafficType===3)의 distance 합 → 환승 도보 총거리(m). 없으면 0. */
+function sumTransferWalkMeters(path: OdsayPath): number {
+  let m = 0;
+  for (const sp of path.subPath ?? []) {
+    if (sp.trafficType === 3 && typeof sp.distance === "number") m += sp.distance;
+  }
+  return m;
+}
+
+/** 탑승 구간(지하철=1/버스=2)의 노선 목록 → RouteLine[] (쾌적도 룰 입력). */
+function extractRouteLines(path: OdsayPath): RouteLine[] {
+  const out: RouteLine[] = [];
+  for (const sp of path.subPath ?? []) {
+    if (sp.trafficType !== 1 && sp.trafficType !== 2) continue;
+    const lane = sp.lane?.[0];
+    const name = lane?.name ?? lane?.busNo;
+    if (name) out.push({ type: sp.trafficType === 1 ? "subway" : "bus", name });
+  }
+  return out;
+}
+
+/** 탑승 구간 거쳐가는 역 이름 목록(순서대로) — 착석확률/혼잡도 매칭 입력. */
+function extractRouteStations(path: OdsayPath): string[] {
+  const out: string[] = [];
+  for (const sp of path.subPath ?? []) {
+    if (sp.trafficType !== 1 && sp.trafficType !== 2) continue;
+    for (const st of sp.passStopList?.stations ?? []) {
+      if (st.stationName) out.push(st.stationName);
     }
   }
   return out;
@@ -42,6 +77,11 @@ export function mapOdsayResponseToCommuteInfo(
   const transfers = Math.max(0, subwayTransitCount + busTransitCount - 1);
   const stationPath = extractStationPath(path);
 
+  // 스트레스 지수 P1 — 룰 입력 파생 데이터(있을 때만 부착, 거짓값 금지).
+  const transferWalkMeters = sumTransferWalkMeters(path);
+  const routeLines = extractRouteLines(path);
+  const routeStations = extractRouteStations(path);
+
   return {
     time: totalTime,
     mode: "transit",
@@ -50,6 +90,10 @@ export function mapOdsayResponseToCommuteInfo(
     ...(stationPath.length >= 2 ? { routePath: stationPath } : {}),
     // 하루 미리보기 — 첫 탑승역 이름(있을 때만, 거짓값 금지). 기존 로직 무영향(필드 추가만).
     ...(firstStartStation ? { departureStation: firstStartStation } : {}),
+    // 스트레스 지수 P1 — 환승 도보거리/노선/역 목록(있을 때만). 룰·표시는 후속 P2~P4.
+    ...(transferWalkMeters > 0 ? { transferWalkMeters } : {}),
+    ...(routeLines.length ? { routeLines } : {}),
+    ...(routeStations.length ? { routeStations } : {}),
     // totalWalk / payment 는 현재 CommuteInfo 미보유 — 정보 손실 수용 (차후 모델 확장 시).
   } satisfies CommuteInfo;
 }
