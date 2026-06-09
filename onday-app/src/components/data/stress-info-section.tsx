@@ -53,9 +53,12 @@ interface Row {
 /** 라벨(옅게) + 값(진하게) 위계 한 줄. */
 function Metric({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1">
-      <p className="text-caption-xs text-ink-3">{label}</p>
-      <div className="text-body-sm text-ink">{children}</div>
+    // 라벨(옅게·작게, 고정폭 좌측) + 값(진하게, 우측 컬럼). 좁으면 값이 컬럼 안에서 wrap → 묶음 유지.
+    <div className="flex gap-s-2">
+      <p className="w-[4.75rem] shrink-0 pt-0.5 text-caption-xs text-ink-3">
+        {label}
+      </p>
+      <div className="min-w-0 flex-1 text-body-sm text-ink">{children}</div>
     </div>
   );
 }
@@ -77,7 +80,7 @@ function FatigueValue({ f }: { f: TransferFatigue }) {
           )}
         </p>
       )}
-      {f.quip && <p className="mt-s-1 text-caption text-ink-3">{f.quip}</p>}
+      {f.quip && <p className="mt-s-1 text-caption text-ink-2">{f.quip}</p>}
     </>
   );
 }
@@ -111,8 +114,11 @@ function CongestionValue({ c }: { c: RouteCongestion }) {
           </Badge>
         )}
       </p>
-      <p className="mt-s-1 text-caption text-ink-3">{c.label}</p>
-      <p className="text-caption-xs text-ink-3">{c.basisNote}</p>
+      <p className="mt-s-1 text-caption text-ink-2">{c.label}</p>
+      {/* basisNote — 부가설명 위계: 연한 회색 박스 + 더 옅은 작은 글씨(본문/멘트와 구분). */}
+      <p className="mt-s-1 w-fit max-w-full rounded-sm bg-muted px-s-2 py-0.5 text-caption-xs text-ink-3">
+        {c.basisNote}
+      </p>
     </>
   );
 }
