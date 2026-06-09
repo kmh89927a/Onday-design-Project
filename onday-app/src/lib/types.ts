@@ -18,6 +18,15 @@ export interface RouteLine {
   name: string; // 노선명/호선 (지하철) 또는 버스 번호
 }
 
+// 스트레스 지수 P1.5 — ODsay subPath 1개(탑승 구간) = segment 1개. (역+호선) 묶음 보존.
+//   routeStations/routeLines(flat)로는 환승 경로에서 역-호선 경계가 소실 → 혼잡도 매칭용 묶음.
+export interface RouteSegment {
+  line: RouteLine; // 이 구간 노선
+  from?: string; // 승차역 (ODsay startName)
+  to?: string; // 하차역 (ODsay endName)
+  stations: string[]; // 이 구간 거쳐가는 역 이름(순서대로)
+}
+
 export interface CommuteInfo {
   time: number; // minutes
   mode: CommuteMode;
@@ -34,6 +43,8 @@ export interface CommuteInfo {
   routeLines?: RouteLine[];
   // 경로 탑승 역 이름 목록(순서대로) — 착석확률/혼잡도 매칭 입력.
   routeStations?: string[];
+  // P1.5 — 탑승 구간별 (역+호선) 묶음. 환승 경로 혼잡도 매칭용(routeStations flat 보완).
+  routeSegments?: RouteSegment[];
 }
 
 export interface CandidateArea {
