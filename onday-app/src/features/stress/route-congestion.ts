@@ -13,9 +13,9 @@ export type CongestionLevel = "low" | "medium" | "high" | "veryHigh";
 
 // 혼잡도 % → 레벨/문구. 서울교통공사 정의: 좌석만 차면 ~34%, 100%=입석 포함 정원.
 const LEVELS: { level: CongestionLevel; min: number; label: string }[] = [
-  { level: "veryHigh", min: 150, label: "많이 혼잡해요, 각오하세요 😣" },
-  { level: "high", min: 130, label: "서서 가기 힘들 수 있어요" },
-  { level: "medium", min: 80, label: "출근길이 꽤 붐벼요" },
+  { level: "veryHigh", min: 150, label: "매우 혼잡해요 😣" },
+  { level: "high", min: 130, label: "서서 가기 힘들 수 있어요 😥" },
+  { level: "medium", min: 80, label: "출근길이 꽤 붐벼요 🚶" },
   { level: "low", min: 0, label: "비교적 여유로워요 😌" },
 ];
 
