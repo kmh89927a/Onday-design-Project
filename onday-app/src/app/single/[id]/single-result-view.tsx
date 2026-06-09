@@ -682,6 +682,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                 workplaces={workplaces}
                 lines={lines}
                 topRightSlot={mapModeToggle}
+                onMarkerClick={open}
               />
             </div>
 
