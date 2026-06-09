@@ -45,6 +45,8 @@ import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
 
 import { BudgetChipOptions } from "./budget-chip-options";
+import { TransferFatigueSection } from "@/components/data/transfer-fatigue-section";
+
 import { CommuteChipOptions } from "./commute-chip-options";
 import { SortControl } from "./sort-control";
 import { TimeChipOptions } from "./time-chip-options";
@@ -632,10 +634,18 @@ export function ResultContent({
             />
           }
           commuteExtra={
-            <TimeSlotSelector
-              value={currentDepartureTime}
-              onChange={handleTimeSlotChange}
-            />
+            <>
+              <TransferFatigueSection
+                items={[
+                  { tag: "A", commute: selectedCandidate.commuteA },
+                  { tag: "B", commute: selectedCandidate.commuteB },
+                ]}
+              />
+              <TimeSlotSelector
+                value={currentDepartureTime}
+                onChange={handleTimeSlotChange}
+              />
+            </>
           }
           dayPreview={
             <DayPreview
