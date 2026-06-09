@@ -1,8 +1,9 @@
-import congestionData from "@/lib/data/congestion-index.json";
+import congestionData from "@/lib/data/congestion-commute.json";
 
-// 스트레스 지수 지표2 — 지하철 혼잡도 조회 골격 (safety-index getSafetyByGu 패턴 답습).
-//   ★ 여기선 "조회"만. 룰 계산(착석확률·쾌적도 점수화)은 2-B, 표시는 2-C.
-//   소스: 서울교통공사 1~8호선(congestion-index.json). 미포함 노선·역 → no_data(날조 금지).
+// 스트레스 지수 지표2 — 지하철 혼잡도 조회 (safety-index getSafetyByGu 패턴 답습).
+//   ★ 여기선 "조회"만. 룰 계산은 2-B(route-congestion), 표시는 2-C.
+//   소스: 서울교통공사 1~8호선 출근 윈도 경량본(congestion-commute.json — 6~10시, 클라 번들 경량).
+//   미포함 노선·역·출근 윈도 밖 시각 → no_data(날조 금지). 전 시간대는 congestion-index.json.
 
 interface CongestionData {
   _meta: { times: string[]; lines: string[]; dayType: string };
