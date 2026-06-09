@@ -50,6 +50,14 @@ const LEVEL_META: Record<
   high: { levelLabel: "높음", emoji: "🔴", tone: "danger" },
 };
 
+// 다정한 큐레이터 멘트 — 거리 데이터와 모순 없게(낮음에 "힘들어요" 금지). 착석/혼잡도 언급 금지(지표2 영역).
+const LEVEL_QUIP: Record<FatigueLevel, string> = {
+  none: "환승 없이 한 번에! 출근길이 편안해요 😌",
+  low: "환승은 있지만 동선이 짧아 부담 없어요 👍",
+  medium: "적당한 환승 거리예요",
+  high: "환승 동선이 길어 체력 소모가 있어요",
+};
+
 function findNotoriousStation(routeStations?: string[]): string | undefined {
   if (!routeStations?.length) return undefined;
   return NOTORIOUS_TRANSFER_STATIONS.find((s) => routeStations.includes(s));
@@ -73,6 +81,7 @@ export function computeTransferFatigue(
       label: "환승 없이 한 번에",
       emoji: "🟢",
       tone: "success",
+      quip: LEVEL_QUIP.none,
     };
   }
 
@@ -90,8 +99,12 @@ export function computeTransferFatigue(
 
   const level = levelFromMeters(walkMeters);
   const meta = LEVEL_META[level];
+  // 막장환승 멘트는 높음일 때만 우선(거리와 모순 없음). 그 외엔 레벨별 멘트.
   const notorious =
-    level === "low" ? undefined : findNotoriousStation(commute.routeStations);
+    level === "high" ? findNotoriousStation(commute.routeStations) : undefined;
+  const quip = notorious
+    ? `${notorious} 환승은 꽤 걸어요 🚶`
+    : LEVEL_QUIP[level];
 
   return {
     level,
@@ -101,6 +114,6 @@ export function computeTransferFatigue(
     levelLabel: meta.levelLabel,
     emoji: meta.emoji,
     tone: meta.tone,
-    ...(notorious ? { quip: `${notorious} 환승은 꽤 걸어요 🚶` } : {}),
+    quip,
   };
 }
