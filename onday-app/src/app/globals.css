@@ -43,6 +43,11 @@
     --danger: 0 84% 60%;
     --danger-soft: 0 86% 96%;
 
+    /* ───── 환승 피로도 배지 텍스트색 (soft bg 위 deep 톤 — grade-a~d 패턴 답습) ───── */
+    --fatigue-low: 160 50% 32%;
+    --fatigue-medium: 28 78% 40%;
+    --fatigue-high: 0 62% 48%;
+
     /* ───── Safety grades (letter+label+color 3중 표기 필수) ───── */
     --safety-a: 160 84% 39%;
     --safety-b: 217 91% 60%;

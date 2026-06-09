@@ -37,6 +37,10 @@ const badgeVariants = cva(
         "grade-b": "bg-[hsl(213_97%_87%)] text-[hsl(224_76%_48%)]",
         "grade-c": "bg-[hsl(48_96%_89%)] text-[hsl(35_92%_33%)]",
         "grade-d": "bg-[hsl(0_93%_94%)] text-[hsl(0_74%_42%)]",
+        // 환승 피로도 — soft bg + deep 텍스트(grade-a~d 패턴). 은은하게, 쨍하지 않게.
+        "fatigue-low": "bg-success-soft text-fatigue-low",
+        "fatigue-medium": "bg-warning-soft text-fatigue-medium",
+        "fatigue-high": "bg-danger-soft text-fatigue-high",
       },
       size: {
         sm: "px-s-2 py-s-1 text-caption-xs [&>svg]:size-3",

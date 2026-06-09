@@ -71,6 +71,11 @@ const config: Config = {
           c: "hsl(var(--safety-c))",
           d: "hsl(var(--safety-d))",
         },
+        fatigue: {
+          low: "hsl(var(--fatigue-low))",
+          medium: "hsl(var(--fatigue-medium))",
+          high: "hsl(var(--fatigue-high))",
+        },
         oauth: {
           kakao: "#FEE500",
           "kakao-ink": "#191600",
