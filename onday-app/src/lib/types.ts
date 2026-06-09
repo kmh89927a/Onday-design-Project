@@ -12,6 +12,12 @@ export interface Coordinate {
   lng: number;
 }
 
+// 스트레스 지수 P1 — 경로상 탑승 노선(지하철 호선/버스 번호). 쾌적도 룰 입력.
+export interface RouteLine {
+  type: "subway" | "bus"; // ODsay trafficType 1=subway, 2=bus
+  name: string; // 노선명/호선 (지하철) 또는 버스 번호
+}
+
 export interface CommuteInfo {
   time: number; // minutes
   mode: CommuteMode;
@@ -21,6 +27,13 @@ export interface CommuteInfo {
   routePath?: Coordinate[];
   // 하루 미리보기 — 첫 탑승역 이름(ODsay firstStartStation). transit 실데이터만, 없으면 생략.
   departureStation?: string;
+  // ── 스트레스 지수 P1 (ODsay transit 실데이터만, 없으면 생략. 룰 엔진·표시는 후속 P2~P4) ──
+  // 환승 시 도보 이동 거리 합(m) — 계단/환승 스트레스 룰 입력.
+  transferWalkMeters?: number;
+  // 경로 탑승 노선 목록 — 쾌적도 룰 입력.
+  routeLines?: RouteLine[];
+  // 경로 탑승 역 이름 목록(순서대로) — 착석확률/혼잡도 매칭 입력.
+  routeStations?: string[];
 }
 
 export interface CandidateArea {
