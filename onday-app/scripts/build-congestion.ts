@@ -14,6 +14,12 @@ import { join } from "node:path";
 
 const SRC = join(process.cwd(), "data-raw/subway.csv");
 const OUT = join(process.cwd(), "src/lib/data/congestion-index.json");
+// 2-C 경량 — 출근 윈도(6~10시 30분단위)만 추린 런타임 파일. 클라 번들 경량화(full 39칸 → 9칸).
+const OUT_COMMUTE = join(process.cwd(), "src/lib/data/congestion-commute.json");
+const COMMUTE_TIMES = [
+  "6시00분", "6시30분", "7시00분", "7시30분", "8시00분",
+  "8시30분", "9시00분", "9시30분", "10시00분",
+];
 const RETRIEVED_AT = new Date().toISOString().slice(0, 10);
 const DAY_TYPE = "평일"; // 통근 기준
 const META_COLS = 5; // 요일구분/호선/역번호/출발역/상하구분
@@ -104,6 +110,34 @@ const out = {
 writeFileSync(OUT, JSON.stringify(out, null, 2) + "\n");
 if (!existsSync(OUT)) throw new Error("congestion-index.json 쓰기 실패");
 
+// ── 경량 런타임 파일(출근 윈도만) ─────────────────────────────
+//   full 파일은 빌드 참조용. 앱(2-C)은 이 경량 파일을 import → 클라 번들 경량화.
+const commuteIdx = COMMUTE_TIMES.map((t) => times.indexOf(t)).filter((i) => i >= 0);
+const commuteTimes = commuteIdx.map((i) => times[i]);
+const byLineCommute: typeof byLine = {};
+for (const [line, stations] of Object.entries(byLine)) {
+  byLineCommute[line] = {};
+  for (const [st, dirs] of Object.entries(stations)) {
+    byLineCommute[line][st] = {};
+    for (const [d, series] of Object.entries(dirs)) {
+      byLineCommute[line][st][d] = commuteIdx.map((i) => series[i]);
+    }
+  }
+}
+const outCommute = {
+  _meta: {
+    ...out._meta,
+    description:
+      "출근 윈도(6~10시) 혼잡도 — congestion-index.json 경량 런타임본(앱 import용). 2-C 클라 번들 경량화.",
+    times: commuteTimes,
+    note: `출근 시간대(${commuteTimes[0]}~${commuteTimes[commuteTimes.length - 1]})만 추림. 그 외 시각은 no_data(전 시간대는 congestion-index.json).`,
+    generatedFrom: "scripts/build-congestion.ts (commute window)",
+  },
+  byLine: byLineCommute,
+};
+writeFileSync(OUT_COMMUTE, JSON.stringify(outCommute, null, 2) + "\n");
+if (!existsSync(OUT_COMMUTE)) throw new Error("congestion-commute.json 쓰기 실패");
+
 // ── 콘솔 리포트 ───────────────────────────────────────────────
 console.log(`\n✅ congestion-index.json — ${DAY_TYPE} ${rowsUsed}행 사용`);
 console.log(`   시간대 ${N}개: ${times[0]} ~ ${times[N - 1]}`);
@@ -112,6 +146,7 @@ for (const l of lineList) {
   console.log(`     ${l}: 역 ${Object.keys(byLine[l]).length}개`);
 }
 console.log(`   고유 역-방향 시리즈 ${rowsUsed}개, null 셀 ${nullCells}개`);
+console.log(`   ↳ 경량(출근 윈도 ${commuteTimes.length}칸): congestion-commute.json — ${commuteTimes[0]}~${commuteTimes[commuteTimes.length - 1]}`);
 if (duplicates.length) {
   console.log(`   ⚠️ 중복 (역+방향) ${duplicates.length}건: ${duplicates.slice(0, 10).join(", ")}`);
 }

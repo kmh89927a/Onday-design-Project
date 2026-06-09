@@ -6,7 +6,7 @@ import { AlertCircle, ChevronLeft, FileDown, Home } from "lucide-react";
 
 import { SafetyCard } from "@/components/card/safety-card";
 import { LegendBar } from "@/components/data/legend-bar";
-import { TransferFatigueSection } from "@/components/data/transfer-fatigue-section";
+import { StressInfoSection } from "@/components/data/stress-info-section";
 import { MapCanvas } from "@/components/map/map-canvas";
 import type { MapWorkplace, MapLine } from "@/components/map/map-canvas";
 import { DetailSheet } from "@/components/sheet/detail-sheet";
@@ -801,8 +801,9 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                   />
                 }
                 commuteExtra={
-                  <TransferFatigueSection
+                  <StressInfoSection
                     items={[{ tag: "A", commute: selectedCandidate.commuteA }]}
+                    departureTime={currentDepartureTime}
                   />
                 }
                 dayPreview={
