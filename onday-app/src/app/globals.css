@@ -43,6 +43,11 @@
     --danger: 0 84% 60%;
     --danger-soft: 0 86% 96%;
 
+    /* ───── 환승 피로도 단어색 (status 토큰보다 muted·deep — 흰 카드 위 가독성+융화) ───── */
+    --fatigue-low: 160 50% 32%;
+    --fatigue-medium: 28 78% 40%;
+    --fatigue-high: 0 62% 48%;
+
     /* ───── Safety grades (letter+label+color 3중 표기 필수) ───── */
     --safety-a: 160 84% 39%;
     --safety-b: 217 91% 60%;
@@ -119,6 +124,11 @@
     --primary-pastel: 222 30% 18%;
     --primary-soft: 222 28% 14%;
     --primary-deep: 221 83% 50%;
+
+    /* 환승 피로도 — 어두운 배경에선 lighten(가독성) */
+    --fatigue-low: 158 55% 58%;
+    --fatigue-medium: 33 85% 62%;
+    --fatigue-high: 0 75% 70%;
   }
 
   /* ───── Base resets ───── */

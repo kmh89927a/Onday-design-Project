@@ -11,11 +11,12 @@ import { cn } from "@/lib/utils";
 
 // 스트레스 지수 지표1 — 환승 피로도 표시. detail-sheet commuteExtra slot 에 inject(부부/싱글 공용).
 //   레벨은 라벨("낮음/보통/높음") + 색 토큰 + emoji 3중 표기(색 단독 의존 금지, 안전등급 규칙 답습).
+//   색은 status 토큰보다 muted·deep 한 fatigue 전용 토큰(흰 카드 위 가독성·앱 톤 융화, dark lighten).
 
 const TONE_CLASS: Record<TransferFatigue["tone"], string> = {
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
+  success: "text-fatigue-low",
+  warning: "text-fatigue-medium",
+  danger: "text-fatigue-high",
 };
 
 interface FatigueItem {
