@@ -305,7 +305,7 @@ export default function DeadlinePage() {
               <ul className="space-y-s-2">
                 {listings.map((listing) => (
                   <li key={listing.id}>
-                    <ListingCard listing={listing} />
+                    <ListingCard listing={listing} mode={mode} />
                   </li>
                 ))}
               </ul>
