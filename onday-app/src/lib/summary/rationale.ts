@@ -5,6 +5,12 @@ import type { SummaryFacts } from "./extract-summary";
 // 30분 요약 (Phase 1) — SummaryFacts → Gemini "이 동네 추천 이유" 한 줄. story.ts 답습.
 // ★ 거짓 방지(하루 미리보기 원칙 그대로): 주어진 데이터(통근·점수·등급·시세)만,
 //   미화·창작 금지. 안전등급 낮으면(C·D) "안전/안심" 금지. 데이터 없는 항목 언급 금지.
+//
+// ★ INFRA-005(#4) "AI 기반 동네 추천 요약" 실구현 (코드=SSoT 정합):
+//   명세 neighborhoodSummarySchema{summary, commuteAnalysis, lifestyleMatch}(3필드)를
+//   카드 UI 에 맞춰 단일 rationale 로 통합(통근·생활점수·안전을 한 문장에) — 1인 MVP 단순화.
+//   provider 분기(AI_PROVIDER)는 GA 이연 — GEMINI_MODEL env 교체로 CON-14 충족(타 provider 키 부재).
+//   "맞춤 인사이트"(§6.6)는 하루 미리보기(/api/insight)로 별도 구현됨.
 
 /** 추천 이유 출력 — 단일 텍스트(따뜻+간결). */
 export const rationaleSchema = z.object({
