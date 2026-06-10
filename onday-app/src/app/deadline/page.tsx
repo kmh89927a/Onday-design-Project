@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Sparkles } from "lucide-react";
 
 import { DDayCounter } from "@/components/deadline/dday-counter";
 import { ListingCard } from "@/components/deadline/listing-card";
 import { MiniCalendar } from "@/components/deadline/mini-calendar";
+import { SummaryCardGrid } from "@/components/deadline/summary-card-grid";
 import { TimelineStep } from "@/components/deadline/timeline-step";
 import { AppHeader } from "@/components/layout/app-header";
 import { MapCanvas } from "@/components/map/map-canvas";
@@ -22,8 +23,17 @@ import {
 import { markerLabel } from "@/features/diagnosis/result-utils";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import { buildMockListings } from "@/lib/mocks/deadline/listings";
+import {
+  buildSummaryCardBase,
+  extractSummaryFacts,
+  selectTopCandidates,
+} from "@/lib/summary/extract-summary";
+import { generateFallbackRationale } from "@/lib/summary/rationale";
+import type { RationaleResponse, SummaryCardDTO } from "@/lib/types/deadline";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
+
+type SummaryStatus = "idle" | "loading" | "error";
 
 const MIN_DAYS_FROM_NOW = 7; // wiki/concepts/deadline-mode.md — D+7 미만 차단
 
@@ -54,7 +64,55 @@ export default function DeadlinePage() {
   const deadlineDate = useDiagnosisStore((s) => s.deadlineDate);
   const setDeadlineDate = useDiagnosisStore((s) => s.setDeadlineDate);
   const candidates = useDiagnosisStore((s) => s.candidates);
+  const mode = useDiagnosisStore((s) => s.mode);
+  const filters = useDiagnosisStore((s) => s.filters);
+  // ★ 30분 요약 세션 캐시 — 생성한 Top3 요약 보관(재클릭/탭 재방문 시 재호출 0, day-preview stories 답습).
+  const summary = useDiagnosisStore((s) => s.summary);
+  const setSummary = useDiagnosisStore((s) => s.setSummary);
   const pushToast = useUIStore((s) => s.pushToast);
+
+  // 생성 중 전이(loading/error)는 로컬, done 데이터(summary)는 store 캐시 — day-preview 패턴.
+  const [summaryStatus, setSummaryStatus] =
+    React.useState<SummaryStatus>("idle");
+
+  // "30분 요약" — Top3 후보별 rationale 을 /api/summary 병렬 호출(route 방식, CLAUDE.md 10초 한도).
+  //   ★ 카드 결정값(시세·통근·네이버URL)은 클라에서 결정(buildSummaryCardBase), route 는 AI rationale 만.
+  //   ★ route/네트워크 실패해도 룰 fallback 으로 대체 → 빈 카드 0.
+  const generateSummary = React.useCallback(async () => {
+    setSummaryStatus("loading");
+    try {
+      const dealType = filters.dealType;
+      const top3 = selectTopCandidates(candidates);
+      const cards: SummaryCardDTO[] = await Promise.all(
+        top3.map(async (c, i) => {
+          const facts = extractSummaryFacts(c, mode, dealType);
+          let rationale: string;
+          try {
+            const res = await fetch("/api/summary", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(facts),
+            });
+            if (!res.ok) throw new Error(String(res.status));
+            rationale = ((await res.json()) as RationaleResponse).rationale;
+          } catch {
+            // route 미도달/네트워크 실패 → 클라 룰 fallback(빈 카드 방지).
+            rationale = generateFallbackRationale(facts);
+          }
+          return { ...buildSummaryCardBase(c, i + 1, dealType), rationale };
+        }),
+      );
+      setSummary({
+        cards,
+        generatedAt: new Date().toISOString(),
+        totalCandidates: candidates.length,
+      });
+      setSummaryStatus("idle");
+    } catch {
+      // 예기치 못한 전체 실패만 error(개별 카드는 위에서 fallback 처리).
+      setSummaryStatus("error");
+    }
+  }, [candidates, mode, filters.dealType, setSummary]);
 
   const [draft, setDraft] = React.useState<string>(
     deadlineDate ? deadlineDate.slice(0, 10) : todayPlus(30),
@@ -255,6 +313,43 @@ export default function DeadlinePage() {
                 매물 정보는 예시이며, 클릭 시 네이버 부동산 검색으로 이동해요.
               </p>
             </div>
+          )}
+        </section>
+
+        {/* REQ-FUNC-018 — 30분 요약(Top3 동네 비교). 기존 타임라인·급매 매물과 별도 섹션. */}
+        <section
+          aria-label="30분 요약"
+          className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card"
+        >
+          <div className="mb-s-3 flex items-center justify-between">
+            <h2 className="text-title font-bold text-ink">30분 요약</h2>
+            {summary && (
+              <span className="text-caption text-ink-3">
+                Top {summary.cards.length} 동네
+              </span>
+            )}
+          </div>
+
+          {candidates.length === 0 ? (
+            <p className="py-s-4 text-center text-body-sm text-ink-3">
+              진단을 먼저 하면 Top 3 동네를 30분 만에 비교할 수 있어요.
+            </p>
+          ) : !summary && summaryStatus === "idle" ? (
+            <Button
+              fullWidth
+              variant="outline"
+              onClick={generateSummary}
+              leading={<Sparkles />}
+            >
+              AI로 Top 3 동네 30분 요약 보기
+            </Button>
+          ) : (
+            <SummaryCardGrid
+              cards={summary?.cards ?? []}
+              isLoading={summaryStatus === "loading"}
+              error={summaryStatus === "error"}
+              onRetry={generateSummary}
+            />
           )}
         </section>
       </div>
