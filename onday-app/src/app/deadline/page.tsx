@@ -22,6 +22,7 @@ import {
 } from "@/features/deadline/timeline-builder";
 import { markerLabel } from "@/features/diagnosis/result-utils";
 import { latLngToPixel } from "@/lib/coordinate-transform";
+import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
 import { buildMockListings } from "@/lib/mocks/deadline/listings";
 import {
   buildSummaryCardBase,
@@ -229,6 +230,20 @@ export default function DeadlinePage() {
     coordinate: c.coordinate,
     rank: i + 1,
   }));
+  // 동네 id → 점수 순위(마커 rank 동일). 매물 카드 배지가 같은 동네 마커 숫자와 매칭.
+  const rankById = new Map(candidates.map((c, i) => [c.id, i + 1]));
+
+  // REQ-FUNC-016 — 마커(동네) 클릭 → 그 동네 네이버 부동산 아웃링크(좌표 기반, 새 창).
+  //   동네 단위라 매물 특정 X(매물별 네이버는 각 카드). dealType 은 필터값(없으면 생략).
+  const handleMarkerClick = (id: string) => {
+    const c = candidates.find((cand) => cand.id === id);
+    if (!c) return;
+    const url = buildNaverRealEstateUrl(
+      c.coordinate,
+      filters.dealType ? { dealType: filters.dealType } : {},
+    );
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <main className="flex min-h-screen flex-col bg-bg">
@@ -301,11 +316,19 @@ export default function DeadlinePage() {
             </p>
           ) : (
             <div className="space-y-s-3">
-              <MapCanvas markers={markers} height={200} />
+              <MapCanvas
+                markers={markers}
+                height={200}
+                onMarkerClick={handleMarkerClick}
+              />
               <ul className="space-y-s-2">
                 {listings.map((listing) => (
                   <li key={listing.id}>
-                    <ListingCard listing={listing} mode={mode} />
+                    <ListingCard
+                      listing={listing}
+                      mode={mode}
+                      rank={rankById.get(listing.neighborhoodId)}
+                    />
                   </li>
                 ))}
               </ul>

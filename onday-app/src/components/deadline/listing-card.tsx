@@ -12,14 +12,17 @@ import type { ListingItem } from "@/lib/types/deadline";
 // 학군 PR2 — 인근 초등학교 한 줄 + 네이버 검색 아웃링크 (REQ-FUNC-018 "학교" 충족).
 //   ★ 카드를 div 로 감싸고 부동산/학교 두 아웃링크를 형제로 둠 (<a> 중첩 금지).
 //   ★ 싱글 모드(#55 정합): 학군 숨김 → 학교 줄 미렌더(부부만 표시). 30분 요약 카드와 동일 원칙.
+//   ★ rank 배지 = 지도 마커 숫자(동네 점수 순위)와 시각 일관(회색 원+흰 숫자, map-marker 답습) →
+//     매물↔마커 매칭(같은 동네 매물끼리 같은 순위). 1 동네 : 1~3 매물.
 // 보안: target="_blank" + rel="noopener noreferrer" (window.opener 차단 + Referer 미전송).
 
 interface ListingCardProps {
   listing: ListingItem;
   mode: DiagnosisMode;
+  rank?: number; // 동네 점수 순위(지도 마커 숫자와 매칭). 없으면 배지 미표시.
 }
 
-export function ListingCard({ listing, mode }: ListingCardProps) {
+export function ListingCard({ listing, mode, rank }: ListingCardProps) {
   // 좌표 기반 new.land + 거래유형(매매/전세 → A1/B1) + 아파트.
   const url = buildNaverRealEstateUrl(listing.coordinate, {
     dealType: listing.dealType === "매매" ? "maemae" : "jeonse",
@@ -34,9 +37,18 @@ export function ListingCard({ listing, mode }: ListingCardProps) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`${listing.areaName} ${listing.dealType} ${listing.priceLabel}, 네이버 부동산에서 보기 (새 창)`}
+        aria-label={`${rank ? `추천 ${rank}위 동네 ` : ""}${listing.areaName} ${listing.dealType} ${listing.priceLabel}, 네이버 부동산에서 보기 (새 창)`}
         className="flex items-center gap-s-3 px-s-4 py-s-3 transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
       >
+        {/* 지도 마커 숫자(동네 순위)와 시각 일관 — 회색 원 + 흰 숫자 (map-marker 답습). */}
+        {rank != null && (
+          <span
+            aria-hidden
+            className="flex size-6 shrink-0 items-center justify-center rounded-full bg-ink-3 text-[11px] font-extrabold text-white"
+          >
+            {rank}
+          </span>
+        )}
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-s-2">
             <p className="truncate text-body-sm font-bold text-ink">
