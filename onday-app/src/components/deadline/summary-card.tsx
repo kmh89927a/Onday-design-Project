@@ -4,10 +4,12 @@ import { ArrowUpRight, GraduationCap, Sparkles } from "lucide-react";
 
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import type { DiagnosisMode } from "@/lib/types";
 import type { SummaryCardDTO } from "@/lib/types/deadline";
 
 // UI-011 — 30분 요약 카드(동네 단위, Top3 비교). REQ-FUNC-018 — 항목 ≥6개/카드.
-//   항목: ①동네명 ②예상 시세 ③직장A 통근 ④직장B 통근 ⑤생활 점수 ⑥추천 이유 ⑦네이버 버튼 (+⑧학교 선택)
+//   항목: ①동네명 ②예상 시세 ③내 통근 ④배우자 통근(부부만) ⑤생활 점수 ⑥추천 이유 ⑦네이버 버튼 (+⑧학교: 부부만)
+//   ★ 싱글 모드(#55 정합): 배우자 통근·학군 숨김 → 6필드(①②③⑤⑥⑦)로 ≥6 유지.
 //   ★ listing-card 네이버 아웃링크 + candidate-card 점수 tier(색 단독 금지 — 숫자+라벨 칩) 답습.
 //   ★ rationale 은 Phase 1 이 비어있지 않음 보장(AI 또는 룰 fallback) → 빈 카드 0.
 
@@ -45,9 +47,11 @@ function InfoRow({ label, value }: InfoRowProps) {
 
 interface SummaryCardProps {
   card: SummaryCardDTO;
+  mode: DiagnosisMode;
 }
 
-export function SummaryCard({ card }: SummaryCardProps) {
+export function SummaryCard({ card, mode }: SummaryCardProps) {
+  const isCouple = mode === "couple";
   const tier = scoreTier(card.livingScore);
   const rankVariant = RANK_VARIANT[card.rank] ?? "neutral";
   const ariaLabel = `${card.rank}순위 추천 동네 ${card.candidateName}, 생활 점수 ${card.livingScore}점`;
@@ -88,9 +92,10 @@ export function SummaryCard({ card }: SummaryCardProps) {
 
       <div className="space-y-s-1">
         <InfoRow label="예상 시세" value={card.estimatedPrice} />
-        <InfoRow label="직장 A 통근" value={card.commuteToA} />
-        <InfoRow label="직장 B 통근" value={card.commuteToB} />
-        {card.schoolDistrict && (
+        <InfoRow label="내 통근" value={card.commuteToA} />
+        {/* 배우자 통근·인근 학교 = 부부 모드만 (싱글은 #55 학군 숨김 + 배우자 없음). */}
+        {isCouple && <InfoRow label="배우자 통근" value={card.commuteToB} />}
+        {isCouple && card.schoolDistrict && (
           <div className="flex items-center justify-between gap-s-2 text-body-sm">
             <span className="flex shrink-0 items-center gap-1 text-ink-3">
               <GraduationCap aria-hidden className="size-3.5" />

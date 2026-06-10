@@ -346,6 +346,7 @@ export default function DeadlinePage() {
           ) : (
             <SummaryCardGrid
               cards={summary?.cards ?? []}
+              mode={mode}
               isLoading={summaryStatus === "loading"}
               error={summaryStatus === "error"}
               onRetry={generateSummary}
