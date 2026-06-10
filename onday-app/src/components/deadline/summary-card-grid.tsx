@@ -4,6 +4,7 @@ import { RotateCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { DiagnosisMode } from "@/lib/types";
 import type { SummaryCardDTO } from "@/lib/types/deadline";
 
 import { SummaryCard } from "./summary-card";
@@ -38,6 +39,7 @@ function SummaryCardSkeleton() {
 
 interface SummaryCardGridProps {
   cards: SummaryCardDTO[];
+  mode: DiagnosisMode; // 싱글/부부 — 카드의 배우자 통근·학군 조건부 표시.
   isLoading?: boolean;
   error?: boolean;
   onRetry?: () => void;
@@ -45,6 +47,7 @@ interface SummaryCardGridProps {
 
 export function SummaryCardGrid({
   cards,
+  mode,
   isLoading,
   error,
   onRetry,
@@ -79,7 +82,7 @@ export function SummaryCardGrid({
   return (
     <div className={GRID_CLASS}>
       {cards.map((card) => (
-        <SummaryCard key={card.candidateId} card={card} />
+        <SummaryCard key={card.candidateId} card={card} mode={mode} />
       ))}
     </div>
   );
