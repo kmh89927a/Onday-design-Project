@@ -176,15 +176,15 @@ export function DetailSheet({
                       {c.tag}
                     </span>
                     <div className="min-w-0 flex-1">
-                      {/* 부부 — 누구 직장인지 보조 라벨(주소가 메인, 라벨은 보조). 싱글은 미설정. */}
-                      {c.who && (
-                        <p className="text-caption-xs font-bold text-ink-2">
-                          {c.who}
+                      {/* 부부 = "내 직장"/"배우자 직장"이 제목(주소는 보조). 싱글 = 주소가 제목. */}
+                      <p className="truncate text-body-sm font-bold text-ink">
+                        {c.who ?? c.dest}
+                      </p>
+                      {c.who && c.dest && (
+                        <p className="truncate text-caption text-ink-3">
+                          {c.dest}
                         </p>
                       )}
-                      <p className="truncate text-body-sm font-bold text-ink">
-                        {c.dest}
-                      </p>
                       {c.detail && (
                         <p className="text-caption text-ink-3">{c.detail}</p>
                       )}
