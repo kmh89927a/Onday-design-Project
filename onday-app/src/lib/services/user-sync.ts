@@ -7,6 +7,7 @@ import type { AuthProviderType } from "@/lib/types/user";
 // RLS off(DB-007 RLS 이연) 상태라 Prisma(postgres role)로 직접 write.
 export async function syncUserFromAuth(user: User): Promise<void> {
   const rawProvider = user.app_metadata?.provider;
+  // ★ 네이버 로그인은 GA 이연(버튼 제거) — naver 분기는 재개 대비 보존.
   const authProvider: AuthProviderType =
     rawProvider === "naver" ? "naver" : "kakao";
 

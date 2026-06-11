@@ -9,6 +9,7 @@ import { useSessionStore, type SessionUser } from "@/stores/session";
 
 function toSessionUser(user: User): SessionUser {
   const meta = user.user_metadata ?? {};
+  // ★ 네이버 로그인은 GA 이연(버튼 제거) — naver 분기는 재개 대비 보존.
   const provider = user.app_metadata?.provider === "naver" ? "naver" : "kakao";
   const nickname =
     meta.name ?? meta.nickname ?? meta.full_name ?? user.email?.split("@")[0] ?? "사용자";
