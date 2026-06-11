@@ -16,12 +16,14 @@ import { cn } from "@/lib/utils";
 // 패턴 A — controlled props 유지
 //   OAuthButton / Button은 props만 받고, store 연결은 본 LoginForm에서만
 //   ★ W1-2: IS_MOCK_AUTH(=false) 시 카카오 = 실 supabase.auth.signInWithOAuth →
-//     카카오 redirect → /auth/callback 복귀. 네이버는 #22 이연("준비 중" 토스트).
+//     카카오 redirect → /auth/callback 복귀.
 //     mock-auth 모드는 기존 즉시 setUser + 라우팅 유지.
+//   ★ 네이버 로그인 = GA 이연 — 버튼/핸들러 제거. 카카오 + 게스트 + 심사관으로 완결.
+//     (콜백·user-sync·session-bridge 의 naver 분기는 재개 대비 보존.)
 
 const MOCK_LATENCY_MS = 400;
 
-type AuthInFlight = "kakao" | "naver" | "guest" | null;
+type AuthInFlight = "kakao" | "guest" | null;
 
 export function LoginForm() {
   const router = useRouter();
@@ -31,27 +33,17 @@ export function LoginForm() {
   const pushToast = useUIStore((s) => s.pushToast);
   const [inFlight, setInFlight] = React.useState<AuthInFlight>(null);
 
-  const handleOAuth = async (provider: "kakao" | "naver") => {
-    setInFlight(provider);
+  const handleKakao = async () => {
+    setInFlight("kakao");
     try {
       if (IS_MOCK_AUTH) {
         await new Promise((resolve) => setTimeout(resolve, MOCK_LATENCY_MS));
         setUser({
           id: MOCK_USER.id,
           nickname: MOCK_USER.email.split("@")[0],
-          provider,
+          provider: "kakao",
         });
         router.push("/diagnosis");
-        return;
-      }
-
-      // 네이버는 #22 이연 — 카카오 패턴 복제 예정. 크래시 대신 안내.
-      if (provider === "naver") {
-        pushToast({
-          variant: "default",
-          message: "네이버 로그인은 준비 중이에요. 카카오로 시작해 주세요.",
-        });
-        setInFlight(null);
         return;
       }
 
@@ -135,15 +127,9 @@ export function LoginForm() {
 
       <OAuthButton
         provider="kakao"
-        onClick={() => handleOAuth("kakao")}
+        onClick={handleKakao}
         loading={inFlight === "kakao"}
         disabled={isBusy && inFlight !== "kakao"}
-      />
-      <OAuthButton
-        provider="naver"
-        onClick={() => handleOAuth("naver")}
-        loading={inFlight === "naver"}
-        disabled={isBusy && inFlight !== "naver"}
       />
 
       <div
