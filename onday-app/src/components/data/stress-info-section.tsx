@@ -12,6 +12,7 @@ import {
   type CongestionLevel,
   type RouteCongestion,
 } from "@/features/stress/route-congestion";
+import { WORKPLACE_LABEL } from "@/components/data/commute-chip";
 import type { CommuteInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -161,6 +162,12 @@ export function StressInfoSection({
             </span>
           )}
           <div className="min-w-0 flex-1 space-y-s-3">
+            {/* 부부 모드 — 누구 직장 경로인지 보조 표기(A/B 배지 옆). 싱글은 showTag=false. */}
+            {showTag && (
+              <p className="text-caption font-bold text-ink-2">
+                {WORKPLACE_LABEL[tag]}
+              </p>
+            )}
             {fatigue && (
               <Metric label="환승 피로도">
                 <FatigueValue f={fatigue} />

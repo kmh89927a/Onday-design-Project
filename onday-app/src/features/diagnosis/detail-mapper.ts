@@ -1,4 +1,8 @@
-import { MODE_LABELS, type CommuteMode as ChipMode } from "@/components/data/commute-chip";
+import {
+  MODE_LABELS,
+  WORKPLACE_LABEL,
+  type CommuteMode as ChipMode,
+} from "@/components/data/commute-chip";
 import type { BadgeProps } from "@/components/ui/badge";
 import {
   toChipMode,
@@ -15,6 +19,8 @@ interface PillItem {
 interface CommuteRowItem {
   tag: "A" | "B";
   dest: string;
+  /** 부부 모드 — "내 직장"/"배우자 직장" 보조 라벨. 싱글(destB 없음)은 미설정. */
+  who?: string;
   mode: ChipMode;
   modeLabel: string;
   detail?: string;
@@ -43,11 +49,13 @@ function toCommuteRow(
   tag: "A" | "B",
   dest: string,
   info: CommuteInfo,
+  who?: string,
 ): CommuteRowItem {
   const mode = toChipMode(info.mode);
   return {
     tag,
     dest,
+    who,
     mode,
     modeLabel: MODE_LABELS[mode],
     detail: info.transfers != null ? `환승 ${info.transfers}회` : undefined,
@@ -64,11 +72,14 @@ export function buildCommuteRows(
 ): CommuteRowItem[] {
   const da = destA || "직장 A";
   const db = destB || "직장 B";
-  const rows: CommuteRowItem[] = [toCommuteRow("A", da, c.commuteA)];
-  if (c.commuteACar) rows.push(toCommuteRow("A", da, c.commuteACar));
+  // 부부(destB 있음)일 때만 "내 직장"/"배우자 직장" 보조 라벨 — 싱글은 직장 하나라 생략.
+  const whoA = destB ? WORKPLACE_LABEL.A : undefined;
+  const whoB = destB ? WORKPLACE_LABEL.B : undefined;
+  const rows: CommuteRowItem[] = [toCommuteRow("A", da, c.commuteA, whoA)];
+  if (c.commuteACar) rows.push(toCommuteRow("A", da, c.commuteACar, whoA));
   if (c.commuteB) {
-    rows.push(toCommuteRow("B", db, c.commuteB));
-    if (c.commuteBCar) rows.push(toCommuteRow("B", db, c.commuteBCar));
+    rows.push(toCommuteRow("B", db, c.commuteB, whoB));
+    if (c.commuteBCar) rows.push(toCommuteRow("B", db, c.commuteBCar, whoB));
   }
   return rows;
 }
