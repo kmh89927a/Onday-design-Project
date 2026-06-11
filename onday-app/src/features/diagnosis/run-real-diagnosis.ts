@@ -120,7 +120,6 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
     leisureCoordA,
     leisureCoordB,
     filters,
-    mode,
   } = input;
 
   // 1) Haversine 사전필터 — 직장 A(+B) 합산 직선거리 기준 가까운 top N.
@@ -198,7 +197,6 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
         leisureA: leisureA ?? undefined,
         leisureB: leisureB ?? undefined,
         score,
-        safetyGrade: mode === "single" ? n.safetyGrade : undefined,
         // priceRange = 거래유형 median ±15%(만원). filters.dealType 기준(예산 미입력해도 거래유형 반영). 결측 시 undefined.
         priceRange: priceRangeFor(n.id, dealType),
         // 월세 — dealType=wolse 시만 채움. 실거래 median, 결측 시 undefined.

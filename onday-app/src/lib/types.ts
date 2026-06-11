@@ -62,7 +62,8 @@ export interface CandidateArea {
   leisureA?: CommuteInfo;
   leisureB?: CommuteInfo;
   score: number; // 0-100
-  safetyGrade?: SafetyGrade;
+  // ★ safetyGrade 제거(#192/#193 후속) — 야간 안전 등급은 getSafetyByGu(시군구 종합지수)
+  //   단일 소스로 통일. 후보에 박힌 mock 등급은 stale 화근이라 필드 자체를 삭제.
   priceRange?: { min: number; max: number }; // KRW in 만원 (전세/매매 표시·정렬용)
   // 월세 실거래 median(만원) — dealType=wolse 시 채움(price-index). 표시는 보증금/월.
   wolseEstimate?: { deposit: number; monthly: number };

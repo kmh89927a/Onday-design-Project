@@ -49,9 +49,9 @@ export function toFavoriteSnapshot(
     dong: c.dong,
     coordinate: c.coordinate,
     score: c.score,
-    // grade===null = no_data(준비중) → mock 폴백 금지(#59), 배지 없이 점수 표시.
-    //   grade 미전달(undefined, 부부)만 후보 mock 등급으로 폴백(레거시 유지).
-    safetyGrade: grade === null ? undefined : (grade ?? c.safetyGrade),
+    // 야간안전 등급 = 호출처가 getSafetyByGu(resolveGrade)로 넘긴 grade 만 사용.
+    //   null(no_data) / undefined(부부) 둘 다 배지 없이 점수 표시 — stale mock 폴백 제거(#192/#193).
+    safetyGrade: grade ?? undefined,
     commuteA: c.commuteA.time,
     commuteB: c.commuteB?.time,
     priceRange: c.priceRange,

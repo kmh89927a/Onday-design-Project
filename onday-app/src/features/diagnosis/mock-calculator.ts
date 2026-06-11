@@ -41,7 +41,7 @@ async function computeOneCandidate(
   neighborhood: (typeof MOCK_NEIGHBORHOODS)[number],
   args: ComputeArgs,
 ): Promise<ComputeSettled> {
-  const { coordA, coordB, leisureCoordA, leisureCoordB, filters, mode } = args;
+  const { coordA, coordB, leisureCoordA, leisureCoordB, filters } = args;
   // 비동기 API 지연 시뮬레이션 (50-200ms)
   await new Promise((r) => setTimeout(r, 50 + Math.random() * 150));
 
@@ -170,7 +170,6 @@ async function computeOneCandidate(
             }
           : undefined,
       score,
-      safetyGrade: mode === "single" ? neighborhood.safetyGrade : undefined,
       // priceRange = 거래유형 median ±15%(만원). filters.dealType 기준(예산 미입력해도 거래유형 반영). 결측 시 undefined.
       priceRange: priceRangeFor(neighborhood.id, dealType),
       // 월세 — dealType=wolse 시만 채움(표시는 보증금/월). 실거래 median, 결측 시 undefined.
