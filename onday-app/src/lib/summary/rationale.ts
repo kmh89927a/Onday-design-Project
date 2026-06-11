@@ -35,8 +35,11 @@ function commuteLine(label: string, c: { time: number; mode: string }): string {
 /** SummaryFacts → 시스템 프롬프트 + 사실 데이터. 없는 항목은 줄 자체를 뺀다(거짓 방지). */
 export function buildRationalePrompt(facts: SummaryFacts): string {
   const lines: string[] = [];
-  lines.push(commuteLine("직장 A 통근", facts.commuteA));
-  if (facts.commuteB) lines.push(commuteLine("직장 B 통근", facts.commuteB));
+  // 통근 라벨 — 카드 라벨("내 통근/배우자 통근")과 일치. 부부=내 직장/배우자 직장, 싱글=직장(배우자 없음).
+  //   ★ A=내 직장, B=배우자 직장 (입력 1번째=A 기준, #208 정합).
+  const isCouple = facts.mode === "couple";
+  lines.push(commuteLine(isCouple ? "내 직장 통근" : "직장 통근", facts.commuteA));
+  if (facts.commuteB) lines.push(commuteLine("배우자 직장 통근", facts.commuteB));
   lines.push(`- 생활 적합도 점수: ${facts.livingScore}점 (100점 만점)`);
   lines.push(`- 예상 시세: ${facts.priceLabel}`);
   if (facts.safetyGrade) {
@@ -59,6 +62,7 @@ export function buildRationalePrompt(facts: SummaryFacts): string {
     `3. 평가 형용사("쾌적한", "편리한", "안전한" 등)는 데이터가 뒷받침할 때만 써. 통근이 길면 "쾌적" 금지, 야간 등급이 낮으면(C·D) "안전/안심" 금지. 수치는 그대로, 평가는 사실에 부합하게.`,
     `4. 야간 등급은 사실대로: A=안심, B=양호, C=보통, D=주의.`,
     `5. 추천 이유는 가장 강한 강점(짧은 통근·높은 점수 등)을 중심으로.`,
+    `6. 통근은 데이터 라벨 그대로 표현해("내 직장"·"배우자 직장"·"직장"). "직장 A"·"직장 B"·"A까지"·"B까지" 같은 표현은 절대 쓰지 마.`,
     ``,
     `[톤] 따뜻한 권유체("~예요/~해요"), 군더더기 없이.`,
   ].join("\n");
@@ -80,12 +84,13 @@ export function sanitizeRationale(raw: string, facts: SummaryFacts): string {
 
 /**
  * AI 실패 시 룰 기반 추천 이유 한 줄. 결정적(≤500ms, 외부 호출 0) — 빈 카드 방지.
- * 예: "직장A 35분 · 직장B 42분 · 생활점수 78점"
+ * 예(부부): "내 직장 35분 · 배우자 직장 42분 · 생활점수 78점" / (싱글): "직장 35분 · 생활점수 78점"
  */
 export function generateFallbackRationale(facts: SummaryFacts): string {
   const parts: string[] = [];
-  parts.push(`직장A ${facts.commuteA.time}분`);
-  if (facts.commuteB) parts.push(`직장B ${facts.commuteB.time}분`);
+  const isCouple = facts.mode === "couple";
+  parts.push(`${isCouple ? "내 직장" : "직장"} ${facts.commuteA.time}분`);
+  if (facts.commuteB) parts.push(`배우자 직장 ${facts.commuteB.time}분`);
   parts.push(`생활점수 ${facts.livingScore}점`);
   if (facts.safetyGrade) parts.push(`야간 ${facts.safetyGrade}등급`);
   return parts.join(" · ");
