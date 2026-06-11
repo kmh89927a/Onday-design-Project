@@ -24,11 +24,20 @@ const MODE_LABELS: Record<CommuteMode, string> = {
   walk: "도보",
 };
 
+// 부부 모드 A/B 직장 정체 — 입력 1번째(A)=내 직장, 2번째(B)=배우자 직장 (diagnosis/page.tsx).
+//   A/B 배지(지도 마커·통근선 색 매칭)는 유지하고, 누구 직장인지 텍스트로 보조 표기.
+export const WORKPLACE_LABEL: Record<"A" | "B", string> = {
+  A: "내 직장",
+  B: "배우자 직장",
+};
+
 export interface CommuteChipProps {
   tag: "A" | "B";
   mode: CommuteMode;
   minutes: number;
   detail?: string;
+  /** 부부 모드 — "내 직장"/"배우자 직장" 보조 라벨(있으면 배지 옆 표기). 싱글은 미전달. */
+  who?: string;
   variant?: "chip" | "row";
   className?: string;
 }
@@ -38,11 +47,12 @@ export function CommuteChip({
   mode,
   minutes,
   detail,
+  who,
   variant = "chip",
   className,
 }: CommuteChipProps) {
   const Icon = MODE_ICONS[mode];
-  const aria = `${tag} 직장까지 ${MODE_LABELS[mode]} ${minutes}분${
+  const aria = `${who ?? `${tag} 직장`}까지 ${MODE_LABELS[mode]} ${minutes}분${
     detail ? `, ${detail}` : ""
   }`;
   return (
@@ -65,6 +75,11 @@ export function CommuteChip({
       >
         {tag}
       </span>
+      {who && (
+        <span className="shrink-0 text-caption-xs font-bold text-ink-2">
+          {who}
+        </span>
+      )}
       <Icon
         aria-hidden
         className={cn(

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   CommuteChip,
   MODE_LABELS,
+  WORKPLACE_LABEL,
   type CommuteMode,
 } from "@/components/data/commute-chip";
 import { cn } from "@/lib/utils";
@@ -130,6 +131,7 @@ export function CandidateCard({
             tag={c.tag}
             mode={c.mode}
             minutes={c.minutes}
+            who={WORKPLACE_LABEL[c.tag]}
           />
         ))}
       </div>

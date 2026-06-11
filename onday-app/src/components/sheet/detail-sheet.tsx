@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 interface CommuteRowItem {
   tag: "A" | "B";
   dest: string;
+  /** 부부 — "내 직장"/"배우자 직장" 보조 라벨. 싱글은 미설정. */
+  who?: string;
   mode: CommuteMode;
   modeLabel: string;
   detail?: string;
@@ -159,7 +161,7 @@ export function DetailSheet({
                   <div
                     key={`${c.tag}-${c.mode}`}
                     role="group"
-                    aria-label={`${c.tag} 직장까지 ${group.label} ${c.minutes}분${
+                    aria-label={`${c.who ?? `${c.tag} 직장`}까지 ${group.label} ${c.minutes}분${
                       c.detail ? `, ${c.detail}` : ""
                     }`}
                     className="flex items-center gap-s-3 rounded-lg border border-card-border bg-surface px-s-4 py-s-3 shadow-card"
@@ -174,9 +176,15 @@ export function DetailSheet({
                       {c.tag}
                     </span>
                     <div className="min-w-0 flex-1">
+                      {/* 부부 = "내 직장"/"배우자 직장"이 제목(주소는 보조). 싱글 = 주소가 제목. */}
                       <p className="truncate text-body-sm font-bold text-ink">
-                        {c.dest}
+                        {c.who ?? c.dest}
                       </p>
+                      {c.who && c.dest && (
+                        <p className="truncate text-caption text-ink-3">
+                          {c.dest}
+                        </p>
+                      )}
                       {c.detail && (
                         <p className="text-caption text-ink-3">{c.detail}</p>
                       )}
