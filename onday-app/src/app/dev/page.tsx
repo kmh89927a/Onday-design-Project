@@ -857,7 +857,7 @@ export default function DevSamplePage() {
         >
           <SafetyCard
             name="마포구 공덕동"
-            sub="반경 1km · 인접 4개 동 기준"
+            sub="시군구 단위 집계"
             grade="A"
             gradeLabel="야간 매우 안전"
             metric={{ label: "야간 범죄율 (10만명당)", value: 0.84, unit: "건" }}
@@ -871,7 +871,7 @@ export default function DevSamplePage() {
           />
           <SafetyCard
             name="용산구 한남동"
-            sub="반경 1km · 인접 3개 동 기준"
+            sub="시군구 단위 집계"
             grade="C"
             gradeLabel="야간 주의"
             metric={{ label: "야간 범죄율 (10만명당)", value: 1.4, unit: "건" }}
@@ -1499,12 +1499,12 @@ export default function DevSamplePage() {
           checks={[
             "4개 등급 chip 균등 분배",
             "각 chip = letter + label + 파스텔 색",
-            "title + meta (예: '22:00–04:00 · 반경 1km')",
+            "title + meta (예: '22:00–04:00 · 시군구 단위')",
           ]}
         >
           <LegendBar
             title="야간 안전 등급 기준"
-            meta="22:00–04:00 · 반경 1km"
+            meta="22:00–04:00 · 시군구 단위"
           />
         </Section>
 

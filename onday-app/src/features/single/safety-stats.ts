@@ -38,13 +38,10 @@ export function getNightGradeLabel(grade: SafetyGrade): string {
   return NIGHT_GRADE_LABELS[grade];
 }
 
-// "반경 1km · 인접 N개 동 기준" — facilities 기반 deterministic
-export function getRadiusSub(facilities?: {
-  convenience: number;
-  cafes: number;
-}): string {
-  const adjacent = facilities
-    ? ((facilities.convenience + facilities.cafes) % 5) + 3
-    : 4;
-  return `반경 1km · 인접 ${adjacent}개 동 기준`;
+// 야간 안전 등급 산정 단위 표기.
+//   ★ 등급 소스 = #57 getSafetyByGu(safety-index.json) = 시군구(구) 단위 종합지수.
+//   이전 "반경 1km · 인접 N개 동" 표기는 좌표 반경 검색을 전제 — 실 데이터 산정 방식과
+//   불일치하여 정정(편의시설과 달리 안전은 구 단위 집계).
+export function getSafetyBasisSub(): string {
+  return "시군구 단위 집계";
 }

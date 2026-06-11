@@ -26,7 +26,7 @@ import {
   getCrimePercent,
   getNightCrimeRate,
   getNightGradeLabel,
-  getRadiusSub,
+  getSafetyBasisSub,
 } from "@/features/single/safety-stats";
 import { getSafetyByGu } from "@/features/single/safety-index";
 import { getCommunityByGu } from "@/lib/diagnosis/community-index";
@@ -133,7 +133,7 @@ function buildLayerStat(c: CandidateArea, layer: SingleLayer) {
 const LEGEND_META: Record<SingleLayer, { title: string; meta: string }> = {
   safety: {
     title: "야간 안전 등급 기준",
-    meta: "22:00–04:00 · 반경 1km",
+    meta: "22:00–04:00 · 시군구 단위",
   },
   convenience: {
     title: "편의시설 밀집도 기준",
@@ -718,7 +718,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                   >
                     <SafetyCard
                       name={`${c.gu} ${c.dong}`}
-                      sub={getRadiusSub(c.facilities)}
+                      sub={getSafetyBasisSub()}
                       grade={grade}
                       gradeLabel={grade ? getNightGradeLabel(grade) : ""}
                       metric={{
