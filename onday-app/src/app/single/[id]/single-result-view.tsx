@@ -137,7 +137,7 @@ const LEGEND_META: Record<SingleLayer, { title: string; meta: string }> = {
   },
   convenience: {
     title: "편의시설 밀집도 기준",
-    meta: "편의점 + 약국 + 24시간 매장 · 반경 1km",
+    meta: "편의점 + 카페 · 반경 1km",
   },
   community: {
     // 출처("data.go.kr 표준데이터")는 LAYER_SOURCES 캡션 한 줄로 이관(하드코딩 제거).
