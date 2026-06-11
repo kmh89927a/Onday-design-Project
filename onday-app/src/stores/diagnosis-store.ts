@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { CandidateArea, Coordinate, DiagnosisFilters, DiagnosisMode } from "@/lib/types";
 import type { DayStory } from "@/lib/insight/story";
 import type { SummaryResult } from "@/lib/types/deadline";
@@ -71,44 +72,73 @@ const initialState = {
   error: null,
 };
 
-export const useDiagnosisStore = create<DiagnosisState>((set) => ({
-  ...initialState,
+// ★ 입력 좌표만 localStorage persist — 새로고침 시 지도 직장 마커·통근선 복원.
+//   직장 마커/선은 coordinateA/B(입력값)에 의존하는데, candidates(숫자 마커)와 달리
+//   서버 GET 복원 경로가 없어(DB에 좌표 컬럼 없음) 인메모리 리셋 시 사라졌음.
+//   ★ 결과/캐시(candidates·commutePool·stories·summary)는 persist 제외 — 용량·정합상
+//     기존대로 서버 GET(result-view)으로 복원. filters 도 서버 GET 복원이라 제외.
+//   session/favorites 와 동일 패턴(zustand persist), 별도 storage key.
+export const useDiagnosisStore = create<DiagnosisState>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-  setAddressA: (address, coordinate) =>
-    set({ addressA: address, ...(coordinate && { coordinateA: coordinate }) }),
+      setAddressA: (address, coordinate) =>
+        set({ addressA: address, ...(coordinate && { coordinateA: coordinate }) }),
 
-  setAddressB: (address, coordinate) =>
-    set({ addressB: address, ...(coordinate && { coordinateB: coordinate }) }),
+      setAddressB: (address, coordinate) =>
+        set({ addressB: address, ...(coordinate && { coordinateB: coordinate }) }),
 
-  setLeisureA: (address, coordinate) =>
-    set({ leisureA: address, ...(coordinate && { leisureCoordA: coordinate }) }),
+      setLeisureA: (address, coordinate) =>
+        set({ leisureA: address, ...(coordinate && { leisureCoordA: coordinate }) }),
 
-  setLeisureB: (address, coordinate) =>
-    set({ leisureB: address, ...(coordinate && { leisureCoordB: coordinate }) }),
+      setLeisureB: (address, coordinate) =>
+        set({ leisureB: address, ...(coordinate && { leisureCoordB: coordinate }) }),
 
-  setMode: (mode) => set({ mode }),
-  setFilters: (filters) => set({ filters }),
-  setDeadlineDate: (deadlineDate) => set({ deadlineDate }),
+      setMode: (mode) => set({ mode }),
+      setFilters: (filters) => set({ filters }),
+      setDeadlineDate: (deadlineDate) => set({ deadlineDate }),
 
-  // 새 진단 결과 = 통근데이터 달라짐 → 옛 스토리·요약 무효(stories·summary 비움 → 재생성).
-  setResult: (diagnosisId, candidates) =>
-    set({
-      diagnosisId,
-      candidates,
-      stories: {},
-      summary: null,
-      isLoading: false,
-      error: null,
+      // 새 진단 결과 = 통근데이터 달라짐 → 옛 스토리·요약 무효(stories·summary 비움 → 재생성).
+      //   입력 좌표는 진단 생성 직전 setAddress* 로 이미 새 값이 박힘 → setResult 가 따로 손댈 필요 없음.
+      setResult: (diagnosisId, candidates) =>
+        set({
+          diagnosisId,
+          candidates,
+          stories: {},
+          summary: null,
+          isLoading: false,
+          error: null,
+        }),
+
+      setStory: (candidateId, story) =>
+        set((s) => ({ stories: { ...s.stories, [candidateId]: story } })),
+
+      setSummary: (summary) => set({ summary }),
+
+      setCommutePool: (commutePool) => set({ commutePool }),
+
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error, isLoading: false }),
+      // reset = 새 진단 시작 등에서 입력 좌표까지 초기화 → persist 블롭도 비워져 옛 좌표 잔존 0.
+      reset: () => set(initialState),
     }),
-
-  setStory: (candidateId, story) =>
-    set((s) => ({ stories: { ...s.stories, [candidateId]: story } })),
-
-  setSummary: (summary) => set({ summary }),
-
-  setCommutePool: (commutePool) => set({ commutePool }),
-
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error, isLoading: false }),
-  reset: () => set(initialState),
-}));
+    {
+      name: "onday-diagnosis-input",
+      storage: createJSONStorage(() => localStorage),
+      // ★ 입력 좌표만 — 지도 직장 마커·통근선 복원에 필요한 최소 필드.
+      //   결과(candidates)·캐시(commutePool/stories/summary)·filters 는 제외(서버 GET 복원).
+      partialize: (s) => ({
+        addressA: s.addressA,
+        addressB: s.addressB,
+        coordinateA: s.coordinateA,
+        coordinateB: s.coordinateB,
+        leisureA: s.leisureA,
+        leisureB: s.leisureB,
+        leisureCoordA: s.leisureCoordA,
+        leisureCoordB: s.leisureCoordB,
+        mode: s.mode,
+      }),
+    },
+  ),
+);
