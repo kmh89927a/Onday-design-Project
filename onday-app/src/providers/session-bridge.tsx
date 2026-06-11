@@ -28,6 +28,7 @@ function toSessionUser(user: User): SessionUser {
 export function SessionBridge() {
   const setUser = useSessionStore((s) => s.setUser);
   const signOut = useSessionStore((s) => s.signOut);
+  const clearGuestSession = useSessionStore((s) => s.clearGuestSession);
 
   React.useEffect(() => {
     if (IS_MOCK_AUTH) return;
@@ -37,6 +38,8 @@ export function SessionBridge() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
+        // ★ CMD-AUTH-004 — 게스트/심사관 → 인증 전환 시 게스트 세션 플래그 정리.
+        clearGuestSession();
         setUser(toSessionUser(session.user));
       } else if (event === "SIGNED_OUT") {
         signOut();
@@ -44,7 +47,7 @@ export function SessionBridge() {
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser, signOut]);
+  }, [setUser, signOut, clearGuestSession]);
 
   return null;
 }

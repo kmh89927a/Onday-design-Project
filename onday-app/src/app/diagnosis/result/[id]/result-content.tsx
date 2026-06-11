@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
+import { useGuestGate } from "@/features/auth/use-guest-gate";
 
 import { BudgetChipOptions } from "./budget-chip-options";
 import { StressInfoSection } from "@/components/data/stress-info-section";
@@ -72,6 +73,7 @@ export function ResultContent({
   const searchParams = useSearchParams();
   const sort = parseSortKey(searchParams.get("sort"));
   const pushToast = useUIStore((s) => s.pushToast);
+  const guestGate = useGuestGate();
 
   const addressA = useDiagnosisStore((s) => s.addressA);
   const addressB = useDiagnosisStore((s) => s.addressB);
@@ -385,6 +387,7 @@ export function ResultContent({
 
   const handleLike = () => {
     if (!selectedCandidate) return;
+    if (guestGate("save")) return;
     const wasLiked = Boolean(favorites[selectedCandidate.id]);
     toggleFavorite(
       toFavoriteSnapshot(
