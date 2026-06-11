@@ -58,6 +58,7 @@ import { FavoritesMenu } from "@/components/favorites/favorites-menu";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
+import { useGuestGate } from "@/features/auth/use-guest-gate";
 
 import { LayerToggle, type SingleLayer } from "./layer-toggle";
 
@@ -218,6 +219,7 @@ function LayerSources({
 
 export function SingleResultView({ id }: SingleResultViewProps) {
   const pushToast = useUIStore((s) => s.pushToast);
+  const guestGate = useGuestGate();
   const storeId = useDiagnosisStore((s) => s.diagnosisId);
   const storeCandidates = useDiagnosisStore((s) => s.candidates);
   const storeAddressA = useDiagnosisStore((s) => s.addressA);
@@ -504,6 +506,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
 
   const handleLike = () => {
     if (!selectedCandidate) return;
+    if (guestGate("save")) return;
     const wasLiked = Boolean(favorites[selectedCandidate.id]);
     toggleFavorite(
       toFavoriteSnapshot(
@@ -525,6 +528,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const [isSharing, setIsSharing] = React.useState(false);
   const handleShare = async () => {
     if (isSharing) return;
+    if (guestGate("share")) return;
     setIsSharing(true);
     try {
       const res = await fetch("/api/share", {

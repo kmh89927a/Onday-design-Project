@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { OAuthButton } from "@/components/ui/oauth-button";
@@ -10,6 +11,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { IS_MOCK_AUTH } from "@/lib/auth/flags";
 import { useSessionStore } from "@/stores/session";
 import { useUIStore } from "@/stores/ui";
+import { cn } from "@/lib/utils";
 
 // 패턴 A — controlled props 유지
 //   OAuthButton / Button은 props만 받고, store 연결은 본 LoginForm에서만
@@ -25,6 +27,7 @@ export function LoginForm() {
   const router = useRouter();
   const setUser = useSessionStore((s) => s.setUser);
   const enterGuestMode = useSessionStore((s) => s.enterGuestMode);
+  const enterReviewerMode = useSessionStore((s) => s.enterReviewerMode);
   const pushToast = useUIStore((s) => s.pushToast);
   const [inFlight, setInFlight] = React.useState<AuthInFlight>(null);
 
@@ -83,10 +86,53 @@ export function LoginForm() {
     router.push("/diagnosis");
   };
 
+  // ★ #24 심사관(채용 담당자) 데모 모드 — 로그인 없이 풀 기능(저장/공유 차단 면제).
+  //   세션 내(in-memory + favorites localStorage) 동작, 회원 정보에는 귀속되지 않음.
+  const handleReviewer = () => {
+    enterReviewerMode();
+    // CMD-AUTH-004 — 진입 이벤트 기록(Sentry 미초기화 시 silent no-op).
+    Sentry.captureMessage("reviewer_mode_entered", "info");
+    pushToast({
+      variant: "default",
+      message:
+        "👨‍💻 심사관 전용 데모 모드로 접속했습니다. (테스트 데이터는 회원 정보에 저장되지 않아요.)",
+    });
+    router.push("/diagnosis");
+  };
+
   const isBusy = inFlight !== null;
 
   return (
     <div className="space-y-s-3">
+      {/* ★ #24 심사관 진입 — 최상단 강조 버튼. navy(primary) 톤 융화 + 좌측 accent. */}
+      <button
+        type="button"
+        onClick={handleReviewer}
+        disabled={isBusy}
+        className={cn(
+          "w-full rounded-md border-2 border-primary bg-primary/[0.04] px-s-4 py-s-3 text-left",
+          "transition-all hover:bg-primary/[0.08] disabled:opacity-50",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+        )}
+      >
+        <span className="block text-body-sm font-bold text-primary">
+          👨‍💻 채용 담당자 · 심사관이신가요?
+        </span>
+        <span className="mt-0.5 block text-caption text-ink-2">
+          원클릭으로 풀버전 체험하기 (로그인 불필요)
+        </span>
+      </button>
+
+      <div
+        role="separator"
+        aria-orientation="horizontal"
+        className="flex items-center gap-s-3 py-s-1"
+      >
+        <span aria-hidden className="h-px flex-1 bg-line-2" />
+        <span className="text-caption text-ink-3">일반 사용자</span>
+        <span aria-hidden className="h-px flex-1 bg-line-2" />
+      </div>
+
       <OAuthButton
         provider="kakao"
         onClick={() => handleOAuth("kakao")}

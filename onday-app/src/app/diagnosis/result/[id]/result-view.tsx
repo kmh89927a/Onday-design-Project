@@ -28,6 +28,7 @@ import type { DiagnosisFilters } from "@/lib/types";
 import { copyToClipboard } from "@/lib/utils/clipboard";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useUIStore } from "@/stores/ui";
+import { useGuestGate } from "@/features/auth/use-guest-gate";
 
 import { ResultContent } from "./result-content";
 
@@ -49,6 +50,7 @@ export function ResultView({ id }: ResultViewProps) {
   const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
   const leisureCoordB = useDiagnosisStore((s) => s.leisureCoordB);
   const pushToast = useUIStore((s) => s.pushToast);
+  const guestGate = useGuestGate();
 
   // ★ 버그수정: length>0 제거 — 토글/필터로 결과가 0개가 돼도 "미로드"로 오판해 DB 원본을
   //   재로드(dealType 롤백)하던 것 방지. 정당한 0개 결과는 EmptyState(완화 제안)로 처리.
@@ -116,6 +118,7 @@ export function ResultView({ id }: ResultViewProps) {
 
   const handleShare = async () => {
     if (isSharing) return;
+    if (guestGate("share")) return;
     setIsSharing(true);
     try {
       const res = await fetch("/api/share", {
