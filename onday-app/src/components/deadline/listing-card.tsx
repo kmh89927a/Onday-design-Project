@@ -2,7 +2,6 @@
 
 import { ArrowUpRight, Clock, GraduationCap } from "lucide-react";
 
-import { NaverMobileNote } from "@/components/data/naver-mobile-note";
 import { Badge } from "@/components/ui/badge";
 import {
   buildNaverMobileMapUrl,
@@ -81,9 +80,6 @@ export function ListingCard({ listing, mode, rank }: ListingCardProps) {
           <ArrowUpRight aria-hidden className="size-3.5" />
         </span>
       </a>
-
-      {/* 모바일은 좌표 딥링크 비호환 → 지도 검색 연결 안내(작고 연한 톤). */}
-      {isMobile && <NaverMobileNote className="px-s-4 pb-s-2" />}
 
       {school && (
         <a

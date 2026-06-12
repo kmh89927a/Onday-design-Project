@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Calendar as CalendarIcon, Sparkles } from "lucide-react";
 
+import { NaverMobileNote } from "@/components/data/naver-mobile-note";
 import { DDayCounter } from "@/components/deadline/dday-counter";
 import { ListingCard } from "@/components/deadline/listing-card";
 import { MiniCalendar } from "@/components/deadline/mini-calendar";
@@ -331,6 +332,9 @@ export default function DeadlinePage() {
                 height={200}
                 onMarkerClick={handleMarkerClick}
               />
+              {/* 모바일은 좌표 딥링크 비호환 → 지도 검색 연결 안내. 매물 카드마다 반복하면
+                  도배되므로 섹션 단위 1회(지도 바로 아래)만 표시. */}
+              {isMobile && <NaverMobileNote />}
               <ul className="space-y-s-2">
                 {listings.map((listing) => (
                   <li key={listing.id}>
