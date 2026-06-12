@@ -7,7 +7,11 @@ import { SafetyGradeBadge } from "@/components/data/safety-grade-badge";
 import { BottomSheet } from "@/components/sheet/bottom-sheet";
 import { IconButton } from "@/components/ui/icon-button";
 import { formatCardPrice } from "@/features/diagnosis/result-utils";
-import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
+import {
+  buildNaverMobileMapUrl,
+  buildNaverRealEstateUrl,
+} from "@/lib/deadline/naver-url-builder";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { cn } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites";
 import type { DiagnosisMode } from "@/lib/types";
@@ -24,6 +28,9 @@ type ModeFilter = "all" | DiagnosisMode;
 export function FavoritesMenu() {
   const favorites = useFavoritesStore((s) => s.favorites);
   const remove = useFavoritesStore((s) => s.remove);
+  // 네이버 매물 링크 — 모바일은 PC 좌표 URL 비호환 → 동네명 지도검색으로 분기(클라 시점).
+  //   아이콘 링크(컴팩트 목록)라 텍스트 라벨·마이크로카피 자리가 없어 URL 분기만 적용.
+  const isMobile = useIsMobile();
   const [open, setOpen] = React.useState(false);
   const [modeFilter, setModeFilter] = React.useState<ModeFilter>("all");
 
@@ -163,15 +170,20 @@ export function FavoritesMenu() {
                     </p>
                   </div>
 
-                  {/* 좌표 기반 new.land + 거래유형(기본 전세). 레거시 스냅샷(좌표 미보유)은 링크 생략. */}
+                  {/* 모바일=동네명 지도검색, PC=좌표 new.land + 거래유형(기본 전세).
+                      레거시 스냅샷(좌표 미보유)은 링크 생략(PC·모바일 공통, 기존 동작 유지). */}
                   {it.coordinate && (
                     <a
-                      href={buildNaverRealEstateUrl(it.coordinate, {
-                        dealType: it.dealType ?? "jeonse",
-                      })}
+                      href={
+                        isMobile
+                          ? buildNaverMobileMapUrl(`${it.gu} ${it.dong}`)
+                          : buildNaverRealEstateUrl(it.coordinate, {
+                              dealType: it.dealType ?? "jeonse",
+                            })
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`${it.gu} ${it.dong} 매물 보기`}
+                      aria-label={`${it.gu} ${it.dong} ${isMobile ? "네이버 지도에서 동네 탐색" : "매물 보기"}`}
                       className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm text-ink-3 hover:text-ink"
                     >
                       <ExternalLink aria-hidden className="size-4" />

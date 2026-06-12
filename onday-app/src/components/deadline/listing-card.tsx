@@ -2,9 +2,15 @@
 
 import { ArrowUpRight, Clock, GraduationCap } from "lucide-react";
 
+import { NaverMobileNote } from "@/components/data/naver-mobile-note";
 import { Badge } from "@/components/ui/badge";
-import { buildNaverRealEstateUrl, buildSchoolSearchUrl } from "@/lib/deadline/naver-url-builder";
+import {
+  buildNaverMobileMapUrl,
+  buildNaverRealEstateUrl,
+  buildSchoolSearchUrl,
+} from "@/lib/deadline/naver-url-builder";
 import { getNearestSchool } from "@/lib/schools-index";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import type { DiagnosisMode } from "@/lib/types";
 import type { ListingItem } from "@/lib/types/deadline";
 
@@ -23,11 +29,15 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, mode, rank }: ListingCardProps) {
-  // 좌표 기반 new.land + 거래유형(매매/전세 → A1/B1) + 아파트.
-  const url = buildNaverRealEstateUrl(listing.coordinate, {
-    dealType: listing.dealType === "매매" ? "maemae" : "jeonse",
-    roomType: "apartment",
-  });
+  // 네이버 매물 링크 — 모바일은 PC 좌표 URL 비호환 → 동네명 지도검색으로 분기(클라 시점).
+  const isMobile = useIsMobile();
+  // 모바일=동네명 지도검색, PC=좌표 new.land + 거래유형(매매/전세 → A1/B1) + 아파트.
+  const url = isMobile
+    ? buildNaverMobileMapUrl(listing.areaName)
+    : buildNaverRealEstateUrl(listing.coordinate, {
+        dealType: listing.dealType === "매매" ? "maemae" : "jeonse",
+        roomType: "apartment",
+      });
   // 좌표 최근접 초등학교 (PR1 사전계산). 싱글은 학군 숨김(#55) → 부부만 조회·표시.
   const school = mode === "couple" ? getNearestSchool(listing.neighborhoodId) : null;
 
@@ -37,7 +47,7 @@ export function ListingCard({ listing, mode, rank }: ListingCardProps) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`${rank ? `추천 ${rank}위 동네 ` : ""}${listing.areaName} ${listing.dealType} ${listing.priceLabel}, 네이버 부동산에서 보기 (새 창)`}
+        aria-label={`${rank ? `추천 ${rank}위 동네 ` : ""}${listing.areaName} ${listing.dealType} ${listing.priceLabel}, ${isMobile ? "네이버 지도에서 동네 탐색" : "네이버 부동산에서 보기"} (새 창)`}
         className="flex items-center gap-s-3 px-s-4 py-s-3 transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
       >
         {/* 지도 마커 숫자(동네 순위)와 시각 일관 — 회색 원 + 흰 숫자 (map-marker 답습). */}
@@ -71,6 +81,9 @@ export function ListingCard({ listing, mode, rank }: ListingCardProps) {
           <ArrowUpRight aria-hidden className="size-3.5" />
         </span>
       </a>
+
+      {/* 모바일은 좌표 딥링크 비호환 → 지도 검색 연결 안내(작고 연한 톤). */}
+      {isMobile && <NaverMobileNote className="px-s-4 pb-s-2" />}
 
       {school && (
         <a

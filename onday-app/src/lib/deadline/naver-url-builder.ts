@@ -44,6 +44,22 @@ export function buildNaverRealEstateUrl(
   return `${NAVER_LAND_BASE}?ms=${lat},${lng},${NAVER_MAP_ZOOM}&a=${article}${tradeParam}&e=RETAIL`;
 }
 
+// ★ 모바일 대응 — PC 좌표 URL(new.land)은 모바일에서 네이버가 fin.land 로 리다이렉트하며 구조 비호환
+//   ("페이지 찾을 수 없음"). 모바일 매물 딥링크는 네이버가 좌표 인코딩으로 막아 직접 생성 불가 →
+//   동네명으로 네이버 지도 검색(map.naver.com/p/search/{동네명})으로 우회. 모바일·PC 모두 동작.
+//   상세 매물 대신 지도 탐색이라 마이크로카피로 안내(아래 상수). 분기는 클라이언트(useIsMobile)에서만.
+const NAVER_MAP_SEARCH_BASE = "https://map.naver.com/p/search";
+
+// 모바일 매물 CTA 문구 + 안내 마이크로카피 — 호출처 공통(중복 방지).
+export const NAVER_MOBILE_CTA_LABEL = "네이버 부동산 탐색하기";
+export const NAVER_MOBILE_NOTE =
+  "💡 모바일에서는 지도로 연결돼요. 상세 매물은 PC에서 확인해 보세요!";
+
+// 동네명("강남구 역삼동") → 네이버 지도 검색 아웃링크. 한글은 encodeURIComponent 로 인코딩.
+export function buildNaverMobileMapUrl(neighborhoodName: string): string {
+  return `${NAVER_MAP_SEARCH_BASE}/${encodeURIComponent(neighborhoodName)}`;
+}
+
 // 학군 PR2 — 인근 초등학교명 → 네이버 통합검색 아웃링크.
 //   학교는 부동산(land.naver.com)이 아니라 search.naver.com. URLSearchParams 가 한글 인코딩 처리.
 //   ★ 좌표 최근접 "인근" 학교 — 정확한 배정 학군은 검색 결과에서 사용자가 확인하는 흐름.

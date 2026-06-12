@@ -28,7 +28,13 @@ import {
   toChipMode,
 } from "@/features/diagnosis/result-utils";
 import { recomputeWhatIf } from "@/lib/diagnosis/whatif";
-import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
+import { NaverMobileNote } from "@/components/data/naver-mobile-note";
+import {
+  buildNaverMobileMapUrl,
+  buildNaverRealEstateUrl,
+  NAVER_MOBILE_CTA_LABEL,
+} from "@/lib/deadline/naver-url-builder";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { DayPreview } from "@/components/insight/day-preview";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
@@ -103,6 +109,8 @@ export function ResultContent({
     }
   }, [candidates]);
 
+  // 네이버 매물 링크 — 모바일은 PC 좌표 URL 비호환 → 동네명 지도검색으로 분기(클라 시점).
+  const isMobile = useIsMobile();
   // Issue #111 β — 출근시간 chip 클릭 시 what-if 입력 inline 박힘 토글.
   // Issue #112 — maxCommuteTime + budget chip 클릭 시 what-if 입력 inline 박힘 토글 답습.
   const [showTimeOptions, setShowTimeOptions] = React.useState(false);
@@ -659,17 +667,24 @@ export function ResultContent({
             />
           }
           primaryCta={{
-            label: selectedCandidate.listingsCount
-              ? `매물 ${selectedCandidate.listingsCount}건 보기`
-              : "매물 보기",
+            label: isMobile
+              ? NAVER_MOBILE_CTA_LABEL
+              : selectedCandidate.listingsCount
+                ? `매물 ${selectedCandidate.listingsCount}건 보기`
+                : "매물 보기",
             onClick: () => {
-              // 좌표 기반 new.land + 거래유형(토글 후 filters.dealType, 기본 전세). 매물종류=APT.
-              const url = buildNaverRealEstateUrl(selectedCandidate.coordinate, {
-                dealType: filters.dealType ?? "jeonse",
-              });
+              // 모바일=동네명 지도검색(좌표 딥링크 비호환), PC=좌표 new.land + 거래유형(기본 전세).
+              const url = isMobile
+                ? buildNaverMobileMapUrl(
+                    `${selectedCandidate.gu} ${selectedCandidate.dong}`,
+                  )
+                : buildNaverRealEstateUrl(selectedCandidate.coordinate, {
+                    dealType: filters.dealType ?? "jeonse",
+                  });
               window.open(url, "_blank", "noopener,noreferrer");
             },
           }}
+          primaryCtaNote={isMobile ? <NaverMobileNote /> : undefined}
         />
       )}
     </div>

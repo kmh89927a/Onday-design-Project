@@ -22,7 +22,11 @@ import {
 } from "@/features/deadline/timeline-builder";
 import { markerLabel } from "@/features/diagnosis/result-utils";
 import { latLngToPixel } from "@/lib/coordinate-transform";
-import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
+import {
+  buildNaverMobileMapUrl,
+  buildNaverRealEstateUrl,
+} from "@/lib/deadline/naver-url-builder";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { buildMockListings } from "@/lib/mocks/deadline/listings";
 import {
   buildSummaryCardBase,
@@ -67,6 +71,9 @@ export default function DeadlinePage() {
   const candidates = useDiagnosisStore((s) => s.candidates);
   const mode = useDiagnosisStore((s) => s.mode);
   const filters = useDiagnosisStore((s) => s.filters);
+  // 네이버 매물 링크 — 모바일은 PC 좌표 URL 비호환 → 동네명 지도검색으로 분기(클라 시점).
+  //   마커(지도 핀)는 텍스트 라벨·마이크로카피 자리가 없어 URL 분기만 적용.
+  const isMobile = useIsMobile();
   // ★ 30분 요약 세션 캐시 — 생성한 Top3 요약 보관(재클릭/탭 재방문 시 재호출 0, day-preview stories 답습).
   const summary = useDiagnosisStore((s) => s.summary);
   const setSummary = useDiagnosisStore((s) => s.setSummary);
@@ -238,10 +245,13 @@ export default function DeadlinePage() {
   const handleMarkerClick = (id: string) => {
     const c = candidates.find((cand) => cand.id === id);
     if (!c) return;
-    const url = buildNaverRealEstateUrl(
-      c.coordinate,
-      filters.dealType ? { dealType: filters.dealType } : {},
-    );
+    // 모바일=동네명 지도검색(좌표 딥링크 비호환), PC=좌표 new.land + 거래유형(필터값).
+    const url = isMobile
+      ? buildNaverMobileMapUrl(`${c.gu} ${c.dong}`)
+      : buildNaverRealEstateUrl(
+          c.coordinate,
+          filters.dealType ? { dealType: filters.dealType } : {},
+        );
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
