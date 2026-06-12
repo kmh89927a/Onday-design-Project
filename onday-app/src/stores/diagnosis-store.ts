@@ -72,11 +72,17 @@ const initialState = {
   error: null,
 };
 
-// ★ 입력 좌표만 localStorage persist — 새로고침 시 지도 직장 마커·통근선 복원.
-//   직장 마커/선은 coordinateA/B(입력값)에 의존하는데, candidates(숫자 마커)와 달리
-//   서버 GET 복원 경로가 없어(DB에 좌표 컬럼 없음) 인메모리 리셋 시 사라졌음.
-//   ★ 결과/캐시(candidates·commutePool·stories·summary)는 persist 제외 — 용량·정합상
-//     기존대로 서버 GET(result-view)으로 복원. filters 도 서버 GET 복원이라 제외.
+// ★ 입력 좌표 + 데드라인 결과(candidates·deadlineDate) localStorage persist.
+//   ① 입력 좌표(coordinateA/B 등): 새로고침 시 지도 직장 마커·통근선 복원(#209).
+//   ② candidates·deadlineDate: 데드라인 페이지(/deadline)는 정적 라우트(URL [id] 없음)라
+//      result-view 식 서버 GET 복원이 불가능 → 외부 링크(네이버) 후 모바일 뒤로가기 reload 시
+//      candidates 가 리셋돼 "급매 매물·30분 요약" 이 빈 값이 됐음. 둘을 persist 해 reload 에도 유지.
+//      · candidates: 급매 매물·요약 파생 소스. 새 진단 시 setResult 가 덮어씀(staleness 자동 정합).
+//      · deadlineDate: D-day. 데드라인 페이지가 candidates 와 함께 쓰는 화면 상태.
+//   ★ diagnosisId 는 persist 제외 — result/single 의 복원 가드(inSync = storeId === id)가
+//     reload 때 true 가 되면 서버 GET 이 건너뛰어져 filters(persist 제외) 복원이 깨짐. 제외해야
+//     result/single 의 GET 복원 흐름이 무변경 유지된다(데드라인은 diagnosisId 를 쓰지 않음).
+//   ★ 캐시(commutePool·stories·summary)·filters 는 여전히 제외 — 무겁고 재생성/서버 GET 가능.
 //   session/favorites 와 동일 패턴(zustand persist), 별도 storage key.
 export const useDiagnosisStore = create<DiagnosisState>()(
   persist(
@@ -126,8 +132,8 @@ export const useDiagnosisStore = create<DiagnosisState>()(
     {
       name: "onday-diagnosis-input",
       storage: createJSONStorage(() => localStorage),
-      // ★ 입력 좌표만 — 지도 직장 마커·통근선 복원에 필요한 최소 필드.
-      //   결과(candidates)·캐시(commutePool/stories/summary)·filters 는 제외(서버 GET 복원).
+      // ★ 입력 좌표(마커·통근선 복원) + candidates·deadlineDate(데드라인 reload 복원).
+      //   diagnosisId·filters·캐시(commutePool/stories/summary)는 제외(위 설명 참조).
       partialize: (s) => ({
         addressA: s.addressA,
         addressB: s.addressB,
@@ -138,6 +144,8 @@ export const useDiagnosisStore = create<DiagnosisState>()(
         leisureCoordA: s.leisureCoordA,
         leisureCoordB: s.leisureCoordB,
         mode: s.mode,
+        candidates: s.candidates,
+        deadlineDate: s.deadlineDate,
       }),
     },
   ),
