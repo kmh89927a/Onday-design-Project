@@ -45,7 +45,13 @@ import { BudgetChipOptions } from "@/app/diagnosis/result/[id]/budget-chip-optio
 import { TimeChipOptions } from "@/app/diagnosis/result/[id]/time-chip-options";
 import { buildCommuteRows, buildLines } from "@/features/diagnosis/detail-mapper";
 import { latLngToPixel } from "@/lib/coordinate-transform";
-import { buildNaverRealEstateUrl } from "@/lib/deadline/naver-url-builder";
+import { NaverMobileNote } from "@/components/data/naver-mobile-note";
+import {
+  buildNaverMobileMapUrl,
+  buildNaverRealEstateUrl,
+  NAVER_MOBILE_CTA_LABEL,
+} from "@/lib/deadline/naver-url-builder";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { copyToClipboard } from "@/lib/utils/clipboard";
 import { cn } from "@/lib/utils";
 import type {
@@ -234,6 +240,8 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const commutePool = useDiagnosisStore((s) => s.commutePool);
   const priorityKey = filters.priorities?.[0];
   const dealType = filters.dealType;
+  // 네이버 매물 링크 — 모바일은 PC 좌표 URL 비호환 → 동네명 지도검색으로 분기(클라 시점).
+  const isMobile = useIsMobile();
   const favorites = useFavoritesStore((s) => s.favorites);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
@@ -819,18 +827,24 @@ export function SingleResultView({ id }: SingleResultViewProps) {
                   />
                 }
                 primaryCta={{
-                  label: selectedCandidate.listingsCount
-                    ? `매물 ${selectedCandidate.listingsCount}건 보기`
-                    : "매물 보기",
+                  label: isMobile
+                    ? NAVER_MOBILE_CTA_LABEL
+                    : selectedCandidate.listingsCount
+                      ? `매물 ${selectedCandidate.listingsCount}건 보기`
+                      : "매물 보기",
                   onClick: () => {
-                    // 좌표 기반 new.land + 거래유형(월세=B2 포함, 기본 전세). 매물종류=APT.
-                    const url = buildNaverRealEstateUrl(
-                      selectedCandidate.coordinate,
-                      { dealType: dealType ?? "jeonse" },
-                    );
+                    // 모바일=동네명 지도검색(좌표 딥링크 비호환), PC=좌표 new.land + 거래유형(기본 전세).
+                    const url = isMobile
+                      ? buildNaverMobileMapUrl(
+                          `${selectedCandidate.gu} ${selectedCandidate.dong}`,
+                        )
+                      : buildNaverRealEstateUrl(selectedCandidate.coordinate, {
+                          dealType: dealType ?? "jeonse",
+                        });
                     window.open(url, "_blank", "noopener,noreferrer");
                   },
                 }}
+                primaryCtaNote={isMobile ? <NaverMobileNote /> : undefined}
               />
             )}
           </>

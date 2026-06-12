@@ -2,7 +2,13 @@
 
 import { ArrowUpRight, GraduationCap, Sparkles } from "lucide-react";
 
+import { NaverMobileNote } from "@/components/data/naver-mobile-note";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
+import {
+  buildNaverMobileMapUrl,
+  NAVER_MOBILE_CTA_LABEL,
+} from "@/lib/deadline/naver-url-builder";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { cn } from "@/lib/utils";
 import type { DiagnosisMode } from "@/lib/types";
 import type { SummaryCardDTO } from "@/lib/types/deadline";
@@ -52,6 +58,12 @@ interface SummaryCardProps {
 
 export function SummaryCard({ card, mode }: SummaryCardProps) {
   const isCouple = mode === "couple";
+  // 네이버 매물 링크 — DTO 의 PC URL(naverSearchUrl)은 유지하되, 모바일은 비호환 →
+  //   동네명 지도검색으로 교체(클라 시점). 동네명은 카드 데이터(candidateName)에 있음.
+  const isMobile = useIsMobile();
+  const naverUrl = isMobile
+    ? buildNaverMobileMapUrl(card.candidateName)
+    : card.naverSearchUrl;
   const tier = scoreTier(card.livingScore);
   const rankVariant = RANK_VARIANT[card.rank] ?? "neutral";
   const ariaLabel = `${card.rank}순위 추천 동네 ${card.candidateName}, 생활 점수 ${card.livingScore}점`;
@@ -115,15 +127,17 @@ export function SummaryCard({ card, mode }: SummaryCardProps) {
       </div>
 
       <a
-        href={card.naverSearchUrl}
+        href={naverUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`${card.candidateName} 네이버 부동산에서 보기 (새 창)`}
+        aria-label={`${card.candidateName} ${isMobile ? "네이버 지도에서 동네 탐색" : "네이버 부동산에서 보기"} (새 창)`}
         className="flex items-center justify-center gap-s-1 rounded-md border border-card-border py-s-2 text-body-sm font-bold text-primary transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
       >
-        네이버 매물 보기
+        {isMobile ? NAVER_MOBILE_CTA_LABEL : "네이버 매물 보기"}
         <ArrowUpRight aria-hidden className="size-3.5" />
       </a>
+      {/* 모바일은 좌표 딥링크 비호환 → 지도 검색 연결 안내(작고 연한 톤). */}
+      {isMobile && <NaverMobileNote />}
     </article>
   );
 }

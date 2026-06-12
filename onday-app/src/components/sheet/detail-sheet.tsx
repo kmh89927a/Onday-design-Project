@@ -55,6 +55,8 @@ interface DetailSheetProps {
     onClick?: () => void;
     loading?: boolean;
   };
+  /** primary CTA 버튼 바로 아래 muted 안내(예: 모바일 매물 링크 마이크로카피). */
+  primaryCtaNote?: React.ReactNode;
 }
 
 export function DetailSheet({
@@ -68,6 +70,7 @@ export function DetailSheet({
   commuteExtra,
   dayPreview,
   primaryCta,
+  primaryCtaNote,
 }: DetailSheetProps) {
   return (
     <BottomSheet
@@ -221,23 +224,26 @@ export function DetailSheet({
 
         {dayPreview}
 
-        {primaryCta.href ? (
-          <Button
-            fullWidth
-            loading={primaryCta.loading}
-            render={<a href={primaryCta.href} />}
-          >
-            {primaryCta.label}
-          </Button>
-        ) : (
-          <Button
-            fullWidth
-            loading={primaryCta.loading}
-            onClick={primaryCta.onClick}
-          >
-            {primaryCta.label}
-          </Button>
-        )}
+        <div className="space-y-s-2">
+          {primaryCta.href ? (
+            <Button
+              fullWidth
+              loading={primaryCta.loading}
+              render={<a href={primaryCta.href} />}
+            >
+              {primaryCta.label}
+            </Button>
+          ) : (
+            <Button
+              fullWidth
+              loading={primaryCta.loading}
+              onClick={primaryCta.onClick}
+            >
+              {primaryCta.label}
+            </Button>
+          )}
+          {primaryCtaNote}
+        </div>
       </section>
     </BottomSheet>
   );
