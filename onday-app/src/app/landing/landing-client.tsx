@@ -3,9 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  ArrowRight, MapPin, Clock, Shield, Users, Zap, ChevronDown, Star,
+  ArrowRight, MapPin, Clock, Shield, Users, Zap, ChevronDown,
   Home, TrendingUp, CheckCircle2, BookOpen, CalendarClock, Heart,
-  Share2, Save, AlertTriangle, Target, GraduationCap, Bell, Menu, X,
+  Share2, Save, AlertTriangle, Target, Bell, Menu, X,
 } from "lucide-react";
 
 import { Logo } from "@/components/layout/logo";
@@ -137,7 +137,7 @@ function HeroSection() {
         {/* 핵심 Pain 자극 뱃지 */}
         <motion.div variants={heroItem} className="mx-auto flex w-fit items-center gap-s-2 rounded-chip border border-warning/30 bg-warning-soft px-s-4 py-1.5">
           <AlertTriangle className="size-3.5 text-warning" />
-          <span className="text-caption-xs font-bold text-warning">이사 가구 연 800만 · 입지 실패 25%</span>
+          <span className="text-caption-xs font-bold text-warning">탐색 평균 4.2개월 · 부부 1차 합의 실패율 70% — 자체 인터뷰 14건</span>
         </motion.div>
 
         <motion.div variants={heroItem}>
@@ -160,9 +160,9 @@ function HeroSection() {
 
         <motion.div variants={heroItem}>
           <p className="mx-auto max-w-sm text-body-sm md:text-base lg:text-lg leading-relaxed text-ink-3">
-            남편 직장 + 아내 직장 + 아이 학군,
+            남편 직장 + 아내 직장,
             <br />
-            세 가지를 동시에 만족하는 동네를 찾아드려요.
+            두 동선을 동시에 만족하는 동네를 찾아드려요.
           </p>
         </motion.div>
 
@@ -176,7 +176,7 @@ function HeroSection() {
           </motion.div>
           <motion.div variants={heroItem}>
             <p className="text-caption text-ink-3">
-              회원가입 없이 · 게스트 체험 가능 · 데이터 자동 삭제
+              회원가입 없이 게스트 체험 가능 · 게스트 진단 데이터는 자동 삭제
             </p>
           </motion.div>
         </div>
@@ -192,9 +192,9 @@ function HeroSection() {
 /* ── Pain Points ── */
 function PainSection() {
   const pains = [
-    { icon: Target, title: "트레이드오프 마비", desc: "학군 좋은 곳은 직장에서 멀고,\n직장 가까운 곳은 학교가 아쉬움", severity: "5.0" },
-    { icon: Clock, title: "정보 과부하", desc: "학군카페·네이버 지도·부동산앱·통근앱\n수동 조합에 평균 2~3시간", severity: "5.0" },
-    { icon: CalendarClock, title: "미래 시뮬레이션 불가", desc: "아이 입학 시점·전세 만료 등\n미래 변수 반영 도구 전무", severity: "5.0" },
+    { icon: Target, title: "트레이드오프 마비", desc: "내 직장에 가까우면 배우자 직장이 멀고,\n둘 다 만족하는 동네는 찾을 도구가 없음", severity: "AOS 4.00 · 1위" },
+    { icon: Clock, title: "정보 과부하", desc: "네이버 지도·부동산앱·통근앱\n수동 조합에 회당 평균 2~3시간", severity: "평균 2~3시간" },
+    { icon: CalendarClock, title: "긴급 이사 패닉", desc: "전세 만료·발령 통보 후\n일 2시간씩 앱만 뒤지는 탐색 루프", severity: "AOS 3.80" },
   ];
   return (
     <motion.section {...fadeUp} id="pain" className="bg-surface px-s-5 py-s-10">
@@ -205,7 +205,7 @@ function PainSection() {
             3040 부부가 겪는
             <br />3가지 구조적 문제
           </h2>
-          <p className="text-body-sm md:text-base text-ink-3">심각도 조사 결과, 모두 <strong className="text-danger">최고 등급 5.0</strong></p>
+          <p className="text-body-sm md:text-base text-ink-3"><strong className="text-danger">자체 JTBD 인터뷰 14건</strong> 분석 결과</p>
         </div>
         <div className="space-y-s-3">
           {pains.map((p, i) => (
@@ -254,7 +254,6 @@ function InputOutputSection() {
               {[
                 { icon: MapPin, label: "내 직장", color: "bg-primary-soft text-primary" },
                 { icon: MapPin, label: "배우자 직장", color: "bg-[hsl(262_83%_95%)] text-secondary" },
-                { icon: GraduationCap, label: "아이 학군", color: "bg-warning-soft text-warning" },
               ].map((item) => (
                 <motion.div variants={ioBoxItem} key={item.label} className="flex flex-col items-center gap-s-1">
                   <span className={cn("flex size-10 items-center justify-center rounded-xl", item.color.split(" ")[0])}>
@@ -269,7 +268,7 @@ function InputOutputSection() {
             <div className="flex size-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary shadow-marker">
               <Zap className="size-5 text-white" />
             </div>
-            <span className="text-caption-xs font-bold text-primary">AI 동선 교차 분석 · 6초</span>
+            <span className="text-caption-xs font-bold text-primary">AI 동선 교차 분석</span>
           </motion.div>
           <motion.div variants={ioBox} className="rounded-2xl border border-primary/20 bg-primary-soft/50 p-s-5 shadow-card">
             <p className="mb-s-3 text-caption font-bold text-primary">OUTPUT</p>
@@ -278,7 +277,7 @@ function InputOutputSection() {
                 { icon: Home, label: "최적 동네\n6~8곳" },
                 { icon: Share2, label: "부부 공유\n링크" },
                 { icon: TrendingUp, label: "시세·매물\n연결" },
-                { icon: GraduationCap, label: "학군·학원\n통합" },
+                { icon: Shield, label: "야간 안전·\n편의시설" },
               ].map(({ icon: Icon, label }) => (
                 <motion.div variants={ioBoxItem} key={label} className="flex flex-col items-center gap-s-1">
                   <span className="flex size-9 items-center justify-center rounded-lg bg-surface shadow-card"><Icon className="size-4 text-primary" /></span>
@@ -313,7 +312,7 @@ function BeforeAfterSection() {
             <motion.div variants={baItem} className="rounded-2xl border border-danger/20 bg-danger-soft p-s-4 space-y-s-3">
               <span className="inline-block rounded-chip bg-danger/10 px-s-3 py-1 text-caption-xs font-bold text-danger">BEFORE</span>
               <div className="space-y-s-2">
-                {["주말 6시간 발품", "앱 4~5개 번갈아", "학군카페 2주 탐색", "배우자 설득 근거 없음"].map((t) => (
+                {["주말 6시간 발품", "앱 4~5개 번갈아", "앱·카페 탐색 평균 4.2개월", "배우자 설득 근거 없음"].map((t) => (
                   <div key={t} className="flex items-center gap-s-2 text-body-sm md:text-base text-ink-2">
                     <Clock className="size-4 shrink-0 text-danger" /><span>{t}</span>
                   </div>
@@ -326,7 +325,7 @@ function BeforeAfterSection() {
                 {[
                   { t: "6초 AI 진단", bold: "6초" },
                   { t: "한 화면에 모두", bold: "한 화면" },
-                  { t: "학군+통근 통합", bold: "통합" },
+                  { t: "통근+시세+안전 통합", bold: "통합" },
                   { t: "공유 링크로 합의", bold: "합의" },
                 ].map(({ t, bold }) => (
                   <div key={t} className="flex items-center gap-s-2 text-body-sm md:text-base text-ink-2">
@@ -339,14 +338,14 @@ function BeforeAfterSection() {
           </div>
           <motion.div variants={baItem} className="flex items-center justify-center gap-s-4 rounded-2xl bg-primary-soft/60 p-s-5">
             <div className="text-center">
-              <p className="text-display-2 font-extrabold text-primary tabular"><CountUpStat end={98} suffix="%" duration={2} /></p>
-              <p className="text-caption text-ink-3">시간 절약</p>
+              <p className="text-display-2 font-extrabold text-primary tabular">12~18배</p>
+              <p className="text-caption text-ink-3">시간 단축</p>
             </div>
             <div aria-hidden className="h-10 w-px bg-line" />
             <p className="text-body-sm md:text-base leading-relaxed text-ink-2">
-              주말 <strong className="text-ink">6시간 발품</strong> →{" "}
-              <strong className="text-primary">6초 AI 진단</strong>
-              <br />이사 리서치를 극적으로 단축
+              수작업 비교 <strong className="text-ink">2~3시간</strong> →{" "}
+              <strong className="text-primary">10분 탐색 완료</strong>
+              <br />진단 응답은 단 몇 초
             </p>
           </motion.div>
         </motion.div>
@@ -360,7 +359,7 @@ function ValueProposition() {
   const features = [
     { icon: MapPin, title: "F1. 두 동선 교차 진단", desc: "남편 직장 + 아내 직장 교집합에서 최적 동네를 자동 산출. 서비스의 핵심 정체성.", tag: "AOS 4.00 — 1위", accent: "primary" as const },
     { icon: Share2, title: "F2. 배우자 공유 링크", desc: "앱 설치 없이 모바일 웹에서 리포트 + 무료 미리보기 1곳. 부부 합의 돌파의 핵심 레버.", tag: "바이럴 루프", accent: "secondary" as const },
-    { icon: CalendarClock, title: "F3. 데드라인 모드", desc: "전세 만료 D-Day 역산 타임라인 + 네이버 부동산 매물 아웃링크.", tag: "AOS 3.80", accent: "warning" as const },
+    { icon: CalendarClock, title: "F3. 데드라인 모드", desc: "전세 만료 D-Day 역산 타임라인 + 네이버 부동산 매물 아웃링크. 이사 체크리스트(D-30~D-Day) 자동 생성.", tag: "AOS 3.80", accent: "warning" as const },
     { icon: Shield, title: "F4. 싱글 모드", desc: "학군 숨김, 야간 치안·편의시설 강조. 1인 가구 맞춤 분석.", tag: "1인가구", accent: "success" as const },
     { icon: Save, title: "F5. 간이 저장", desc: "입력값 자동 저장 + 불러오기. 2년 주기 발령 교사도 재사용 가능.", tag: "재방문", accent: "primary" as const },
   ];
@@ -399,27 +398,75 @@ function ValueProposition() {
   );
 }
 
+/* ── In-App Capabilities ── */
+function InAppSection() {
+  const items = [
+    { icon: TrendingUp, title: "거래유형 전환", badge: "전세·매매·월세", desc: "토글 한 번으로 거래유형을 바꾸면 모든 후보 동네 시세가 즉시 재계산돼요", accent: "primary" as const },
+    { icon: Target, title: "타협 인사이트", badge: "더 싸게 · 더 빠르게", desc: "1위 동네 대비 “여기로 가면 월 얼마 절약, 통근 몇 분 단축”을 숫자로 비교해 부부 합의 근거를 만들어줘요", accent: "secondary" as const },
+    { icon: Clock, title: "AI 동네 하루 미리보기", badge: "카드 탭", desc: "후보 동네 카드를 누르면 출근부터 퇴근 후까지, 그 동네에서의 하루를 AI가 미리 그려줘요", accent: "warning" as const },
+    { icon: BookOpen, title: "AI 30분 요약", badge: "Top 3", desc: "후보 중 Top 3 동네를 AI가 카드로 요약하고 네이버 부동산 매물로 바로 연결돼요", accent: "success" as const },
+  ];
+  const accentMap = {
+    primary: { bg: "bg-primary-soft", text: "text-primary" },
+    success: { bg: "bg-success-soft", text: "text-success" },
+    secondary: { bg: "bg-[hsl(262_83%_95%)]", text: "text-secondary" },
+    warning: { bg: "bg-warning-soft", text: "text-warning" },
+  };
+  return (
+    <motion.section {...fadeUp} id="in-app" className="bg-surface px-s-5 py-s-10">
+      <div className="mx-auto max-w-xl md:max-w-3xl space-y-s-6">
+        <div className="space-y-s-2 text-center">
+          <p className="text-caption-xs font-bold tracking-widest text-primary">IN THE APP</p>
+          <h2 className="text-h2 md:text-3xl lg:text-4xl font-extrabold tracking-tight text-ink">결과 화면에서<br />바로 되는 것들</h2>
+          <p className="text-body-sm md:text-base text-ink-3">지금 베타에서 실제로 동작하는 기능이에요</p>
+        </div>
+        <motion.div
+          variants={baContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-s-3"
+        >
+          {items.map((item) => (
+            <motion.article key={item.title} variants={baItem} className="flex gap-s-4 rounded-2xl border border-card-border bg-bg p-s-5 shadow-card">
+              <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-xl", accentMap[item.accent].bg)}>
+                <item.icon className={cn("size-5", accentMap[item.accent].text)} />
+              </span>
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-s-2">
+                  <h3 className="text-title font-bold text-ink">{item.title}</h3>
+                  <span className={cn("rounded-chip px-2 py-0.5 text-caption-xs font-bold", accentMap[item.accent].bg, accentMap[item.accent].text)}>{item.badge}</span>
+                </div>
+                <p className="mt-s-1 whitespace-pre-line text-body-sm md:text-base leading-relaxed text-ink-3">{item.desc}</p>
+              </div>
+            </motion.article>
+          ))}
+        </motion.div>
+      </div>
+    </motion.section>
+  );
+}
+
 /* ── Persona Testimonials ── */
 function PersonaSection() {
   const personas = [
-    { name: "김지영", age: 36, type: "워킹맘", quote: "입장비보다 싸요. 남편 판교, 저 여의도. 매주 6시간 발품 팔았는데, 여기선 6초에 답 나왔어요. 공유 링크로 남편 설득 성공!", feature: "F1 교차 진단 + F2 공유", stars: 5 },
-    { name: "정우진", age: 38, type: "긴급이사", quote: "이 상황이면 10만원도 냈겠어요. 전세 만료 D-2개월, 마감 역산 타임라인이 정말 생명이었습니다. 매물 링크도 바로 연결돼서 시간 절약 엄청났어요.", feature: "F3 데드라인 모드", stars: 5 },
-    { name: "박상민", age: 41, type: "맹모 아빠", quote: "임장 교통비보다 싸요. 학군·통근 둘 다 포기 못하는데, 교집합 동네 찾아줘서 부부싸움이 줄었어요.", feature: "F1 + 학군 레이어", stars: 5 },
+    { name: "INT-01", age: 36, type: "맞벌이", quote: "저는 여의도인데 남편은 판교잖아요. 각자 검색하면 서로 원하는 동네가 달라서… 합의를 못 해요.", feature: "→ F1 교차 진단 + F2 공유로 해결" },
+    { name: "INT-07", age: 38, type: "긴급 이사", quote: "집주인 연락이랑 발령 문자가 같은 날 왔어요. 눈앞이 하얘지더라고요. 이 상황이면 10만원도 냈겠어요.", feature: "→ F3 데드라인 모드로 해결" },
+    { name: "INT-13", age: 32, type: "이직 후 1인 가구", quote: "치안 점수가 저한테는 제일 중요해요. 학군 항목이 불필요해요.", feature: "→ F4 싱글 모드로 해결" },
   ];
   return (
     <motion.section {...fadeUp} id="stories" className="bg-surface px-s-5 py-s-10">
       <div className="mx-auto max-w-xl md:max-w-3xl space-y-s-6">
         <div className="space-y-s-2 text-center">
-          <p className="text-caption-xs font-bold tracking-widest text-primary">REAL STORIES</p>
-          <h2 className="text-h2 md:text-3xl lg:text-4xl font-extrabold tracking-tight text-ink">3040 부부의 실제 이야기</h2>
+          <p className="text-caption-xs font-bold tracking-widest text-primary">USER RESEARCH</p>
+          <h2 className="text-h2 md:text-3xl lg:text-4xl font-extrabold tracking-tight text-ink">사전 인터뷰 14건에서<br />들은 목소리</h2>
+          <p className="text-body-sm md:text-base text-ink-3">2026.03 자체 JTBD 인터뷰 발췌 · 출시 전 조사 결과예요</p>
         </div>
         <div className="space-y-s-3">
           {personas.map((p) => (
             <motion.article key={p.name} {...cardFadeUpNormal} className="rounded-2xl border border-card-border bg-bg p-s-5 shadow-card">
-              <div className="mb-s-2 flex gap-0.5">
-                {Array.from({ length: p.stars }).map((_, i) => (
-                  <Star key={`s-${p.name}-${i}`} className="size-4 fill-warning text-warning" />
-                ))}
+              <div className="mb-s-2">
+                <span className="inline-block rounded-chip bg-ink-3/10 px-2 py-0.5 text-caption-xs font-bold text-ink-3">JTBD 인터뷰</span>
               </div>
               <p className="text-body-sm md:text-base leading-relaxed text-ink-2">&ldquo;{p.quote}&rdquo;</p>
               <div className="mt-s-3 flex items-center justify-between">
@@ -451,10 +498,10 @@ function MarketSection() {
         </div>
         <div className="grid grid-cols-2 gap-s-3">
           {[
-            { end: 800, prefix: "", suffix: "만+", duration: 2, label: "연간 이사 가구", sub: "수도권 45%" },
+            { end: 4.2, prefix: "", suffix: "개월", duration: 0, label: "평균 동네 탐색 기간", sub: "인터뷰 14건 실측" },
             { end: 470, prefix: "$", suffix: "억", duration: 2, label: "글로벌 프롭테크", sub: "CAGR 16%" },
-            { end: 0, prefix: "", suffix: "개", duration: 0, label: "직접 경쟁자", sub: "블루오션" },
-            { end: 6, prefix: "", suffix: "초", duration: 1.5, label: "AI 분석 시간", sub: "실시간 결과" },
+            { end: 0, prefix: "", suffix: "개", duration: 0, label: "두 동선 동시 계산 도구", sub: "블루오션" },
+            { end: 10, prefix: "", suffix: "분", duration: 1.5, label: "탐색 완료 목표", sub: "기존 2~3시간" },
           ].map((s) => (
             <div key={s.label} className="flex flex-col items-center gap-s-1 rounded-2xl border border-card-border bg-surface p-s-4 shadow-card">
               <span className="text-h3 font-extrabold text-ink tabular">
@@ -472,8 +519,8 @@ function MarketSection() {
         <div className="flex items-start gap-s-2 rounded-xl bg-info-soft p-s-4">
           <Shield className="mt-0.5 size-4 shrink-0 text-info" />
           <p className="text-body-sm md:text-base text-ink-2">
-            <strong className="text-ink">카카오 모빌리티 (경로) · 국가공간정보포털 (입지) · 학구도 (학군)</strong> 공공 데이터 기반
-            <br /><span className="text-caption text-ink-3">입력 데이터는 분석 후 자동 삭제됩니다</span>
+            <strong className="text-ink">카카오 모빌리티 (자차 경로) · ODsay (대중교통) · 국토교통부 실거래가 (시세) · 행정안전부 지역안전지수·CCTV 공공데이터 (야간 안전)</strong>
+            <br /><span className="text-caption text-ink-3">게스트 진단 데이터는 자동 삭제 · 로그인 시 입력값을 저장해 다음에 불러올 수 있어요</span>
           </p>
         </div>
       </div>
@@ -492,7 +539,7 @@ function FinalCTA() {
           <br />10분이면 찾을 수 있어요.
         </h2>
         <p className="mt-s-2 text-body-sm text-white/70">
-          직장 주소 두 개 + 학군 → AI가 교집합 최적 동네 추천
+          직장 주소 두 개만 입력하면 → AI가 교집합 동네를 추천해요
         </p>
         <div className="mt-s-5 flex flex-col items-center gap-s-3">
           <Link href="/login" className="w-full max-w-xs">
@@ -511,17 +558,17 @@ function FinalCTA() {
 function PricingSection() {
   const betaBenefits = [
     "F1+F2 — 두 동선 교차 진단 + 배우자 공유 링크",
-    "F3 — 데드라인 모드 (D-2개월 카운트다운 매물 추적)",
+    "F3 — 데드라인 모드 (D-Day 역산 체크리스트 + 네이버 급매 연동)",
     "F4+F5 — 싱글 모드 + 입력값 저장 / 무제한 재진단",
   ];
   const oneTimeBenefits = [
-    "F1 — 6초 AI 동선 교차 진단 1회",
+    "F1 — AI 동선 교차 진단 1회",
     "F2 — 결과 리포트 영구 저장 + 공유 링크",
     "F4 — 싱글 모드 / 학군 숨김 옵션",
   ];
   const subscriptionBenefits = [
-    "F5 — 무제한 재진단 (학군 변경·시세 변동 시 즉시 재계산)",
-    "F2+F5 — 즐겨찾기 동네 알림 (학교 배정·시세 변동)",
+    "F5 — 무제한 재진단 (시세 변동 시 즉시 재계산)",
+    "F2+F5 — 시세 변동 리마인더 (예정)",
     "2년 후 재진단 리마인더 (반복 이사 대비)",
   ];
   return (
@@ -567,9 +614,9 @@ function PricingSection() {
               Open Beta 2026.09 예정
             </span>
             <h3 className="mt-s-3 text-h3 font-extrabold text-ink">1회 진단</h3>
-            <p className="mt-s-1 text-caption text-ink-3">한 번 결제로 진단 1회 · 결과 영구 저장</p>
+            <p className="mt-s-1 text-caption text-ink-3">베타 기간 WTP 설문 결과로 확정해요</p>
             <div className="mt-s-3 flex items-baseline gap-s-1">
-              <span className="text-display-2 font-extrabold text-ink tabular">₩30,000</span>
+              <span className="text-display-2 font-extrabold text-ink tabular">가격 미정</span>
             </div>
             <ul className="mt-s-4 space-y-s-2">
               {oneTimeBenefits.map((b) => (
@@ -589,10 +636,9 @@ function PricingSection() {
               정식 출시 2026.11 예정
             </span>
             <h3 className="mt-s-3 text-h3 font-extrabold text-ink">월정액 구독</h3>
-            <p className="mt-s-1 text-caption text-ink-3">학교 배정 · 시세 변동 알림 + 무제한 재진단</p>
+            <p className="mt-s-1 text-caption text-ink-3">베타 기간 WTP 설문 결과로 확정해요</p>
             <div className="mt-s-3 flex items-baseline gap-s-1">
-              <span className="text-display-2 font-extrabold text-ink tabular">₩10,000</span>
-              <span className="text-body-sm font-bold text-ink-3">/월</span>
+              <span className="text-display-2 font-extrabold text-ink tabular">가격 미정</span>
             </div>
             <ul className="mt-s-4 space-y-s-2">
               {subscriptionBenefits.map((b) => (
@@ -614,7 +660,7 @@ function PricingSection() {
               비용 ROI
             </span>
             <h3 className="text-title font-bold text-ink">
-              1주 살아보기 vs 6초 진단
+              1주 살아보기 vs 10분 진단
             </h3>
           </div>
           <div className="grid grid-cols-2 gap-s-3">
@@ -636,14 +682,10 @@ function PricingSection() {
           </p>
           <div className="space-y-s-2 text-center text-caption-xs text-ink-2 leading-relaxed">
             <p>
-              ※ 비용 출처: 단기체류 플랫폼 1주 기준 (PRD §1-3)
-              <br />
-              50~80만원/주 → 3~5만원/회
+              ※ 비용 출처: 단기체류 플랫폼 1주 요금 기준
             </p>
             <p>
-              ※ 부가 ROI (PRD §9-4 벤치마크):
-              <br />
-              임장 12→3회 (75%↓) · 합의 4.2개월→2주 (8~12배 단축)
+              목표: 임장 12회→3회 (75%↓) · 부부 합의 4.2개월→2주
             </p>
           </div>
         </motion.div>
@@ -660,7 +702,7 @@ function Footer() {
         <Logo size="sm" text="OnDay 온데이" className="mx-auto" />
         <p className="text-caption text-ink-3">© 2026 OnDay 온데이. 모든 권리 보유.</p>
         <p className="text-caption-xs italic text-ink-3">그곳에서의 하루(One Day)를 켜다(On)</p>
-        <p className="text-caption-xs text-ink-3">카카오 모빌리티 · 국가공간정보포털 · 학구도 공공 데이터 기반 서비스</p>
+        <p className="text-caption-xs text-ink-3">카카오 모빌리티 (자차 경로) · ODsay (대중교통) · 국토교통부 실거래가 (시세) · 행정안전부 지역안전지수·CCTV 공공데이터 (야간 안전)</p>
       </div>
     </footer>
   );
@@ -670,7 +712,7 @@ function Footer() {
 const NAV_LINKS = [
   { href: "#how", label: "진단 과정" },
   { href: "#features", label: "기능" },
-  { href: "#stories", label: "후기" },
+  { href: "#stories", label: "인터뷰" },
   { href: "#pricing", label: "가격" },
 ];
 
@@ -766,6 +808,7 @@ export function LandingClient() {
       <InputOutputSection />
       <BeforeAfterSection />
       <ValueProposition />
+      <InAppSection />
       <PersonaSection />
       <PricingSection />
       <MarketSection />
