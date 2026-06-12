@@ -253,7 +253,13 @@ export default function DeadlinePage() {
           c.coordinate,
           filters.dealType ? { dealType: filters.dealType } : {},
         );
-    window.open(url, "_blank", "noopener,noreferrer");
+    // 모바일=같은 탭(뒤로가기 1회로 데드라인 복귀 — #214 persist 가 candidates·D-day 복원),
+    //   PC=새 탭(데드라인 페이지 유지). 네이버 지도 SPA 히스토리가 데드라인 탭에 안 쌓이게.
+    if (isMobile) {
+      window.location.href = url;
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (

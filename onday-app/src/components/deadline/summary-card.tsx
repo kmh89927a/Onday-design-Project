@@ -126,11 +126,12 @@ export function SummaryCard({ card, mode }: SummaryCardProps) {
         <p className="text-body-sm leading-relaxed text-ink-2">{card.rationale}</p>
       </div>
 
+      {/* 모바일=같은 탭(뒤로가기로 복귀), PC=새 탭. */}
       <a
         href={naverUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`${card.candidateName} ${isMobile ? "네이버 지도에서 동네 탐색" : "네이버 부동산에서 보기"} (새 창)`}
+        target={isMobile ? undefined : "_blank"}
+        rel={isMobile ? undefined : "noopener noreferrer"}
+        aria-label={`${card.candidateName} ${isMobile ? "네이버 지도에서 동네 탐색" : "네이버 부동산에서 보기 (새 창)"}`}
         className="flex items-center justify-center gap-s-1 rounded-md border border-card-border py-s-2 text-body-sm font-bold text-primary transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
       >
         {isMobile ? NAVER_MOBILE_CTA_LABEL : "네이버 매물 보기"}

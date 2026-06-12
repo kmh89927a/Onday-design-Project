@@ -181,8 +181,8 @@ export function FavoritesMenu() {
                               dealType: it.dealType ?? "jeonse",
                             })
                       }
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      target={isMobile ? undefined : "_blank"}
+                      rel={isMobile ? undefined : "noopener noreferrer"}
                       aria-label={`${it.gu} ${it.dong} ${isMobile ? "네이버 지도에서 동네 탐색" : "매물 보기"}`}
                       className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm text-ink-3 hover:text-ink"
                     >
