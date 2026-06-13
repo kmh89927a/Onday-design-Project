@@ -19,7 +19,8 @@
     "build:schools": "npx tsx scripts/build-schools-index.ts",
     "build:lawd": "npx tsx scripts/build-lawd-mapping.ts",
     "build:price": "npx tsx scripts/build-price-index.ts",
-    "build:congestion": "npx tsx scripts/build-congestion.ts"
+    "build:congestion": "npx tsx scripts/build-congestion.ts",
+    "build:community": "npx tsx scripts/build-community-index.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",
