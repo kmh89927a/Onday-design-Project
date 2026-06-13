@@ -10,7 +10,7 @@ import { MOCK_USER } from "@/mocks/users";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { IS_MOCK_AUTH } from "@/lib/auth/flags";
 import { useSessionStore } from "@/stores/session";
-import { DIAGNOSIS_PERSIST_KEY } from "@/stores/diagnosis-store";
+import { clearGuestPersisted } from "@/lib/auth/clear-guest-persisted";
 import { useUIStore } from "@/stores/ui";
 import { cn } from "@/lib/utils";
 
@@ -76,8 +76,8 @@ export function LoginForm() {
   const handleGuest = () => {
     setInFlight("guest");
     enterGuestMode();
-    // 게스트는 회원 정보 미저장 — 이전 로그인 사용자가 남긴 입력좌표 blob 제거(물려받기 방지).
-    localStorage.removeItem(DIAGNOSIS_PERSIST_KEY);
+    // 게스트는 회원 정보 미저장 — 이전 로그인 사용자가 남긴 좌표·이전조건·찜 제거(물려받기 방지).
+    clearGuestPersisted();
     router.push("/diagnosis");
   };
 
@@ -85,8 +85,8 @@ export function LoginForm() {
   //   세션 내(in-memory + favorites localStorage) 동작, 회원 정보에는 귀속되지 않음.
   const handleReviewer = () => {
     enterReviewerMode();
-    // 심사관도 회원 정보 미저장 — 이전 로그인 사용자가 남긴 입력좌표 blob 제거.
-    localStorage.removeItem(DIAGNOSIS_PERSIST_KEY);
+    // 심사관도 회원 정보 미저장 — 이전 로그인 사용자가 남긴 좌표·이전조건·찜 제거.
+    clearGuestPersisted();
     // CMD-AUTH-004 — 진입 이벤트 기록(Sentry 미초기화 시 silent no-op).
     Sentry.captureMessage("reviewer_mode_entered", "info");
     pushToast({

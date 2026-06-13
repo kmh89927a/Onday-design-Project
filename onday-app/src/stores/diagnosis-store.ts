@@ -7,6 +7,9 @@ import { useSessionStore } from "./session";
 
 // persist localStorage key — 게스트/심사관 진입·로그아웃 시 직접 제거에도 재사용(단일 소스).
 export const DIAGNOSIS_PERSIST_KEY = "onday-diagnosis-input";
+// "이전 조건 불러오기"(diagnosis/page.tsx)가 직접 localStorage 에 쓰는 키 — 직장 주소 포함.
+//   persist store 가 아니므로 저장 시 모드 게이팅 + 진입/로그아웃 제거를 호출처에서 한다.
+export const LAST_CONFIG_KEY = "onday-last-config";
 
 interface DiagnosisState {
   // Input
