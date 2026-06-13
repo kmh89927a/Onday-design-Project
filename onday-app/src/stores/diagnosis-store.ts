@@ -3,6 +3,10 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type { CandidateArea, Coordinate, DiagnosisFilters, DiagnosisMode } from "@/lib/types";
 import type { DayStory } from "@/lib/insight/story";
 import type { SummaryResult } from "@/lib/types/deadline";
+import { useSessionStore } from "./session";
+
+// persist localStorage key — 게스트/심사관 진입·로그아웃 시 직접 제거에도 재사용(단일 소스).
+export const DIAGNOSIS_PERSIST_KEY = "onday-diagnosis-input";
 
 interface DiagnosisState {
   // Input
@@ -130,10 +134,25 @@ export const useDiagnosisStore = create<DiagnosisState>()(
       reset: () => set(initialState),
     }),
     {
-      name: "onday-diagnosis-input",
-      storage: createJSONStorage(() => localStorage),
-      // ★ 입력 좌표(마커·통근선 복원) + candidates·deadlineDate(데드라인 reload 복원).
-      //   diagnosisId·filters·캐시(commutePool/stories/summary)는 제외(위 설명 참조).
+      name: DIAGNOSIS_PERSIST_KEY,
+      // ★ 로그인(카카오)만 입력 좌표·결과 persist — 게스트/심사관(user=null)은 localStorage 에
+      //   아무것도 안 남김(심사관 토스트 "회원 정보에 저장되지 않아요" 정합).
+      //   ★ 분기는 쓰기(setItem)에서만 — 그 시점엔 모드 확정(진입 후 입력)이라 안전. 게스트면
+      //     '쓰기만 건너뜀'(키 미생성). 기존 blob 제거는 진입(login-form)·로그아웃(session-bridge)
+      //     의 removeItem 이 전담 — 여기서 삭제까지 하면 로그인 rehydrate 쓰기(init 시 user=null,
+      //     Supabase 비동기 setUser 전)가 blob 을 지워 복원 회귀가 나므로 삭제는 하지 않는다.
+      //   ★ 읽기(getItem)도 게이팅하지 않음 — 같은 init-시점 user=null 이유. partialize {} 는
+      //     빈 blob 을 남겨 "키 없음" 을 못 지키므로 미사용(storage 분기로 키 자체를 안 만든다).
+      storage: createJSONStorage(() => ({
+        getItem: (name) => localStorage.getItem(name),
+        setItem: (name, value) => {
+          if (useSessionStore.getState().user === null) return;
+          localStorage.setItem(name, value);
+        },
+        removeItem: (name) => localStorage.removeItem(name),
+      })),
+      // 입력 좌표(마커·통근선 #209) + candidates·deadlineDate(데드라인 reload #214).
+      //   diagnosisId·filters·캐시(commutePool/stories/summary)는 제외.
       partialize: (s) => ({
         addressA: s.addressA,
         addressB: s.addressB,
