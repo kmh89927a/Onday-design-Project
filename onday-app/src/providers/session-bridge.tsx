@@ -6,7 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { IS_MOCK_AUTH } from "@/lib/auth/flags";
 import { useSessionStore, type SessionUser } from "@/stores/session";
-import { DIAGNOSIS_PERSIST_KEY } from "@/stores/diagnosis-store";
+import { clearGuestPersisted } from "@/lib/auth/clear-guest-persisted";
 
 function toSessionUser(user: User): SessionUser {
   const meta = user.user_metadata ?? {};
@@ -45,8 +45,8 @@ export function SessionBridge() {
         setUser(toSessionUser(session.user));
       } else if (event === "SIGNED_OUT") {
         signOut();
-        // 로그아웃 후 입력좌표·결과가 localStorage 에 잔존하지 않게 제거(프라이버시).
-        localStorage.removeItem(DIAGNOSIS_PERSIST_KEY);
+        // 로그아웃 후 좌표·이전조건·찜이 localStorage 에 잔존하지 않게 제거(프라이버시).
+        clearGuestPersisted();
       }
     });
 

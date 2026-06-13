@@ -21,13 +21,14 @@ import { useAddressSuggest } from "@/features/diagnosis/use-address-suggest";
 // ★ Mismatch ⑬ 정정: isWithinSeoulMetropolitan → isWithinMetroBounds (★ CMD-DIAG-001 산출물 정합, α₁ page.tsx 책임).
 import { isWithinMetroBounds } from "@/lib/diagnosis";
 import { trackDiagnosisStarted } from "@/lib/analytics/mixpanel";
-import { useDiagnosisStore } from "@/stores/diagnosis-store";
+import { LAST_CONFIG_KEY, useDiagnosisStore } from "@/stores/diagnosis-store";
+import { useSessionStore } from "@/stores/session";
 import { useUIStore } from "@/stores/ui";
 import { cn } from "@/lib/utils";
 import { PREFERENCE_TAGS } from "@/lib/diagnosis/preference-tags";
 
 // ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — 이전 조건 불러오기 (localStorage 직접 + 명시적 패턴, Zustand store 보존 답습).
-const LAST_CONFIG_KEY = "onday-last-config";
+//   LAST_CONFIG_KEY 는 diagnosis-store 에서 import(진입/로그아웃 제거와 단일 소스 공유).
 
 // ★ REFACTOR-COMMUTE-LEGACY (#102) — Issue #102 머지 이전 사용자가 timeRange 박힌 채 localStorage 저장 시 자가 치유.
 //   "morning" → 평일 08:00, "evening" → 평일 18:00, "flexible"/기타 → commuteSchedule 미박힘 (사용자 재입력).
@@ -200,7 +201,8 @@ export default function DiagnosisPage() {
       // MON-003 v1.4 부활 (Issue #127) — REQ-NF-008 funnel 시작점.
       trackDiagnosisStarted(data.diagnosisId);
       // ★ REFACTOR-UI-002-FEEDBACK-2 (#96) — 진단 시작 성공 시 localStorage 저장 (★ "이전 조건 불러오기" 버튼 호출처).
-      if (typeof window !== "undefined") {
+      //   ★ 로그인(user!==null)만 저장 — 게스트/심사관은 직장 주소가 남지 않게(#216 정합, 토스트 일치).
+      if (typeof window !== "undefined" && useSessionStore.getState().user !== null) {
         try {
           localStorage.setItem(
             LAST_CONFIG_KEY,

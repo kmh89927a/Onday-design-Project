@@ -8,6 +8,10 @@ import type {
   DiagnosisMode,
   SafetyGrade,
 } from "@/lib/types";
+import { useSessionStore } from "./session";
+
+// persist localStorage key — 게스트/심사관 진입·로그아웃 시 직접 제거에도 재사용(단일 소스).
+export const FAVORITES_PERSIST_KEY = "onday-favorites";
 
 // 저장한 동네 (즐겨찾기) — localStorage persist.
 // ★ id만 저장하면 새로고침 후 후보 상세(이름·등급·통근·시세)를 못 그림(diagnosis-store는 메모리).
@@ -100,11 +104,24 @@ export const useFavoritesStore = create<FavoritesState>()(
       clear: () => set(initialState),
     }),
     {
-      name: "onday-favorites",
+      name: FAVORITES_PERSIST_KEY,
       version: 1,
       // v0(Record<id,true>)는 스냅샷이 없어 복원 불가 → 초기화. 이후 찜은 스냅샷 저장됨.
       migrate: () => ({ favorites: {} }),
-      storage: createJSONStorage(() => localStorage),
+      // ★ 로그인(카카오)만 찜 persist — 게스트/심사관(user=null)은 localStorage 에 안 남김
+      //   (회원 정보 미저장 정합, #216 좌표·이전조건과 동일). 찜 로직(toggleFavorite/remove/
+      //   스냅샷)은 무변경 — storage 계층만 게이팅 → 세션 내 찜은 동작, 새로고침 후 persist 만 빠짐.
+      //   ★ setItem 에서 user===null 이면 '쓰기만 건너뜀'(키 미생성). 삭제까지 하면 rehydrate 쓰기
+      //     (init 시 로그인도 user=null, Supabase 비동기)가 로그인 찜을 지워 회귀 → 삭제는 진입·
+      //     로그아웃이 전담. getItem 도 게이팅 안 함(같은 init-시점 user=null 이유).
+      storage: createJSONStorage(() => ({
+        getItem: (name) => localStorage.getItem(name),
+        setItem: (name, value) => {
+          if (useSessionStore.getState().user === null) return;
+          localStorage.setItem(name, value);
+        },
+        removeItem: (name) => localStorage.removeItem(name),
+      })),
     },
   ),
 );
