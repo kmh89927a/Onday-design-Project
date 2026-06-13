@@ -42,11 +42,12 @@ export function ListingCard({ listing, mode, rank }: ListingCardProps) {
 
   return (
     <div className="overflow-hidden rounded-lg border border-card-border bg-surface shadow-card">
+      {/* 모바일=같은 탭(뒤로가기로 데드라인 복귀), PC=새 탭. */}
       <a
         href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`${rank ? `추천 ${rank}위 동네 ` : ""}${listing.areaName} ${listing.dealType} ${listing.priceLabel}, ${isMobile ? "네이버 지도에서 동네 탐색" : "네이버 부동산에서 보기"} (새 창)`}
+        target={isMobile ? undefined : "_blank"}
+        rel={isMobile ? undefined : "noopener noreferrer"}
+        aria-label={`${rank ? `추천 ${rank}위 동네 ` : ""}${listing.areaName} ${listing.dealType} ${listing.priceLabel}, ${isMobile ? "네이버 지도에서 동네 탐색" : "네이버 부동산에서 보기 (새 창)"}`}
         className="flex items-center gap-s-3 px-s-4 py-s-3 transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
       >
         {/* 지도 마커 숫자(동네 순위)와 시각 일관 — 회색 원 + 흰 숫자 (map-marker 답습). */}

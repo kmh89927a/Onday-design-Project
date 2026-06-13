@@ -681,7 +681,12 @@ export function ResultContent({
                 : buildNaverRealEstateUrl(selectedCandidate.coordinate, {
                     dealType: filters.dealType ?? "jeonse",
                   });
-              window.open(url, "_blank", "noopener,noreferrer");
+              // 모바일=같은 탭(뒤로가기로 복귀), PC=새 탭.
+              if (isMobile) {
+                window.location.href = url;
+              } else {
+                window.open(url, "_blank", "noopener,noreferrer");
+              }
             },
           }}
           primaryCtaNote={isMobile ? <NaverMobileNote /> : undefined}
