@@ -59,3 +59,9 @@ prisma/dev.db-journal
 
 # B 정책 — 공공데이터 원본 CSV (집계 전용, 커밋 X)
 data-raw/
+
+# Playwright E2E 산출물 (report·trace 는 무겁고 재생성 가능 → 제외).
+#   단 e2e/screenshots/ 는 HAPPY_PATH_REPORT.md 가 참조하므로 커밋 유지.
+/playwright-report/
+/test-results/
+/playwright/.cache/

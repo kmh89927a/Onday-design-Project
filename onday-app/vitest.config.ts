@@ -13,5 +13,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // ★ Playwright E2E(e2e/*.spec.ts)는 @playwright/test 러너 전용 — vitest 가 줍지 않게 제외.
+    //   (vitest 기본 include 가 **/*.spec.ts 라 e2e 를 끌어와 충돌하는 것을 차단.)
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
   },
 });
