@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import {
   SCREENS,
@@ -95,9 +96,13 @@ function ScreenCard({ s }: { s: ScreenNode }) {
               {USER_TYPE_LABEL[u] ?? u}
             </span>
           ))}
-          <span className="ml-auto text-caption-xs text-ink-3" aria-hidden>
-            상세 B-2 →
-          </span>
+          <Link
+            href={`/playboard/${s.id}`}
+            className="ml-auto rounded-sm text-caption-xs font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label={`${s.title} 상세 보기`}
+          >
+            상세 보기 →
+          </Link>
         </div>
       </div>
     </article>
