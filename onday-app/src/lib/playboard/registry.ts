@@ -293,6 +293,22 @@ export const TECH_ITEMS: TechItem[] = [
     evidence: ["prisma/schema.prisma:47", "prisma/schema.prisma:48", "prisma/schema.prisma:51"],
     status: "implemented",
   },
+  {
+    id: "sentry-error-tracking",
+    area: "observability",
+    title: "Sentry 에러 트래킹 + PII 마스킹",
+    point: "@sentry/nextjs config(client/server/edge) 로 init, reportErrorToSentry 헬퍼 + PII 마스킹(sendDefaultPii:false). 실 호출(심사관 진입·API 에러)에서 captureMessage/Exception. DSN 미설정 시 silent no-op.",
+    evidence: ["sentry.client.config.ts", "src/lib/helpers/sentry-error.ts", "src/lib/helpers/sentry-pii-mask.ts:5", "src/components/auth/login-form.tsx:91", "src/app/api/sentry-test/route.ts:17"],
+    status: "implemented",
+  },
+  {
+    id: "mixpanel-analytics",
+    area: "observability",
+    title: "Mixpanel 진단 퍼널 분석",
+    point: "mixpanel-browser lazy init(window·token·initialized 가드, ip:false 익명화). 진단 시작/완료 이벤트 트래킹(이메일/주소 등 PII 미포함). token 미설정 시 no-op.",
+    evidence: ["src/lib/analytics/mixpanel.ts:13", "src/app/diagnosis/page.tsx:202", "src/app/diagnosis/result/[id]/result-view.tsx:73"],
+    status: "implemented",
+  },
 ];
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -325,7 +341,7 @@ export const CRITICAL_AREAS: CriticalArea[] = [
     exercisedOnScreens: ["diagnosis-input", "couple-result", "single-result"],
     status: "partial",
     gapNote:
-      "env 검증·마이그레이션 가드레일·E2E 격리·데이터 출처 정직성은 구현. ★ GAP: 자동 DB 백업/복원 전략(스케줄 백업·PITR)은 미기획. expand/contract 는 DB_SPEC 문서만, 실 적용 이력 없음.",
+      "env 검증·마이그레이션 가드레일·E2E 격리·데이터 출처 정직성은 구현. ★ GAP: 자동 DB 백업/복원 전략(스케줄 백업·PITR)은 미기획. expand/contract 는 DB_SPEC 문서만, 실 적용 이력 없음(현재 prisma/migrations = init 1개 기준 — 마이그레이션 증가 시 갱신 필요한 동적 사실).",
   },
   {
     id: "resilience",
@@ -339,11 +355,11 @@ export const CRITICAL_AREAS: CriticalArea[] = [
   {
     id: "observability",
     label: "관측성",
-    techItemIds: ["health-check"],
+    techItemIds: ["sentry-error-tracking", "mixpanel-analytics", "health-check"],
     exercisedOnScreens: ["landing", "diagnosis-input", "couple-result"],
     status: "partial",
     gapNote:
-      "Sentry(@sentry/nextjs, helpers/sentry-error.ts)·Mixpanel(analytics/mixpanel.ts)·헬스 구조화 로그 배선됨. ★ GAP: SLO/알람 임계·대시보드·로그 집계 파이프라인은 미정. Sentry Uptime/Vercel Analytics 운영 설정은 외부(콘솔).",
+      "Sentry 에러 트래킹·Mixpanel 진단 퍼널·헬스 구조화 로그 배선됨(위 techItemIds). ★ GAP: SLO/알람 임계·대시보드·로그 집계 파이프라인은 미정. Sentry Uptime/Vercel Analytics 운영 설정은 외부(콘솔). Sentry DSN·Mixpanel token 미설정 시 no-op(런타임 안전, 운영 활성화는 env 설정 의존).",
   },
   {
     id: "performance",
