@@ -14,6 +14,8 @@
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
+import { getServerEnv } from "@/lib/env";
+
 // Pin the client to globalThis so Next.js dev HMR (and warm Vercel lambdas) reuse a
 // single connection pool instead of opening a new one per module reload / request.
 const globalForPrisma = globalThis as unknown as {
@@ -21,7 +23,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+  // getServerEnv 가 DATABASE_URL 누락/형식오류를 명확한 에러로 조기 차단 (#6).
+  const { DATABASE_URL } = getServerEnv();
+  const adapter = new PrismaPg({ connectionString: DATABASE_URL });
   return new PrismaClient({ adapter });
 }
 

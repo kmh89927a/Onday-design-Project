@@ -1,13 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./keys";
+import { getSupabaseKeys } from "./keys";
 
 // 서버(Route Handler / Server Component)용 Supabase 클라이언트.
 // ★ @supabase/ssr 0.10.x 쿠키 API = getAll/setAll (구 get/set/remove 아님 — R5).
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
+  const { url, key } = getSupabaseKeys();
 
-  return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  return createServerClient(url, key, {
       cookies: {
         getAll() {
           return cookieStore.getAll();
