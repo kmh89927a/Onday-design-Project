@@ -7,7 +7,10 @@ import {
   USER_FLOWS,
   TECH_ITEMS,
   CRITICAL_AREAS,
+  SCREEN_SPECS,
   type ImplStatus,
+  type SpecItem,
+  type SpecStatus,
 } from "@/lib/playboard/registry";
 
 // Playboard 화면 상세 (Phase B-2) — 목업 + 기술기획 패널 = "시각화된 기술기획서".
@@ -63,6 +66,54 @@ const USER_TYPE_LABEL: Record<string, string> = {
   "share-recipient": "공유수신",
 };
 
+// 스펙 항목 상태 배지 — 기본(implemented)은 배지 없음. na/gap/partial/out-of-scope만 표기.
+const SPEC_STATUS: Record<SpecStatus, { label: string; cls: string } | null> = {
+  implemented: null,
+  partial: { label: "부분", cls: "bg-warning-soft text-warning" },
+  gap: { label: "미기획 갭", cls: "bg-danger-soft text-danger" },
+  na: { label: "해당 없음", cls: "bg-bg text-ink-3 border border-card-border" },
+  "out-of-scope": { label: "MVP 범위 밖", cls: "bg-bg text-ink-3 border border-card-border" },
+};
+
+// 5종 패널 중 하나(요구사항/게이트/데이터계약/예외) 렌더.
+function SpecPanel({ title, items }: { title: string; items: SpecItem[] }) {
+  return (
+    <section>
+      <p className="mb-s-2 text-caption-xs font-extrabold uppercase tracking-[0.14em] text-ink-3">{title}</p>
+      <ul className="flex flex-col gap-s-2">
+        {items.map((item, i) => {
+          const st = SPEC_STATUS[item.status ?? "implemented"];
+          const muted = item.status === "na" || item.status === "out-of-scope";
+          return (
+            <li
+              key={i}
+              className={`rounded-lg border p-s-3 ${item.status === "gap" ? "border-dashed border-danger/40 bg-danger-soft" : "border-card-border bg-surface shadow-card"}`}
+            >
+              <div className="flex items-start gap-s-2">
+                <p className={`flex-1 text-body-sm leading-relaxed ${muted ? "text-ink-3" : "text-ink"}`}>
+                  {item.text}
+                </p>
+                {st ? (
+                  <span className={`shrink-0 rounded-sm px-s-2 py-0.5 text-caption-xs font-bold ${st.cls}`}>
+                    {st.label}
+                  </span>
+                ) : null}
+              </div>
+              {item.evidence.length > 0 ? (
+                <div className="mt-s-2 flex flex-wrap gap-1">
+                  {item.evidence.map((e) => (
+                    <code key={e} className="rounded-xs bg-bg px-1.5 py-0.5 text-caption-xs text-ink-3">{e}</code>
+                  ))}
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 export default async function ScreenDetailPage({
   params,
 }: {
@@ -75,6 +126,7 @@ export default async function ScreenDetailPage({
   const thumb = thumbUrl(screen.screenshot);
   const badge = STATUS_BADGE[screen.status];
   const techById = new Map(TECH_ITEMS.map((t) => [t.id, t]));
+  const spec = SCREEN_SPECS[screen.id];
 
   // 이 화면이 행사하는 mission-critical 영역(역인덱스) + 각 영역의 기술항목.
   const areas = CRITICAL_AREAS.filter((a) => a.exercisedOnScreens.includes(screen.id));
@@ -140,12 +192,21 @@ export default async function ScreenDetailPage({
           </div>
         </div>
 
-        {/* 기술기획 패널 */}
+        {/* 기술기획 패널 — 5종(요구사항·게이트·데이터계약·예외·NFR) */}
         <div className="flex flex-col gap-s-6">
-          {/* mission-critical 영역 & 기술항목 */}
+          {spec ? (
+            <>
+              <SpecPanel title="요구사항 (PRD/SRS)" items={spec.requirements} />
+              <SpecPanel title="게이트 (진입·접근 조건)" items={spec.gates} />
+              <SpecPanel title="데이터 계약 (API·props·DB)" items={spec.dataContracts} />
+              <SpecPanel title="예외 (에러·엣지·fallback)" items={spec.exceptions} />
+            </>
+          ) : null}
+
+          {/* NFR = mission-critical 영역 & 기술항목 */}
           <section>
             <p className="mb-s-2 text-caption-xs font-extrabold uppercase tracking-[0.14em] text-ink-3">
-              mission-critical 기술기획
+              NFR · mission-critical
             </p>
             {areas.length === 0 ? (
               <div className="rounded-lg border border-dashed border-danger/40 bg-danger-soft p-s-4">
