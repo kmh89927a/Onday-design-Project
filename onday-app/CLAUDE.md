@@ -128,3 +128,26 @@ task-domains-overview. 한국어 통합본은 `../my-동네궁합진단기-workb
 lsof -ti:3000 | xargs kill -9 2>/dev/null; rm -rf .next && npm run dev
 ```
 **예방**: Step 단위 큰 변경(신규 페이지 + middleware/store) 후 dev 재시작 권장
+
+## Playboard — 운영 SoT (★ 동시 갱신 규칙)
+
+OnDay는 화면·기능·기술기획의 **운영 현황을 Playboard**로 단일 관리한다.
+
+- **SoT**: `src/lib/playboard/registry.ts` (화면 9 · 사용자 flow 5 · 기술기획 항목 · mission-critical 6영역 · `SCREEN_SPECS`[화면별 5종: 요구사항·게이트·데이터계약·예외·NFR] · `AREA_SPECS`[영역별 제어 스펙] · `CONVERGENCE`[갭 후속]).
+- **상황판**: `/playboard`(인덱스·커버리지 매트릭스·흐름) → `/playboard/[id]`(화면 상세) → `/playboard/flow/[type]`(흐름). 정적 렌더, registry만 참조(진단·DB import 0).
+
+### ★ 동시 갱신 규칙 (앞으로 이렇게 운영한다)
+다음 변경 시 **`registry.ts`를 같은 PR에서 함께 갱신**한다:
+- **요구사항 변경/추가** → 해당 화면 `SCREEN_SPECS[*].requirements` 또는 `AREA_SPECS` 갱신.
+- **화면/라우트 신설·제거** → `SCREENS`(+ 스크린샷)·`USER_FLOWS` 갱신.
+- **구현 완료/이연/범위변경** → 해당 항목 `status` 갱신(`implemented`/`deferred`/`unimplemented`/`unplanned` 또는 `SpecStatus`).
+- **갭의 이슈화/해소** → `CONVERGENCE` 항목 `status`·`link` 갱신.
+
+### ★ 4-상태 분류 의미 (정직성 핵심)
+`AREA_SPECS` 제어와 매트릭스 표기는 "갭"을 뭉뚱그리지 않는다:
+- **implemented** — 코드 `file:line` 또는 플랫폼 기본(Vercel·Supabase).
+- **deferred** — SRS/CON이 **GA 이후·v1.5+로 명시 결정**(예: AES-256 = CON-16, 관측성 SLO = CON-17). **★ 미기획 아님**.
+- **unimplemented** — REQ-NF 요구는 문서화 / 코드 없음(예: WAF REQ-NF-022).
+- **unplanned** — SRS/PRD에도 없음(순수 미기획, 예: DB 자동 롤백). 현재 1건.
+
+> 모든 항목은 `evidence`(SRS/PRD/CON ID 또는 코드 `file:line`)를 둔다 — 추측·창작 금지. 근거 없으면 `unplanned`로 정직 표기.
