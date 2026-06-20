@@ -6,10 +6,28 @@ import {
   USER_FLOWS,
   TECH_ITEMS,
   CRITICAL_AREAS,
+  AREA_SPECS,
   buildCoverageMatrix,
   type ImplStatus,
   type ScreenNode,
+  type ControlStatus,
 } from "@/lib/playboard/registry";
+
+// Phase C — 영역 제어 4-상태 요약 칩 색.
+const CONTROL_CHIP: Record<ControlStatus, { label: string; cls: string }> = {
+  implemented: { label: "구현", cls: "bg-success-soft text-success" },
+  deferred: { label: "이연", cls: "bg-info-soft text-info" },
+  unimplemented: { label: "미구현", cls: "bg-warning-soft text-warning" },
+  unplanned: { label: "미기획", cls: "bg-danger-soft text-danger" },
+};
+
+function controlBreakdown(areaId: string): { status: ControlStatus; n: number }[] {
+  const controls = AREA_SPECS[areaId as keyof typeof AREA_SPECS]?.controls ?? [];
+  const order: ControlStatus[] = ["implemented", "deferred", "unimplemented", "unplanned"];
+  return order
+    .map((status) => ({ status, n: controls.filter((c) => c.status === status).length }))
+    .filter((x) => x.n > 0);
+}
 
 // Playboard 인덱스 상황판 (Phase B-1).
 // ★ 격리: registry.ts(하드코딩 메타데이터)만 import — 진단·DB·API·use-diagnosis 미참조.
@@ -217,9 +235,20 @@ export default function PlayboardPage() {
                 <span className="ml-auto text-caption-xs text-ink-3">{area.techItemIds.length}개 기술항목</span>
               </div>
               <p className="mt-s-2 text-body-sm leading-relaxed text-ink-2">{area.gapNote}</p>
+              {/* ★ Phase C — 제어 4-상태 요약(이연 ≠ 미기획) */}
+              <div className="mt-s-2 flex flex-wrap items-center gap-1">
+                {controlBreakdown(area.id).map(({ status, n }) => (
+                  <span key={status} className={`rounded-xs px-1.5 py-0.5 text-caption-xs font-bold ${CONTROL_CHIP[status].cls}`}>
+                    {CONTROL_CHIP[status].label} {n}
+                  </span>
+                ))}
+              </div>
             </li>
           ))}
         </ul>
+        <p className="mt-s-2 text-caption-xs text-ink-3">
+          ★ <span className="font-bold text-info">이연</span>(GA 이후·v1.5+ SRS/CON 결정)은 <span className="font-bold text-danger">미기획</span>과 다릅니다 — 화면 상세의 NFR 패널에서 제어 스펙 근거 확인.
+        </p>
       </section>
 
       {/* ── 화면맵 그리드 ── */}

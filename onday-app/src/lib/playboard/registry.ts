@@ -613,6 +613,76 @@ export const SCREEN_SPECS: Record<string, ScreenSpec> = {
 };
 
 // ──────────────────────────────────────────────────────────────────────────
+// 8. mission-critical 영역별 제어 스펙 (Phase C)
+//    ★ "갭" 대부분이 순수 미기획이 아님 — SRS §4.2 + PRD §5 + CON 에 근거.
+//    4-상태로 정직 분류:
+//      implemented   — 코드 구현(file:line) 또는 플랫폼 기본(Vercel/Supabase)
+//      deferred      — SRS/CON 이 GA 이후·v1.5+ 로 명시 결정 (★ 미기획 아님 — 의도적 스코핑)
+//      unimplemented — REQ-NF 요구는 문서화 / 코드 없음
+//      unplanned     — SRS/PRD 에도 없음 (순수 미기획, 소수)
+//    evidence: 코드는 onday-app 기준 src/..., SRS/PRD 는 루트 기준 docs/...:line.
+// ──────────────────────────────────────────────────────────────────────────
+
+export type ControlStatus = "implemented" | "deferred" | "unimplemented" | "unplanned";
+
+export interface ControlItem {
+  text: string;
+  status: ControlStatus;
+  evidence: string[];
+  note?: string;
+}
+
+export const AREA_SPECS: Record<CriticalAreaId, { controls: ControlItem[] }> = {
+  "auth-session": {
+    controls: [
+      { text: "REQ-NF-018 — Supabase Auth httpOnly cookie + sameSite strict + CSRF(Supabase 내장)", status: "implemented", evidence: ["docs/05_SRS_v1.7.md:561", "src/lib/supabase/server.ts", "src/lib/supabase/keys.ts"] },
+      { text: "CON-18 — 인증 = Supabase Auth(@supabase/ssr), 카카오 OAuth Provider", status: "implemented", evidence: ["docs/05_SRS_v1.7.md:198", "src/components/auth/login-form.tsx:54"] },
+      { text: "인증 플로우 QA — Closed Beta 전 완료(REQ-NF-018 측정란)", status: "deferred", evidence: ["docs/05_SRS_v1.7.md:561"], note: "운영 QA 시점 결정. 세션 refresh 는 @supabase/ssr 미들웨어가 담당." },
+    ],
+  },
+  "access-control": {
+    controls: [
+      { text: "REQ-NF-020 — 공유 링크 보안: UUID v4 + 만료 30일 + bcrypt 비밀번호 옵션", status: "implemented", evidence: ["docs/05_SRS_v1.7.md:562", "prisma/schema.prisma:47", "prisma/schema.prisma:51"] },
+      { text: "게스트 게이트(찜/공유 차단) + 심사관 면제 + /dev 프로덕션 404", status: "implemented", evidence: ["src/features/auth/use-guest-gate.ts:36", "src/middleware.ts:13"] },
+      { text: "REQ-NF-022 — 악성 트래픽 차단: WAF + Rate Limiter(IP당 분당 60req)", status: "unimplemented", evidence: ["docs/05_SRS_v1.7.md:564", "docs/00_PRD_v1.1-rev.4.md:280"], note: "요구 문서화 / 코드 없음. Vercel Firewall·Rate Limit 후보." },
+      { text: "REQ-NF-021 — 비인가 제3자 공유 링크 개인정보 접근 차단(침투 테스트)", status: "unimplemented", evidence: ["docs/05_SRS_v1.7.md:563"], note: "서버 컴포넌트가 미리보기 1곳만 전체 전달(부분 충족), 침투 테스트는 미수행." },
+      { text: "미인증 라우트 보호(미인증 redirect) — 게스트 흐름 보존 위해 #24 로 이연", status: "deferred", evidence: ["src/middleware.ts:8"], note: "미들웨어는 세션 갱신만, 라우트 보호는 의도적 이연." },
+    ],
+  },
+  "data-integrity": {
+    controls: [
+      { text: "환경변수 Zod 검증(getServerEnv/getClientEnv) + 마이그레이션 가드레일", status: "implemented", evidence: ["src/lib/env.ts:47", "scripts/db/guarded-migrate.mjs"] },
+      { text: "REQ-NF-016 — 입력값 자동 저장 best-effort(실패 시 미통지)", status: "implemented", evidence: ["docs/05_SRS_v1.7.md:555", "src/app/diagnosis/page.tsx:205"] },
+      { text: "데이터 백업 RPO ≤ 1시간 — Supabase Cloud 자동 일일 백업(플랫폼 기본)", status: "implemented", evidence: ["docs/00_PRD_v1.1-rev.4.md:260"], note: "Supabase 무료 티어 daily backup 으로 충족. app-side PITR 명시 설정은 미확인." },
+      { text: "AES-256 PII 암호화 — CON-16 으로 GA 이후 결정(MVP 는 TLS 전송 암호화만)", status: "deferred", evidence: ["docs/05_SRS_v1.7.md:196"], note: "Rev 1.5 결정 — 미기획 아님." },
+    ],
+  },
+  resilience: {
+    controls: [
+      { text: "REQ-NF-011 — 헬스체크 /api/health DB ping + 5분 주기(MON-001)", status: "implemented", evidence: ["docs/05_SRS_v1.7.md:552", "src/app/api/health/route.ts", "src/lib/health.ts:37"] },
+      { text: "지도 SVG fallback — 카카오 SDK 실패/타임아웃 시 degrade", status: "implemented", evidence: ["src/components/map/map-canvas.tsx:91"] },
+      { text: "코드 롤백(Vercel 1-click) + DB 복원(Supabase) — 플랫폼 기본", status: "implemented", evidence: ["docs/00_PRD_v1.1-rev.4.md:260"], note: "플랫폼 제공 — 앱 설정 불필요." },
+      { text: "교통 API 장애 fallback(카카오↔네이버 ADR) — 실 API 미연동이라 v1.5+ 까지 보류", status: "deferred", evidence: ["docs/00_PRD_v1.1-rev.4.md:422"], note: "ADR 결정됨, MVP mock 이라 미적용." },
+      { text: "DB 마이그레이션 자동 롤백/게이트형 워크플로우 — SRS/PRD 명시 없음", status: "unplanned", evidence: [], note: "★ 순수 미기획. DB_SPEC §10.4 권장만." },
+    ],
+  },
+  observability: {
+    controls: [
+      { text: "REQ-NF-012/035 — Sentry 에러 트래킹 + PII 마스킹(sendDefaultPii:false)", status: "implemented", evidence: ["docs/05_SRS_v1.7.md:593", "src/lib/helpers/sentry-error.ts", "src/lib/helpers/sentry-pii-mask.ts:5"] },
+      { text: "REQ-NF-008 — Mixpanel 진단 퍼널(p50 탐색 시간) + 헬스 구조화 로그", status: "implemented", evidence: ["docs/05_SRS_v1.7.md:544", "src/lib/analytics/mixpanel.ts:13", "src/app/api/health/route.ts"] },
+      { text: "SLO/알람 임계·커스텀 슬랙 연동·이상 감지 자동화 — CON-17 로 GA 이후 결정", status: "deferred", evidence: ["docs/05_SRS_v1.7.md:197", "docs/05_SRS_v1.7.md:593"], note: "★ 갭 아님 — Rev 1.5 결정: MVP 는 Sentry 기본 알림만, 커스텀은 GA 이후(REQ-NF-035~038)." },
+    ],
+  },
+  performance: {
+    controls: [
+      { text: "Vercel 10초 timeout 회피(클라 Promise.all) + REQ-NF-004 클라 캐싱(persist·Query·insight)", status: "implemented", evidence: ["docs/05_SRS_v1.7.md:540", "src/features/diagnosis/use-diagnosis.ts:7", "src/stores/diagnosis-store.ts:159"] },
+      { text: "CDN/엣지 정적 서빙 — Vercel 플랫폼 기본", status: "implemented", evidence: ["docs/00_PRD_v1.1-rev.4.md:260"], note: "플랫폼 제공." },
+      { text: "REQ-NF-002 — 페이지 로딩 p95 ≤ 1.5s: Lighthouse CI 게이트(NFR-PERF-PAGE-LOAD)", status: "unimplemented", evidence: ["docs/05_SRS_v1.7.md:538", "docs/perf/baseline-2026-05.md"], note: "baseline 측정 완료(#126), CI 자동 게이트는 미구현." },
+    ],
+  },
+};
+
+// ──────────────────────────────────────────────────────────────────────────
 // 레지스트리 루트
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -622,5 +692,6 @@ export const PLAYBOARD_REGISTRY = {
   techItems: TECH_ITEMS,
   criticalAreas: CRITICAL_AREAS,
   screenSpecs: SCREEN_SPECS,
+  areaSpecs: AREA_SPECS,
   convergence: CONVERGENCE,
 } as const;
