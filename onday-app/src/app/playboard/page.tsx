@@ -233,16 +233,23 @@ export default function PlayboardPage() {
         </div>
       </section>
 
-      {/* ── 사용자 flow 요약 ── */}
-      <section aria-label="사용자 flow" className="mt-s-9 mb-s-10">
-        <h2 className="text-h3 font-extrabold text-ink">사용자 flow</h2>
-        <p className="mt-1 text-body-sm text-ink-3">유형별 화면 순서 (상세 다이어그램은 B-3).</p>
+      {/* ── UX 흐름 오버뷰 ── */}
+      <section aria-label="UX 흐름 오버뷰" className="mt-s-9 mb-s-10">
+        <h2 className="text-h3 font-extrabold text-ink">UX 흐름 오버뷰</h2>
+        <p className="mt-1 text-body-sm text-ink-3">사용자 유형별 화면 여정 — 카드 클릭 시 캡처로 둘러보기.</p>
         <ul className="mt-s-4 grid gap-s-3">
           {USER_FLOWS.map((flow) => (
             <li key={flow.id} className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
               <div className="flex flex-wrap items-baseline gap-x-s-3 gap-y-1">
                 <h3 className="text-body font-bold text-ink">{flow.label}</h3>
                 <span className="text-caption text-ink-3">{flow.persona}</span>
+                <Link
+                  href={`/playboard/flow/${flow.id}`}
+                  className="ml-auto rounded-sm text-caption-xs font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  aria-label={`${flow.label} 흐름 둘러보기`}
+                >
+                  흐름 둘러보기 →
+                </Link>
               </div>
               <ol className="mt-s-3 flex flex-wrap items-center gap-x-1 gap-y-2">
                 {flow.screens.map((sid, i) => (
@@ -262,7 +269,7 @@ export default function PlayboardPage() {
       </section>
 
       <footer className="border-t border-card-border pt-s-5 text-caption-xs text-ink-3">
-        SoT: <code>src/lib/playboard/registry.ts</code> · 정적 렌더(DB 미접근) · 화면 상세(B-2)·flow 다이어그램(B-3) 예정.
+        SoT: <code>src/lib/playboard/registry.ts</code> · 정적 렌더(DB 미접근) · 화면 클릭 → 상세(B-2) · 흐름 둘러보기 → flow(B-3).
       </footer>
     </main>
   );
