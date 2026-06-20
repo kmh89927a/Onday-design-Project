@@ -416,6 +416,203 @@ export interface ConvergenceRef {
 export const CONVERGENCE: ConvergenceRef[] = [];
 
 // ──────────────────────────────────────────────────────────────────────────
+// 7. 화면별 기술스펙 5종 (요구사항·게이트·데이터계약·예외·NFR)
+//    ★ 전부 실제 근거(file:line)만. status: implemented(근거 있음)/partial/gap(미기획)/
+//      na(정적·프레젠테이셔널=실제 없음)/out-of-scope(요구는 있으나 MVP 범위 밖).
+//    ★ 추측 0 — 근거 없는 칸은 채우지 않고 status 로 정직 표기.
+//    evidence: SRS 는 프로젝트 루트 기준 docs/...:line, 코드는 onday-app 기준 src/...:line.
+//    nfr 은 CriticalAreaId 참조만(정의는 CRITICAL_AREAS — 중복 정의 X).
+// ──────────────────────────────────────────────────────────────────────────
+
+export type SpecStatus = "implemented" | "partial" | "gap" | "na" | "out-of-scope";
+
+export interface SpecItem {
+  text: string;
+  evidence: string[]; // file:line (없을 수 있음 — na/gap)
+  status?: SpecStatus; // 기본 implemented
+}
+
+export interface ScreenSpec {
+  requirements: SpecItem[];
+  gates: SpecItem[];
+  dataContracts: SpecItem[];
+  exceptions: SpecItem[];
+  nfr: CriticalAreaId[]; // 참조만 — 정의는 CRITICAL_AREAS
+}
+
+export const SCREEN_SPECS: Record<string, ScreenSpec> = {
+  landing: {
+    requirements: [
+      { text: "PRD/SRS 에 랜딩 전용 기능 요구 없음 (Step 13 디자인 작업물 — 가치 노출 마케팅 페이지)", evidence: [], status: "gap" },
+    ],
+    gates: [
+      { text: "공개 — 인증 게이트 없음. 미들웨어는 /dev 만 차단·세션 갱신", evidence: ["src/middleware.ts:13"], status: "na" },
+    ],
+    dataContracts: [
+      { text: "정적 페이지 — API/DB 호출 없음 (라우터 이벤트만)", evidence: [], status: "na" },
+    ],
+    exceptions: [
+      { text: "정적 콘텐츠 — 에러/로딩 상태 없음", evidence: [], status: "na" },
+    ],
+    nfr: ["observability"],
+  },
+
+  login: {
+    requirements: [
+      { text: "REQ-FUNC-029 — Supabase Auth 기반 카카오·네이버 소셜 로그인 (httpOnly cookie 세션)", evidence: ["docs/05_SRS_v1.7.md:513"] },
+      { text: "REQ-NF-018 — 인증 세션 보안: httpOnly cookie + sameSite strict + CSRF(Supabase 내장)", evidence: ["docs/05_SRS_v1.7.md:561"] },
+    ],
+    gates: [
+      { text: "공개 — 미들웨어 세션 갱신. IS_MOCK_AUTH 분기(mock 즉시 로그인 / real OAuth redirect)", evidence: ["src/middleware.ts:19", "src/components/auth/login-form.tsx:40"] },
+    ],
+    dataContracts: [
+      { text: "real: supabase.auth.signInWithOAuth({ provider:'kakao' }) → /auth/callback", evidence: ["src/components/auth/login-form.tsx:54"] },
+      { text: "세션: SessionUser { id, nickname, provider } → useSessionStore.setUser", evidence: ["src/stores/session.ts:42"] },
+    ],
+    exceptions: [
+      { text: "OAuth 실패 → try/catch → danger 토스트(err.message ?? '로그인에 실패했어요')", evidence: ["src/components/auth/login-form.tsx:67"] },
+    ],
+    nfr: ["auth-session"],
+  },
+
+  "diagnosis-input": {
+    requirements: [
+      { text: "REQ-FUNC-001/002 — 두 직장 주소 입력 + 자동완성(Geocoding), 2개 입력 시에만 진단 활성", evidence: ["docs/05_SRS_v1.7.md:412", "docs/05_SRS_v1.7.md:413"] },
+      { text: "REQ-FUNC-005/006 — 출근 시간대 재계산(p95≤2s) + 필터(통근·예산) 실시간(p95≤1s)", evidence: ["docs/05_SRS_v1.7.md:416", "docs/05_SRS_v1.7.md:417"] },
+      { text: "REQ-FUNC-021/024 — 싱글 모드(직장+여가 2곳, 학군 숨김) + 비수도권 안내(≤500ms)", evidence: ["docs/05_SRS_v1.7.md:477", "docs/05_SRS_v1.7.md:480"] },
+      { text: "REQ-FUNC-031 — 수도권 외 주소 안내 UI + 진단 차단", evidence: ["docs/05_SRS_v1.7.md:514"] },
+    ],
+    gates: [
+      { text: "공개 진입(미들웨어 세션갱신만). '이전 조건 불러오기' 저장은 로그인 유저만", evidence: ["src/app/diagnosis/page.tsx:205"], status: "partial" },
+    ],
+    dataContracts: [
+      { text: "POST /api/diagnosis — req: diagnosisInputSchema(주소·좌표·filters·mode·deadline)", evidence: ["src/lib/validators/diagnosis.ts:8"] },
+      { text: "res: { diagnosisId, candidates[], pool?, timeline? }", evidence: ["src/app/api/diagnosis/route.ts:52"] },
+      { text: "DB: Diagnosis(userId·filters JSON·candidates JSON·mode·deadline)", evidence: ["prisma/schema.prisma:24"] },
+    ],
+    exceptions: [
+      { text: "수도권 밖 주소 선택 → isWithinMetroBounds 차단 + 토스트", evidence: ["src/app/diagnosis/page.tsx:337"] },
+      { text: "canSubmit 가드(verifiedA && verifiedB && !isPending)", evidence: ["src/app/diagnosis/page.tsx:176"] },
+      { text: "진단 요청 실패 → try/catch → setError + danger 토스트", evidence: ["src/app/diagnosis/page.tsx:179"] },
+      { text: "localStorage quota 초과 → silent fail(진단 흐름 차단 X)", evidence: ["src/app/diagnosis/page.tsx:215"] },
+    ],
+    nfr: ["auth-session", "data-integrity", "observability", "performance"],
+  },
+
+  "couple-result": {
+    requirements: [
+      { text: "REQ-FUNC-003/004 — 교집합 후보 3곳+ 지도 시각화(≤3s) + 양쪽 통근시간(오차≤±10%)", evidence: ["docs/05_SRS_v1.7.md:414", "docs/05_SRS_v1.7.md:415"] },
+      { text: "REQ-FUNC-007 — 교통 API 타임아웃 시 토스트 + 자동 재시도 1회(총≤10s). ★ 재시도 로직 미구현(코드는 catch→토스트만)", evidence: ["docs/05_SRS_v1.7.md:418"], status: "gap" },
+      { text: "REQ-FUNC-008 — 교집합 0곳 안내 + 조건 완화 제안 2개+ (#125)", evidence: ["docs/05_SRS_v1.7.md:419"] },
+      { text: "REQ-FUNC-012 — 모든 데이터 항목 출처 배지 + 업데이트 일자(투명도 100%)", evidence: ["docs/05_SRS_v1.7.md:438"] },
+    ],
+    gates: [
+      { text: "URL id 진입. 저장/공유는 useGuestGate(user===null && !isReviewer 차단)", evidence: ["src/features/auth/use-guest-gate.ts:36"] },
+      { text: "복원: inSync(진단직후 store) / 직접접속 시 GET /api/diagnosis/[id]", evidence: ["src/app/diagnosis/result/[id]/result-view.tsx:58"] },
+    ],
+    dataContracts: [
+      { text: "GET /api/diagnosis/[id] → { candidates[], filters, mode, deadline, status }", evidence: ["src/app/api/diagnosis/[id]/route.ts:22"] },
+      { text: "DetailSheet props(candidate{name,score,pills,commutes,metrics}, map, CTA)", evidence: ["src/components/sheet/detail-sheet.tsx:39"] },
+    ],
+    exceptions: [
+      { text: "로딩 → ResultSkeleton / 에러 → ErrorState(다시 입력)", evidence: ["src/app/diagnosis/result/[id]/result-view.tsx:77"] },
+      { text: "빈 후보 → EmptyState + 완화 제안(generateRelaxationSuggestions, #125)", evidence: ["src/app/diagnosis/result/[id]/result-view.tsx:79"] },
+      { text: "지도 SDK 실패/6초 타임아웃 → SVG placeholder fallback", evidence: ["src/components/map/map-canvas.tsx:89", "src/components/map/map-canvas-kakao.tsx:102"] },
+    ],
+    nfr: ["access-control", "data-integrity", "resilience", "observability", "performance"],
+  },
+
+  "single-result": {
+    requirements: [
+      { text: "REQ-FUNC-021 — 싱글 모드 학군·가족 숨김, 야간치안·편의·카페 레이어 기본 활성", evidence: ["docs/05_SRS_v1.7.md:477"] },
+      { text: "REQ-FUNC-022 — 야간(22~06시) 범죄 기반 안전 등급 A~D (수도권 90%+)", evidence: ["docs/05_SRS_v1.7.md:478"] },
+      { text: "REQ-FUNC-023 — 리포트 저장 window.print() + @media print (≤1s)", evidence: ["docs/05_SRS_v1.7.md:479"] },
+    ],
+    gates: [
+      { text: "URL id 진입. 저장/공유 useGuestGate(커플과 동일)", evidence: ["src/features/auth/use-guest-gate.ts:36"] },
+    ],
+    dataContracts: [
+      { text: "GET /api/diagnosis/[id] + 싱글 매퍼(resolveGrade·buildSinglePills/Metrics)", evidence: ["src/app/single/[id]/single-result-view.tsx:78"] },
+    ],
+    exceptions: [
+      { text: "안전등급 no_data → resolveGrade null → '준비중' 표기 + 정렬 후순위", evidence: ["src/app/single/[id]/single-result-view.tsx:75"] },
+      { text: "로딩 → SingleSkeleton / 에러·빈결과 → EmptyState", evidence: ["src/app/single/[id]/single-result-view.tsx:266"] },
+    ],
+    nfr: ["access-control", "data-integrity", "resilience"],
+  },
+
+  "detail-sheet": {
+    requirements: [
+      { text: "전용 요구 없음 — REQ-FUNC-004(통근 표시)·012(출처 배지)로 부분 커버", evidence: ["docs/05_SRS_v1.7.md:415", "docs/05_SRS_v1.7.md:438"], status: "partial" },
+    ],
+    gates: [
+      { text: "부모(result/single)가 open prop 제어. 찜/공유는 부모 useGuestGate", evidence: ["src/app/diagnosis/result/[id]/result-content.tsx:398"] },
+    ],
+    dataContracts: [
+      { text: "DetailSheetProps(open, candidate, onLike/liked, onShare, map, CTA)", evidence: ["src/components/sheet/detail-sheet.tsx:39"] },
+    ],
+    exceptions: [
+      { text: "프레젠테이셔널 — 자체 예외 없음(상태는 부모가 관리)", evidence: [], status: "na" },
+    ],
+    nfr: ["resilience"],
+  },
+
+  "deadline-input": {
+    requirements: [
+      { text: "REQ-FUNC-015 — 이사 마감일 입력 + 데드라인 모드 → 5단계 타임라인 자동 생성(≤2s)", evidence: ["docs/05_SRS_v1.7.md:456"] },
+      { text: "REQ-FUNC-020 — 과거 날짜 차단 + '마감일은 오늘 이후여야 합니다' 인라인 에러(≤100ms)", evidence: ["docs/05_SRS_v1.7.md:461"] },
+    ],
+    gates: [
+      { text: "공개 — deadlineDate 미설정 시 입력 폼(인증 게이트 없음)", evidence: ["src/app/deadline/page.tsx:151"], status: "na" },
+    ],
+    dataContracts: [
+      { text: "date input + validateDeadline → setDeadlineDate(persist)", evidence: ["src/app/deadline/page.tsx:56", "src/app/deadline/page.tsx:146"] },
+    ],
+    exceptions: [
+      { text: "날짜 검증: 과거 → 오늘 이후 안내 / D+7 미만 → 최소 7일 후 안내", evidence: ["src/app/deadline/page.tsx:56"] },
+    ],
+    nfr: [], // ★ registry 영역 0 매핑 = 커버리지 갭 (NFR 미기획)
+  },
+
+  "deadline-timeline": {
+    requirements: [
+      { text: "REQ-FUNC-015 — 계약 역산 타임라인 5단계+ 자동 생성", evidence: ["docs/05_SRS_v1.7.md:456"] },
+      { text: "REQ-FUNC-016/018 — 교집합 동네 네이버 부동산 아웃링크 + 30분 요약 카드(항목 6개+)", evidence: ["docs/05_SRS_v1.7.md:457", "docs/05_SRS_v1.7.md:459"] },
+      { text: "REQ-FUNC-019 — 급매 0건 시 반경 확장·조건 완화·푸시 구독 안내(≤1s)", evidence: ["docs/05_SRS_v1.7.md:460"] },
+    ],
+    gates: [
+      { text: "deadlineDate !== null 일 때 타임라인 뷰(조건부 렌더)", evidence: ["src/app/deadline/page.tsx:151"] },
+    ],
+    dataContracts: [
+      { text: "buildTimeline(days) + candidates(store) + POST /api/summary(Top3 요약)", evidence: ["src/app/deadline/page.tsx:100"] },
+    ],
+    exceptions: [
+      { text: "후보 0 → '진단을 먼저 하세요' 안내 / 요약 실패 → 클라 fallback rationale", evidence: ["src/app/deadline/page.tsx:90"] },
+    ],
+    nfr: ["performance"],
+  },
+
+  share: {
+    requirements: [
+      { text: "REQ-FUNC-009/010/011 — UUID v4 공유 링크(entropy≥128bit) + 만료 30일 + 비회원 전체 열람(미리보기 1곳)", evidence: ["docs/05_SRS_v1.7.md:435", "docs/05_SRS_v1.7.md:436", "docs/05_SRS_v1.7.md:437"] },
+      { text: "REQ-NF-020/021 — 공유 보안: entropy≥128bit, 비밀번호 옵션, 비인가 개인정보 접근 차단", evidence: ["docs/05_SRS_v1.7.md:562", "docs/05_SRS_v1.7.md:563"] },
+      { text: "REQ-FUNC-013/014 — 미리보기 소진 후 유료 전환 유도. ★ MVP 범위 밖(PG 결제 Out-of-Scope)", evidence: ["docs/05_SRS_v1.7.md:439", "docs/05_SRS_v1.7.md:440"], status: "out-of-scope" },
+    ],
+    gates: [
+      { text: "getShareData(uuid): 미존재 → notFound(404) / 만료 → ExpiredView / 유효 → 미리보기 1곳만 전체", evidence: ["src/app/share/[uuid]/page.tsx:14", "src/app/share/[uuid]/page.tsx:79"] },
+    ],
+    dataContracts: [
+      { text: "prisma.shareLink.findUnique({ uniqueUrl }) include diagnosis → ShareData(preview, locked[])", evidence: ["src/app/share/[uuid]/page.tsx:15"] },
+      { text: "POST /api/share — req: { diagnosisId, password? } → res: { shareUrl, expiresAt }", evidence: ["src/lib/validators/diagnosis.ts:44", "src/app/api/share/route.ts:52"] },
+    ],
+    exceptions: [
+      { text: "not-found → notFound() / 만료 → ExpiredView / 보안: 미리보기 외 {id,name}만 전달", evidence: ["src/app/share/[uuid]/page.tsx:79", "src/app/share/[uuid]/page.tsx:35"] },
+    ],
+    nfr: ["access-control"],
+  },
+};
+
+// ──────────────────────────────────────────────────────────────────────────
 // 레지스트리 루트
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -424,5 +621,6 @@ export const PLAYBOARD_REGISTRY = {
   flows: USER_FLOWS,
   techItems: TECH_ITEMS,
   criticalAreas: CRITICAL_AREAS,
+  screenSpecs: SCREEN_SPECS,
   convergence: CONVERGENCE,
 } as const;
