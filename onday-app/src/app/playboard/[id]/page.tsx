@@ -8,10 +8,20 @@ import {
   TECH_ITEMS,
   CRITICAL_AREAS,
   SCREEN_SPECS,
+  AREA_SPECS,
   type ImplStatus,
   type SpecItem,
   type SpecStatus,
+  type ControlStatus,
 } from "@/lib/playboard/registry";
+
+// 영역 제어 스펙 4-상태 배지 (Phase C). deferred = 의도적 이연(갭과 다른 색).
+const CONTROL_STATUS: Record<ControlStatus, { label: string; cls: string }> = {
+  implemented: { label: "구현됨", cls: "bg-success-soft text-success" },
+  deferred: { label: "의도적 이연", cls: "bg-info-soft text-info" },
+  unimplemented: { label: "미구현(요구 있음)", cls: "bg-warning-soft text-warning" },
+  unplanned: { label: "순수 미기획", cls: "bg-danger-soft text-danger" },
+};
 
 // Playboard 화면 상세 (Phase B-2) — 목업 + 기술기획 패널 = "시각화된 기술기획서".
 // ★ 격리: registry.ts(하드코딩 메타데이터)만 import — 진단·DB·API·use-diagnosis 미참조.
@@ -245,10 +255,31 @@ export default async function ScreenDetailPage({
                           </li>
                         ))}
                       </ul>
-                      {/* ★ 이 영역의 갭 정직 노출 */}
-                      <p className="mt-s-3 rounded-sm bg-warning-soft px-s-3 py-s-2 text-caption-xs leading-relaxed text-ink-2">
-                        <span className="font-bold text-warning">영역 갭:</span> {area.gapNote}
-                      </p>
+                      {/* ★ Phase C — 영역 제어 스펙 4-상태(구현/이연/미구현/미기획) */}
+                      <div className="mt-s-3 border-t border-line-2 pt-s-3">
+                        <p className="mb-s-2 text-caption-xs font-bold text-ink-3">제어 스펙</p>
+                        <ul className="flex flex-col gap-s-2">
+                          {(AREA_SPECS[area.id]?.controls ?? []).map((c, ci) => {
+                            const cst = CONTROL_STATUS[c.status];
+                            return (
+                              <li key={ci} className="rounded-sm border border-card-border bg-bg px-s-3 py-s-2">
+                                <div className="flex items-start gap-s-2">
+                                  <p className="flex-1 text-caption-xs leading-relaxed text-ink-2">{c.text}</p>
+                                  <span className={`shrink-0 rounded-xs px-1.5 py-0.5 text-[10px] font-bold ${cst.cls}`}>{cst.label}</span>
+                                </div>
+                                {c.note ? <p className="mt-1 text-[11px] leading-relaxed text-ink-3">{c.note}</p> : null}
+                                {c.evidence.length > 0 ? (
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {c.evidence.map((e) => (
+                                      <code key={e} className="rounded-xs bg-surface px-1 py-0.5 text-[10px] text-ink-3">{e}</code>
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
                     </li>
                   );
                 })}
