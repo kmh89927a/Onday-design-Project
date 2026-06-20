@@ -87,7 +87,7 @@ task-domains-overview. 한국어 통합본은 `../my-동네궁합진단기-workb
 | 13.5 | 랜딩페이지 v2 (비즈니스 브리프 전면 반영: Pain+학군+F1~F5+페르소나+시장) — 97% 달성 | 완료 | — |
 
 ## 🚀 라이브 URL
-**https://onday-prototype-claude-design.vercel.app**
+**https://onday-design-project.vercel.app**
 - `/` → `/landing` 자동 redirect (Step 13 변경: 기존 `/login` → `/landing`)
 - 랜딩페이지 CTA → `/login` → `/diagnosis` 진단 흐름
 - real 모드 — Supabase Postgres 영구 저장 (구 in-memory store 폐지, `src/lib/db.ts` = PrismaPg 어댑터)

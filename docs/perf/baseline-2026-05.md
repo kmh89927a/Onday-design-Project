@@ -3,7 +3,7 @@ title: "Lighthouse baseline — 2026-05 (REQ-NF-002 측정 셋업 시점)"
 issue: "#126"
 task: "NFR-PERF-PAGE-LOAD"
 measurement_date: "(르르 Phase D 측정 시 갱신)"
-production_url: "(르르 Phase D 측정 시 확정 — memory `onday-design-project.vercel.app` vs `onday-prototype-claude-design.vercel.app` 정합 확인)"
+production_url: "https://onday-design-project.vercel.app"
 ---
 
 # Lighthouse baseline — 2026-05
