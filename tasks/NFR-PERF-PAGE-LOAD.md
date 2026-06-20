@@ -72,7 +72,7 @@ assignees: []
   - Chrome DevTools Lighthouse 탭 또는 `npx lighthouse <URL> --view`
   - 환경: 모바일 + 3G throttling + 시크릿 창
   - 대상: `/` (또는 `/landing`), `/login`, `/diagnosis` 3개 페이지
-  - Production URL = 르르 확정 (memory `onday-design-project.vercel.app` vs `onday-prototype-claude-design.vercel.app` 정합 확인)
+  - Production URL = `https://onday-design-project.vercel.app` (실 라이브 확정. 옛 `onday-prototype-claude-design`는 무관 프로토타입)
 
 - [ ] **3.5** `docs/perf/baseline-2026-05.md` 측정 결과 기록
   - Performance / Accessibility / Best Practices / SEO 점수

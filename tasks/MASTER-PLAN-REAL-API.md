@@ -85,7 +85,7 @@ status: planning
 - [ ] **REST API 키 발급** → `NEXT_PUBLIC_KAKAO_REST_API_KEY` (주소 자동완성용)
 - [ ] **카카오 모빌리티 API 키 발급** → `KAKAO_MOBILITY_API_KEY` (실 통근시간용)
   - ⚠️ 카카오 모빌리티는 별도 비즈 검토 필요 (1~2주 대기 가능성). **Week 1 시작 시 즉시 신청 박힘**.
-- [ ] **Web 도메인 등록** → 카카오 디벨로퍼 콘솔에서 `https://onday-prototype-claude-design.vercel.app` + `http://localhost:3000` 박힘
+- [ ] **Web 도메인 등록** → 카카오 디벨로퍼 콘솔에서 `https://onday-design-project.vercel.app` + `http://localhost:3000` 박힘
 
 ### 3.2. 카카오/네이버 OAuth Provider 설정
 
@@ -427,7 +427,7 @@ status: planning
 ### 8.1. End-to-End 시나리오 (5분 데모)
 
 1. **랜딩 → 로그인 (실 OAuth)**
-   - `https://onday-prototype-claude-design.vercel.app` 접속
+   - `https://onday-design-project.vercel.app` 접속
    - "카카오로 1초 만에 시작" → 실 카카오 OAuth 동작 → Supabase Auth httpOnly cookie 박힘
    - 데모용 별도 계정 박힘 (개인 카카오 노출 회피)
 
