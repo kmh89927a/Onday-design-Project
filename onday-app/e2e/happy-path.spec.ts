@@ -103,6 +103,18 @@ test("부부 모드 Happy Path — 랜딩→로그인→주소 입력→진단�
   // ── ① 랜딩 (서비스 가치 노출) ──
   await page.goto("/landing");
   await expect(page).toHaveURL(/\/landing/);
+  // ★ 랜딩은 framer-motion whileInView 로 스크롤 시 섹션이 나타난다. 로드 직후 fullPage 캡처는
+  //   화면 밖 섹션이 opacity:0 으로 잡히므로, 맨 아래까지 스크롤해 전 섹션 reveal 을 트리거한 뒤
+  //   맨 위로 복귀해 캡처한다(애니메이션은 한 번 나타나면 유지 → Hero·본문이 보이게).
+  await page.evaluate(async () => {
+    const step = window.innerHeight;
+    for (let y = 0; y <= document.body.scrollHeight; y += step) {
+      window.scrollTo(0, y);
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    window.scrollTo(0, 0);
+  });
+  await page.waitForTimeout(500);
   await page.screenshot({ path: "e2e/screenshots/step_1_landing.png", fullPage: true });
 
   // ── ② 로그인 (mock 원클릭) ──
@@ -124,10 +136,15 @@ test("부부 모드 Happy Path — 랜딩→로그인→주소 입력→진단�
   await inputB.fill("역삼");
   await page.getByRole("option", { name: /역삼동/ }).first().click();
 
+  // ★ 버튼은 canSubmit 충족 시 비활성(연한)→활성(진한 파랑) 으로 배경색 CSS 트랜지션을 한다.
+  //   toBeEnabled() 는 DOM disabled 해제 즉시 통과하지만 색 전환은 진행 중일 수 있어, 짧게 대기해
+  //   ③도 "진단 시작" 활성색이 안정된 상태로 캡처한다.
+  const submit = page.getByRole("button", { name: "진단 시작" });
+  await expect(submit).toBeEnabled();
+  await page.waitForTimeout(500);
   await page.screenshot({ path: "e2e/screenshots/step_3_addresses.png", fullPage: true });
 
   // ── ④ 진단 시작 (버튼 활성 확인) ──
-  const submit = page.getByRole("button", { name: "진단 시작" });
   await expect(submit).toBeEnabled();
   await page.screenshot({ path: "e2e/screenshots/step_4_ready.png", fullPage: true });
   await submit.click();
