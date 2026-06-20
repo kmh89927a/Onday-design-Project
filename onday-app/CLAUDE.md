@@ -8,9 +8,15 @@
 - Tailwind CSS v3 + shadcn/ui (Pretendard 폰트)
 - react-hook-form + Zod (폼 검증)
 - Zustand (글로벌 상태) + TanStack Query v5 (서버 상태)
-- Supabase Auth (카카오/네이버 OAuth) — MVP는 Mock
-- Prisma ORM (SQLite dev / Supabase PostgreSQL prod)
+- Supabase Auth (카카오/네이버 OAuth) — 실 연동 (mock 은 `NEXT_PUBLIC_USE_MOCK_AUTH=true` 토글로만)
+- Prisma 7 ORM + Supabase PostgreSQL (로컬·프로덕션 단일 — sqlite 이원화 폐지, PrismaPg 드라이버 어댑터)
 - react-kakao-maps-sdk (MVP는 MapPlaceholder)
+
+### 데이터 (DB)
+- 실제 영구 저장 = Supabase Postgres (`src/lib/db.ts` = PrismaPg 어댑터, in-memory 아님).
+- 4 모델: `User` · `Diagnosis` · `ShareLink` · `SavedSearch` (`prisma/schema.prisma`).
+- 진단·공유링크·저장검색이 콜드스타트/세션을 넘어 유지(공유 링크 다중 세션 지속).
+- 찜(favorites)은 별개 — 클라이언트 localStorage.
 
 ## 디렉토리 구조
 - `src/app/` — Next.js App Router 라우트
@@ -48,10 +54,10 @@
 persona-domain-flows, domain-dependencies, market-size, known-follow-ups, srs-v1.6-changes,
 task-domains-overview. 한국어 통합본은 `../my-동네궁합진단기-workbase/llm-wiki.ko.md`.
 
-## Mock 모드
-- `NEXT_PUBLIC_USE_MOCK=true`로 모든 외부 의존성 Mock
-- SQLite 로컬 DB (DATABASE_PROVIDER=sqlite)
-- Prisma 7 + better-sqlite3 adapter
+## 실행 모드
+- **기본 = real 모드** (`NEXT_PUBLIC_USE_MOCK=false`, `NEXT_PUBLIC_USE_MOCK_AUTH=false`) — Supabase Postgres + 실 외부 API.
+- `NEXT_PUBLIC_USE_MOCK=true` = 외부 의존성 Mock (개발용 선택 토글). DB 는 항상 Postgres — sqlite/in-memory 경로 없음.
+- env 검증: `src/lib/env.ts` 의 `getServerEnv`/`getClientEnv` (Zod) 가 누락/형식오류를 진입점에서 차단(#6).
 
 ## 현재 진행 상황
 
@@ -84,7 +90,7 @@ task-domains-overview. 한국어 통합본은 `../my-동네궁합진단기-workb
 **https://onday-prototype-claude-design.vercel.app**
 - `/` → `/landing` 자동 redirect (Step 13 변경: 기존 `/login` → `/landing`)
 - 랜딩페이지 CTA → `/login` → `/diagnosis` 진단 흐름
-- mock 모드 (`NEXT_PUBLIC_USE_MOCK=true`), in-memory store
+- real 모드 — Supabase Postgres 영구 저장 (구 in-memory store 폐지, `src/lib/db.ts` = PrismaPg 어댑터)
 - 베타 테스트 가능 수준
 
 ## 다음 시작 지점
@@ -94,9 +100,9 @@ task-domains-overview. 한국어 통합본은 `../my-동네궁합진단기-workb
 - Tier 2~5 강화는 9~12주차 일정에 맞춰
 
 ### Step 13 후보 (운영 안정화 — 베타 피드백 후 우선순위 조정)
-- Supabase Postgres 연결 (in-memory → 영구 저장, share link 다중 세션 유지)
-  · `src/lib/db.ts` 인터페이스 그대로 두고 driver adapter로 교체
-  · `prisma/seed.ts`는 보존되어 있음 (Step 12에서 tsconfig exclude만 추가)
+- ✅ (완료) Supabase Postgres 연결 — `src/lib/db.ts` 가 PrismaPg 드라이버 어댑터로 교체됨,
+  in-memory → 영구 저장 전환 완료(진단·공유링크·저장검색, share link 다중 세션 유지).
+  추가로 `/api/health` DB ping(#10) + `lib/env.ts` Zod env 검증(#6) 도입.
 - Lighthouse 측정 + 모바일 viewport(375px) 실기 검증
 - Sentry 연결 (`NEXT_PUBLIC_SENTRY_DSN`)
 - Kakao Map SDK 연결 (현재는 `MapPlaceholder`)
@@ -104,13 +110,13 @@ task-domains-overview. 한국어 통합본은 `../my-동네궁합진단기-workb
 ## Step 12 잔여 cleanup (Step 13+)
 - 잔존 `key={i}` (low-risk): `dev/page.tsx`, `map-placeholder.tsx`
 - 잔존 hsl 인라인: `button.tsx` / `mode-selector.tsx`의 disabled `hsl(220 30% 84%)` — 별도 token 검토
-- `better-sqlite3` / `@prisma/adapter-better-sqlite3` 미사용 dep 정리 (Postgres 전환과 함께)
+- ✅ (완료) `better-sqlite3` / `@prisma/adapter-better-sqlite3` 제거 — `@prisma/adapter-pg` + `pg` 로 전환됨
 
 ## 주의사항
 - 한글 인코딩: Write 후 반드시 `grep -rn $'\xef\xbf\xbd'` 로 검증
 - Prisma 7: `@/generated/prisma/client` 경로 사용 (index.ts 없음)
 - shadcn v4: `@base-ui/react` 사용 (Radix 아님), oklch 덮어쓰기 주의
-- **in-memory store는 `globalThis` 핀 필수** — Next.js dev HMR 시 모듈 재로딩으로 Map 초기화됨 (`src/lib/db.ts` 참고). Vercel warm 람다에서도 같은 인스턴스 재사용에 도움.
+- **PrismaClient는 `globalThis` 핀 필수** — Next.js dev HMR 시 모듈 재로딩으로 커넥션 풀이 새로 열리는 누수 방지 (`src/lib/db.ts` 의 `__ondayPrisma`). Vercel warm 람다에서도 같은 풀 재사용. (구 in-memory Map 방식은 폐지 — 이제 Supabase Postgres 영구 저장.)
 - **`src/generated/prisma/`는 `.gitignore`** — 의존하는 파일은 `tsconfig exclude`로 빼야 Vercel 빌드 통과 (`prisma/seed.ts` 사례).
 - **React 19 ESLint 규칙**: `react-hooks/set-state-in-effect`가 useEffect → setState 패턴을 차단. localStorage 같은 외부 store는 `useSyncExternalStore`로 (`deadline-banner.tsx` 참고).
 
