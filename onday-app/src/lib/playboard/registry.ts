@@ -412,8 +412,41 @@ export interface ConvergenceRef {
   link?: string; // PR/이슈 URL 등
 }
 
-/** 현재 비움 — Phase B+ 수렴 시 append. 빈 배열 = 아직 수렴 항목 없음(정직). */
-export const CONVERGENCE: ConvergenceRef[] = [];
+/** Phase D — AREA_SPECS·SCREEN_SPECS 에서 식별된 실제 갭의 후속 수렴 항목.
+ *  ★ 정직: 아직 GitHub 이슈로 발행되지 않은 식별된 갭은 status="planned", link 없음.
+ *  ★ deferred(GA 이후·v1.5+ 의도적 결정)는 후속 to-do 가 아니므로 여기 넣지 않는다. */
+export const CONVERGENCE: ConvergenceRef[] = [
+  {
+    kind: "gap-followup",
+    targetId: "couple-result",
+    title: "REQ-FUNC-007 — 교통 API 자동 재시도 1회 구현 (현재 catch→토스트만)",
+    status: "planned",
+  },
+  {
+    kind: "gap-followup",
+    targetId: "access-control",
+    title: "REQ-NF-022 — 악성 트래픽 차단 WAF + Rate Limiter(IP 60req/분)",
+    status: "planned",
+  },
+  {
+    kind: "gap-followup",
+    targetId: "access-control",
+    title: "REQ-NF-021 — 비인가 공유 링크 접근 침투 테스트",
+    status: "planned",
+  },
+  {
+    kind: "gap-followup",
+    targetId: "performance",
+    title: "REQ-NF-002 — Lighthouse CI 게이트 (baseline 측정은 #126 완료)",
+    status: "planned",
+  },
+  {
+    kind: "gap-followup",
+    targetId: "resilience",
+    title: "DB 마이그레이션 자동 롤백/게이트형 워크플로우 (★ 순수 미기획 — SRS/PRD 부재)",
+    status: "planned",
+  },
+];
 
 // ──────────────────────────────────────────────────────────────────────────
 // 7. 화면별 기술스펙 5종 (요구사항·게이트·데이터계약·예외·NFR)

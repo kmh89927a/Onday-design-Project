@@ -8,6 +8,8 @@
   - rev.3 (2026-04-18): SRS Rev 1.5 MVP 축소 반영 — F5 간이 저장·불러오기로 축소, Story 3-5 AC 축소, §5-3 AES-256·ISMS-P 제거, §7-2 Out-of-Scope 3건 추가, §7-3 R4 완화 전략 수정
   - rev.4 (2026-04-21): SRS Rev 1.6 + Task List v1.2 정합성 반영 — Supabase Auth 전환 (§5-3), 결제 도메인 MVP 제외 (§7-2 Out-of-Scope 추가), 북극성 KPI → 진단 완료 수 (§1-4), 보조1 → WTP 설문 응답률, §5-4 모니터링 도구 갱신, §7-5 PG사 의존성 제거 (+ ERD SAVED_SEARCH 3필드 단순화, /api/v1/search/replay 제거)
 
+> **운영 현황·구현 상태는 Playboard 참조 (역할 분담).** 본 PRD는 **비전·요구사항·근거(why·what)**의 SoT이고, **화면별 구현 상태·기술기획(요구사항/게이트/데이터계약/예외/NFR)·mission-critical 제어의 4-상태(구현/이연/미구현/미기획)·갭 현황**은 **Playboard**(`/playboard`, SoT = `onday-app/src/lib/playboard/registry.ts`)가 운영 SoT다. 요구사항 변경 시 본 PRD와 Playboard registry를 함께 갱신한다.
+
 ---
 
 ## 1. 개요·목표
