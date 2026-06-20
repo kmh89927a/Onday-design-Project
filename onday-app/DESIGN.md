@@ -161,48 +161,88 @@ OnDay의 **실제 구현 디자인 시스템**을 단일 문서로 정리한다.
 ## 4. 레퍼런스 컴포넌트
 
 > 실제 구현된 핵심 컴포넌트만(결정 #6). 전체 31개 설계 스펙은 `design-input/components-spec.md` 참조.
+> 각 항목: **용도 · variant 의미 · props/상태 · 실 사용 예시(file:line)**. 용례는 전부 실제 코드 근거.
+>
+> ⚠️ **primitive vs 도메인 인라인**: `ui/card.tsx`·`ui/input.tsx`·`ui/sheet.tsx`(shadcn 베이스)는 현재
+> **`/dev` 쇼케이스에서만 import**되고, 실제 화면은 같은 토큰을 적용한 도메인 컴포넌트(CandidateCard·
+> SafetyCard·AddressInput·BottomSheet)를 쓴다. 아래는 그 실사용을 정직하게 반영한다.
 
 ### Button — `src/components/ui/button.tsx`
-| variant | 스타일 |
-|---|---|
-| `default`(primary) | `bg-primary text-primary-foreground` · disabled `bg-hsl(220 30% 84%)` |
-| `outline` | `bg-surface border-card-border` |
-| `ghost` | `bg-transparent text-ink-2` |
-| `destructive` | `bg-danger text-white` |
-| `secondary` | `bg-secondary text-secondary-foreground` |
-| `kakao` / `naver` | `bg-oauth-* text-oauth-*-ink` |
-| `link` | `text-primary underline` |
-
-**size**: `default`(=`md`, h 52px, rounded-2xl, px-18) · `sm`(h36, rounded-lg) · `lg`(h44) · `single-foot`(lg + border + shadow) · `icon`(52²) · `icon-sm`(36²). hover `brightness-95`.
+- **용도**: 모든 클릭 액션. 주 CTA = `default`(primary), 보조 = `outline`/`ghost`.
+- **variant 의미**(실사용):
+  | variant | 스타일 | 실 용례 |
+  |---|---|---|
+  | `default`(primary) | `bg-primary text-primary-foreground` · disabled `bg-[hsl(220 30% 84%)]` | 진단 시작·랜딩 CTA |
+  | `outline` | `bg-surface border-card-border` | 싱글 결과 "리포트 저장(PDF)" (`single-result-view.tsx:886,904`) |
+  | `ghost` | `bg-transparent text-ink-2` | 저강조 액션 |
+  | `destructive` | `bg-danger text-white` | 파괴적 액션 |
+  | `secondary` | `bg-secondary text-secondary-foreground` | 보조 강조 |
+  | `kakao`/`naver` | `bg-oauth-* text-oauth-*-ink` | OAuthButton 내부 |
+  | `link` | `text-primary underline` | 인라인 링크형 |
+- **size/props**: size `default`(=md, h52, rounded-2xl, px-18)·`sm`(h36)·`lg`(h44)·`single-foot`·`icon`(52²)·`icon-sm`(36²). props `leading`/`trailing`(아이콘), `loading`(→스피너 + `aria-busy` + 클릭 차단, `button.tsx:12,81`), `fullWidth`. hover `brightness-95`.
+- **실 예시** — 진단 시작 CTA (`src/app/diagnosis/page.tsx:610`):
+  ```tsx
+  <Button fullWidth onClick={handleSubmit} loading={createDiagnosis.isPending}
+          disabled={!canSubmit} trailing={<ArrowRight />}>진단 시작</Button>
+  ```
+  랜딩 1차 CTA (`landing-client.tsx:172`): `<Button fullWidth size="lg" trailing={<ArrowRight />}>`.
 
 ### Badge — `src/components/ui/badge.tsx`
-base: `rounded-sm border-transparent font-bold`. **size**: `sm`(기본) · `xs`.
-| variant | 스타일 |
-|---|---|
-| `default` | `bg-primary-soft text-primary` |
-| `best` | `bg-danger text-primary-foreground shadow-sm` (★ BEST 뱃지) |
-| `solid` | `bg-primary text-primary-foreground` |
-| `secondary`/`ok`/`info`/`warning`/`neutral`/`danger`/`outline` | 각 status soft/배경 |
-| `grade-a` | `bg-[hsl(152 76% 90%)] text-[hsl(161 94% 24%)]` |
-| `grade-b` | `bg-[hsl(213 97% 87%)] text-[hsl(224 76% 48%)]` |
-| `grade-c` | `bg-[hsl(48 96% 89%)] text-[hsl(35 92% 33%)]` |
-| `grade-d` | `bg-[hsl(0 93% 94%)] text-[hsl(0 74% 42%)]` |
-| `fatigue-low/medium/high` | status-soft 배경 + `fatigue-*` 텍스트 |
+- **용도**: 상태·등급·라벨 칩. base `rounded-sm border-transparent font-bold`, size `sm`(기본)·`xs`.
+- **variant 의미**(실사용): `best`=후보 1위 강조, `solid`/`neutral`=순위 칩, `grade-a~d`=야간 안전(파스텔), `fatigue-*`=환승 피로도, 나머지(`ok`/`info`/`warning`/`danger`/`outline`)는 status 칩(대부분 `/dev` 쇼케이스).
+  | variant | 스타일 |
+  |---|---|
+  | `default` | `bg-primary-soft text-primary` |
+  | `best` | `bg-danger text-primary-foreground shadow-sm` (★ BEST) |
+  | `solid` | `bg-primary text-primary-foreground` |
+  | `grade-a~d` | 파스텔 `bg-[hsl(152 76% 90%)] text-[hsl(161 94% 24%)]` … (a/b/c/d) |
+  | `fatigue-low/medium/high` | status-soft 배경 + `fatigue-*` 텍스트 |
+  | `ok`/`info`/`warning`/`neutral`/`danger`/`outline` | 각 status soft/배경 |
+- **실 예시** — BEST + 순위 칩 (`src/components/card/candidate-card.tsx:85,106`):
+  ```tsx
+  {isBest && <Badge variant="best">BEST</Badge>}           // isBest = rank === 1
+  <Badge variant={isBest ? "solid" : "neutral"} size="xs">…</Badge>
+  ```
 
-### Card — `src/components/ui/card.tsx`
-base: `rounded-lg border bg-surface shadow-card`. **variant**: `default`(border-card-border) · `accent`(border-primary + bg-primary-soft). **size**: `default`(py-s-4) · `sm`(py-s-3) · `lg`(py-s-5).
+### Card 패턴 — primitive `ui/card.tsx` + 도메인 인라인
+- **용도**: 표면 컨테이너. base `rounded-lg border bg-surface shadow-card`.
+- **primitive**(`ui/card.tsx`): variant `default`(border-card-border)·`accent`(border-primary + bg-primary-soft); size `default`(py-s-4)·`sm`·`lg`. **현재 import는 `/dev/page.tsx`뿐**.
+- **도메인 실사용**(같은 패턴을 인라인 재현):
+  - `CandidateCard` (`candidate-card.tsx:163`) — `<a>` 베이스, best 시 `primary-soft + border-primary`.
+  - `SafetyCard` (`safety-card.tsx:95`) — `rounded-lg border border-card-border bg-surface p-s-4 shadow-card`.
+- → Card 패턴을 새로 쓸 땐 위 클래스 조합(또는 `ui/card.tsx`)을 따른다.
 
 ### Input — `src/components/ui/input.tsx`
-`h-14`(56px) · `border-[1.5px] border-card-border` · `rounded-lg` · `px-3.5` · `text-body`. **focus**: `border-primary` + `ring-4 ring-primary/10`. disabled `bg-surface-soft opacity-60`.
+- **용도**: 단일 텍스트/날짜 필드. `h-14`(56px)·`border-[1.5px] border-card-border`·`rounded-lg`·`px-3.5`·`text-body`. **focus** `border-primary` + `ring-4 ring-primary/10`. disabled `bg-surface-soft opacity-60`.
+- **실사용 범위**(정직): 도메인은 **데드라인 날짜 입력 1곳**(`src/app/deadline/page.tsx:181`)에서 사용. **주소 입력은 `ui/Input`이 아니라 별도 `AddressInput`**(combobox + 자동완성 + verified, `form/address-input.tsx`)을 쓴다.
 
-### Sheet (BottomSheet) — `src/components/ui/sheet.tsx`
-**side** `bottom`(기본): `rounded-t-3xl px-s-5 pt-s-3 pb-s-7 max-h-[90vh]` + `SheetHandle`. `top`/`left`/`right` 폴백 제공. 진입/이탈 = translate (data-starting/ending-style). shadow `sheet`.
+### Sheet (도메인 = BottomSheet/DetailSheet) — `src/components/sheet/bottom-sheet.tsx`
+- **용도**: 모바일 바텀 시트(후보 상세). 화면에서 카드/마커 클릭 시 하단에서 슬라이드업.
+- **실체**: 도메인 바텀시트는 **`BottomSheet`**(Base UI `Dialog` 기반, `bottom-sheet.tsx:4`)이며, 후보 상세는 이를 감싼 **`DetailSheet`**(`sheet/detail-sheet.tsx`)다. shadcn `ui/sheet.tsx`(side bottom/top/left/right + `SheetHandle`)는 **`/dev` 쇼케이스 전용**.
+- **스타일**: bottom `rounded-t-3xl` + shadow `sheet` + 진입/이탈 translate(data-starting/ending-style), 백드롭 + Close 버튼.
+- **실 예시** — 후보 상세 (`src/app/diagnosis/result/[id]/result-content.tsx:613`):
+  ```tsx
+  <DetailSheet open={openId !== null} onClose={() => setOpenId(null)}
+               candidate={{ name, score, pills: […] }} />
+  ```
+  싱글 결과도 동일 패턴(`single-result-view.tsx:773`).
 
 ### CandidateCard — `src/components/card/candidate-card.tsx`
-props: `name · score · rank · best · commutes[{tag A/B, minutes}]`. `best`(rank=1 또는 best=true) = **primary-soft + border-primary + BEST 뱃지**. 점수 티어: ≥90 / ≥80 / ≥70 (`scoreTier`). aria-label = 이름+점수+순위+통근 3중.
+- **용도**: 추천 동네 후보 1건 카드(결과 목록의 핵심 단위).
+- **props**: `name · score · rank · best · commutes[{tag:'A'|'B', mode, minutes}]`. `best`(rank=1 또는 `best=true`) → **primary-soft + border-primary + BEST 뱃지**. 점수 티어 `scoreTier`: ≥90 / ≥80 / ≥70 (`candidate-card.tsx:20-30`). **aria-label** = 이름+점수+순위+통근 3중(`:75`).
+- **실 예시** — 결과 목록 (`src/app/diagnosis/result/[id]/result-content.tsx:581`):
+  ```tsx
+  <CandidateCard name={`${c.gu} ${c.dong}`} score={c.score} rank={i+1}
+                 best={i === 0} commutes={[{ tag:"A", mode, minutes:c.commuteA.time }, …]} />
+  ```
 
 ### SafetyGradeBadge — `src/components/data/safety-grade-badge.tsx`
-등급 라벨: **A 매우 안전 · B 안전 · C 주의 · D 위험**. `null`(데이터 없음) → 중립 회색 "준비중"(letter "—"). **letter + label + 색 3중 표기**(색 단독 금지). A·B=primary 파스텔, C·D=warning/danger soft.
+- **용도**: 야간 안전 등급 표기(싱글 모드 핵심). 등급 라벨 **A 매우 안전·B 안전·C 주의·D 위험**(`:21-24`). `null`(데이터 없음) → 중립 회색 "준비중"(letter "—", `:40-46`).
+- **상태/색**: **letter + label + 색 3중 표기**(색 단독 금지). A·B = primary 파스텔, C·D = warning/danger soft(뱃지 grade-* 계열).
+- **실 예시**: `SafetyCard` 우상단 (`safety-card.tsx:61`), 찜 목록 (`favorites-menu.tsx:159`):
+  ```tsx
+  <SafetyGradeBadge grade={grade} label={grade ? gradeLabel : undefined} />
+  ```
 
 ---
 
