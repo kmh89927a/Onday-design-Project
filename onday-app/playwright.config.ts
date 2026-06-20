@@ -43,6 +43,12 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_USE_MOCK: "true",
       NEXT_PUBLIC_USE_MOCK_AUTH: "true",
+      // ★ 결과 지도: 빈 값으로 카카오 SDK 키를 끈다 → MapCanvas 가 useSdk=false 로 SVG
+      //   placeholder(격자+한강+추천마커+직장핀+연결선)를 즉시 렌더한다(map-canvas.tsx:91,136).
+      //   헤드리스에서 외부 카카오 타일이 안 그려져 백지가 되던 문제를 외부 의존 0 으로 해결 —
+      //   OnDay 핵심 가치(동선 교집합/여가거점 지도 시각화)를 결정적으로 캡처한다.
+      //   (라이브에선 실 키가 있어 카카오 지도, 로드 실패 시 동일 SVG fallback.)
+      NEXT_PUBLIC_KAKAO_MAP_KEY: "",
     },
   },
 });
