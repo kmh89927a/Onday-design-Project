@@ -25,6 +25,7 @@ import {
   trackDiagnosisInputViewed,
   trackAddressVerified,
   trackDiagnosisSubmitClicked,
+  trackSavedSearchLoaded,
 } from "@/lib/analytics/mixpanel";
 import { LAST_CONFIG_KEY, useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useSessionStore } from "@/stores/session";
@@ -288,6 +289,8 @@ export default function DiagnosisPage() {
       );
       setMonthlyMaxInput(nextIsWolse && nextBudget ? String(nextBudget.max) : "");
       setDealType(nextDealType);
+      // ★ Retention 퍼널 — 불러오기 성공. mode 만(불러온 config 의 주소는 미포함, PII 0).
+      trackSavedSearchLoaded(config.mode === "single" ? "single" : "couple");
       pushToast({ variant: "default", message: "이전 조건을 불러왔습니다 ✨" });
     } catch {
       pushToast({ variant: "default", message: "이전 조건 불러오기 실패" });

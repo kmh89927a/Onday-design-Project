@@ -9,6 +9,7 @@ import { ReportCard } from "@/components/share/report-card";
 import { ShareHero } from "@/components/share/share-hero";
 import { Button } from "@/components/ui/button";
 import { buildReportStats } from "@/features/share/preview-stats";
+import { trackShareLinkClicked } from "@/lib/analytics/mixpanel";
 import type { CandidateArea } from "@/lib/types";
 
 // ★ W2: production = 대중교통 ODsay + 자차 카카오 모빌리티(둘 다 브라우저 직접) / mock = Haversine 추정.
@@ -59,6 +60,15 @@ function expiryChipText(expiresAt: string): string {
 export function ShareReportView({ data }: ShareReportViewProps) {
   const { preview, locked, total } = data;
   const lockedCount = locked.length;
+
+  // ★ Referral 퍼널 — 수신자 진입 1회(클라뷰). trackedRef = Strict Mode 2회·재마운트 중복 방지(landing 선례).
+  //   ★★ mode 만 — uniqueUrl·addressA/B 절대 미포함(share data 에 섞여있음, 재식별 차단).
+  const clickedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (clickedRef.current) return;
+    clickedRef.current = true;
+    trackShareLinkClicked(data.mode);
+  }, [data.mode]);
 
   return (
     <main className="flex min-h-screen flex-col bg-bg pb-[120px]">

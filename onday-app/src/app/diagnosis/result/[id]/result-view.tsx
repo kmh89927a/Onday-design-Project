@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { liftLegacyDealType } from "@/features/diagnosis/result-utils";
 import { useDiagnosis } from "@/features/diagnosis/use-diagnosis";
-import { trackDiagnosisCompleted } from "@/lib/analytics/mixpanel";
+import { trackDiagnosisCompleted, trackShareLinkCreated } from "@/lib/analytics/mixpanel";
 import { generateRelaxationSuggestions } from "@/lib/diagnosis/generate-suggestions";
 import type { DiagnosisFilters } from "@/lib/types";
 import { copyToClipboard } from "@/lib/utils/clipboard";
@@ -131,6 +131,8 @@ export function ResultView({ id }: ResultViewProps) {
         throw new Error(err.error ?? "공유 링크 생성에 실패했습니다");
       }
       const data: { shareUrl: string } = await res.json();
+      // ★ Referral 퍼널 — 생성 성공. diagnosis_id·mode 만(공유 토큰 shareUrl 미포함, PII 0).
+      trackShareLinkCreated(id, mode);
       const absolute = `${window.location.origin}${data.shareUrl}`;
       await copyToClipboard(absolute);
       pushToast({
