@@ -158,20 +158,22 @@ flowchart TB
 
 ### 3-1. 이벤트 스키마 표 (완비 / 보완)
 
+> **구현 현황 (본 리포트 작성 후 배선 반영):** 보완 10개 중 **9개 배선 완료** — 상단 퍼널 5종(#241) + Referral·Retention 4종(#242). 미배선은 `share_link_signup` 1개(attribution 갭, 후속 과제). 속성은 실제 `onday-app/src/lib/analytics/mixpanel.ts` 기준(PII 제외분 정정). 기존 2종(`diagnosis_started`·`diagnosis_completed`)·`app_error`는 그 이전 완비.
+
 | event_name | 발생 화면 | 트리거(행동) | 핵심 properties | AARRR | NSM/Input | 상태 |
 |------------|----------|--------------|-----------------|-------|-----------|------|
 | `diagnosis_started` | `/diagnosis` | 제출 성공(diagnosisId 발급) | `diagnosis_id`, `timestamp` | Activation | 제출 성공률(Input2) | ✅ **완비** (`page.tsx:202`) |
 | `diagnosis_completed` | `/diagnosis/result/[id]` | 결과 화면 진입 | `diagnosis_id`, `timestamp` | Activation(Aha) | 🌟 **NSM** | ✅ **완비** (`result-view.tsx:73`) |
-| `landing_viewed` | `/landing` | 랜딩 최초 노출 | `referrer`, `utm_*` | Acquisition | 유입 수 | ⚠️ **보완** |
-| `login_entered` | `/login` | 로그인/게스트 진입 | `method`(kakao/naver/guest) | Acquisition→Activation | 유입→활성 | ⚠️ **보완** |
-| `diagnosis_input_viewed` | `/diagnosis` | 입력 화면 진입 | `mode`(couple/single) | Activation | 입력 완료율(Input1) 분모 | ⚠️ **보완** |
-| `address_verified` | `/diagnosis` | 주소 A·B 커버리지 검증 통과 | `count`(1/2), `region` | Activation | 입력 완료율(Input1) 분자 | ⚠️ **보완** |
-| `diagnosis_submit_clicked` | `/diagnosis` | 제출 버튼 클릭(성공 전) | `mode`, `has_deadline` | Activation | 제출 성공률 분모 | ⚠️ **보완** |
-| `share_link_created` | `/diagnosis/result/[id]` | 공유 링크 생성(`/api/share`) | `diagnosis_id` | Referral | 공유 생성률(Input3) | ⚠️ **보완**(G3) |
-| `share_link_clicked` | `/share/[uuid]` | 공유 링크 수신자 진입 | `uuid`(해시) | Referral | 보조 KPI(REQ-NF-028) | ⚠️ **보완**(G3) |
-| `share_link_signup` | `/login` | 공유 경유 2nd 유저 가입 | `method`, `via_share` | Referral | 보조 KPI(REQ-NF-029) | ⚠️ **보완**(G3) |
-| `saved_search_loaded` | `/diagnosis` | "이전 조건 불러오기" | — | Retention | 재진단율 | ⚠️ **보완** |
-| `deadline_mode_activated` | `/deadline` | 데드라인 모드 진입 | `days_left` | Retention | REQ-NF-032 | ⚠️ **보완** |
+| `landing_viewed` | `/landing` | 랜딩 최초 노출 | `timestamp` | Acquisition | 유입 수 | ✅ **완비** (#241, `landing-client.tsx`) |
+| `login_entered` | `/login` | 로그인/게스트/심사관 진입 | `method`(kakao/guest/reviewer) | Acquisition→Activation | 유입→활성 | ✅ **완비** (#241, `login-form.tsx`) |
+| `diagnosis_input_viewed` | `/diagnosis` | 입력 화면 진입 | `mode`(couple/single) | Activation | 입력 완료율(Input1) 분모 | ✅ **완비** (#241, `diagnosis/page.tsx`) |
+| `address_verified` | `/diagnosis` | 주소 A·B 커버리지 검증 통과 | `count`(1/2) | Activation | 입력 완료율(Input1) 분자 | ✅ **완비** (#241, `count`만 — 주소·좌표 PII 제외) |
+| `diagnosis_submit_clicked` | `/diagnosis` | 제출 버튼 클릭(성공 전) | `mode` | Activation | 제출 성공률 분모 | ✅ **완비** (#241, `has_deadline` 미포함 — /diagnosis에 deadline 입력 없음) |
+| `share_link_created` | `/diagnosis/result/[id]` | 공유 링크 생성(`/api/share`) | `diagnosis_id`, `mode` | Referral | 공유 생성률(Input3) | ✅ **완비** (#242, 부부·싱글 handleShare) |
+| `share_link_clicked` | `/share/[uuid]` | 공유 링크 수신자 진입(클라뷰) | `mode` | Referral | 보조 KPI(REQ-NF-028) | ✅ **완비** (#242, `uuid` 미포함 — 공유 토큰 PII 제외) |
+| `share_link_signup` | `/login` | 공유 경유 2nd 유저 가입 | `method`, `via_share`(제안) | Referral | 보조 KPI(REQ-NF-029) | ⚠️ **미배선**(G3 — attribution 연결 없음, 후속 과제) |
+| `saved_search_loaded` | `/diagnosis` | "이전 조건 불러오기" | `mode` | Retention | 재진단율 | ✅ **완비** (#242, handleLoadLast 성공 시) |
+| `deadline_mode_activated` | `/deadline` | 데드라인 저장(활성화) | `days_left` | Retention | REQ-NF-032 | ✅ **완비** (#242, handleSave 성공 시) |
 | `app_error`(서버) | 6개 API 라우트 | catch 블록 진입 | `route`,`statusCode`,`errorType`,`userType`,`visitorId` | (운영) | 퍼널 누수(에러) | ✅ **완비** (`error_logs`, PR #238·#239) |
 
 > **측정 가능성 환원 적용:** "사용자가 적극적이다" → `7일 내 diagnosis_completed 3회+`; "부부가 합의했다" → `share_link_clicked AND 2nd diagnosis_completed`; "동네가 마음에 들었다" → `후보 카드 detail_sheet 열람 + 저장`.
