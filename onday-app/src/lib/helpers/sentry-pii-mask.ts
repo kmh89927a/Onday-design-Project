@@ -9,7 +9,8 @@ import type { ErrorEvent } from "@sentry/nextjs";
 const EMAIL_REGEX = /[\w.+-]+@[\w-]+\.[\w.-]+/g;
 const PHONE_REGEX = /010-?\d{3,4}-?\d{4}/g;
 
-function maskPII(text: string): string {
+// ★ export 추가(동작 무변경) — 11주차 로깅 유틸(log-error.ts)이 메시지 마스킹에 재사용(중복 정의 X).
+export function maskPII(text: string): string {
   return text.replace(EMAIL_REGEX, "[REDACTED]").replace(PHONE_REGEX, "[REDACTED]");
 }
 
