@@ -66,3 +66,26 @@ model SavedSearch {
 
   @@map("saved_searches")
 }
+
+// 3-sink 로깅 DB 채널 (11주차 로깅 — 콘솔+DB+Sentry 중 DB).
+// ★ 프라이버시: 개인 식별 필드 없음 — user_id 원문·이메일·이름·정확한 주소 미기록.
+//   userType(유형만)·visitorId(익명 localStorage, 개인 신원 무관)·device/os(대분류)만.
+//   message 는 호출부에서 maskPII(이메일·전화 [REDACTED]) 거친다. USER 와 FK 없음(귀속 방지).
+model ErrorLog {
+  id         String   @id @default(uuid())
+  timestamp  DateTime @default(now())
+  level      String // error | warn
+  statusCode Int?     @map("status_code")
+  route      String? // API route (예: POST /api/diagnosis)
+  screenPath String?  @map("screen_path") // 화면 경로 (예: /diagnosis/result/[id])
+  errorType  String?  @map("error_type") // AppErrorCode 등 분류
+  message    String // maskPII 거친 메시지
+  userType   String?  @map("user_type") // kakao | guest | reviewer | null
+  visitorId  String?  @map("visitor_id") // 익명 방문자 ID(localStorage, 30일) — 개인 식별 아님
+  device     String? // mobile | desktop
+  os         String? // ios | android | windows | mac | other
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([timestamp])
+  @@map("error_logs")
+}
