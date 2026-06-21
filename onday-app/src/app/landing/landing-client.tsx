@@ -11,6 +11,7 @@ import {
 import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { trackLandingViewed } from "@/lib/analytics/mixpanel";
 import { motion, MotionConfig, useScroll, useTransform, useReducedMotion, useMotionValue, animate } from "framer-motion";
 import CountUp from "react-countup";
 
@@ -799,6 +800,14 @@ function HeaderNav() {
 
 /* ── Main ── */
 export function LandingClient() {
+  // ★ 상단 퍼널 시작점 — 랜딩 진입 1회. trackedRef = Strict Mode 2회·재마운트 중복 방지(result-view 선례).
+  const trackedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (trackedRef.current) return;
+    trackedRef.current = true;
+    trackLandingViewed();
+  }, []);
+
   return (
     <MotionConfig reducedMotion="user">
     <div className="relative min-h-screen bg-bg">

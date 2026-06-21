@@ -43,3 +43,35 @@ export function trackDiagnosisCompleted(diagnosisId: string): void {
     timestamp: Date.now(),
   });
 }
+
+// ── 상단 퍼널 5종 (11주차 수요 — AARRR_NSM_PROPOSAL.md G2 해소: 진단 제출 前 이탈 가시화) ──
+//   ★ 기존 패턴 동일: ensureInit(token no-op·ip:false) + 비식별 속성만.
+//   ★ PII 0 — 주소·좌표·역 이름·이메일 절대 미포함. 유형/카운트/모드 같은 카테고리만.
+
+export function trackLandingViewed(): void {
+  if (!ensureInit()) return;
+  mixpanel.track("landing_viewed", { timestamp: Date.now() });
+}
+
+export function trackLoginEntered(method: "kakao" | "guest" | "reviewer"): void {
+  if (!ensureInit()) return;
+  mixpanel.track("login_entered", { method, timestamp: Date.now() });
+}
+
+export function trackDiagnosisInputViewed(mode: "couple" | "single"): void {
+  if (!ensureInit()) return;
+  mixpanel.track("diagnosis_input_viewed", { mode, timestamp: Date.now() });
+}
+
+// ★ count = 확정된 주소 순번(1=A, 2=B). 주소 title·coordinate·역 이름은 절대 담지 않는다(재식별 차단).
+export function trackAddressVerified(count: 1 | 2): void {
+  if (!ensureInit()) return;
+  mixpanel.track("address_verified", { count, timestamp: Date.now() });
+}
+
+// ★ mode 만 — /diagnosis 입력 화면엔 deadline 입력이 없다(deadline 은 별도 /deadline 라우트).
+//   설계의 has_deadline 은 deadline 발 제출 지점이 생기면 그때 추가(없는 값 만들지 않음).
+export function trackDiagnosisSubmitClicked(mode: "couple" | "single"): void {
+  if (!ensureInit()) return;
+  mixpanel.track("diagnosis_submit_clicked", { mode, timestamp: Date.now() });
+}

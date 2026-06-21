@@ -20,7 +20,12 @@ import { liftLegacyDealType } from "@/features/diagnosis/result-utils";
 import { useAddressSuggest } from "@/features/diagnosis/use-address-suggest";
 // ★ Mismatch ⑬ 정정: isWithinSeoulMetropolitan → isWithinMetroBounds (★ CMD-DIAG-001 산출물 정합, α₁ page.tsx 책임).
 import { isWithinMetroBounds } from "@/lib/diagnosis";
-import { trackDiagnosisStarted } from "@/lib/analytics/mixpanel";
+import {
+  trackDiagnosisStarted,
+  trackDiagnosisInputViewed,
+  trackAddressVerified,
+  trackDiagnosisSubmitClicked,
+} from "@/lib/analytics/mixpanel";
 import { LAST_CONFIG_KEY, useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useSessionStore } from "@/stores/session";
 import { useUIStore } from "@/stores/ui";
@@ -92,6 +97,14 @@ export default function DiagnosisPage() {
   const [queryL2, setQueryL2] = React.useState(leisureB);
   // 여가거점2 점진 공개 — 처음엔 L1만, "+ 추가"로 L2 노출. 이미 값 있으면(불러오기) 자동 노출.
   const [showL2, setShowL2] = React.useState(() => Boolean(leisureB));
+
+  // ★ 상단 퍼널 — 진단 입력 진입 1회. trackedRef = Strict Mode 2회·재마운트 중복 방지(result-view 선례).
+  const inputViewedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (inputViewedRef.current) return;
+    inputViewedRef.current = true;
+    trackDiagnosisInputViewed(mode);
+  }, [mode]);
 
   // Issue #112 — maxCommuteTime + budget 입력 영역 (★ 단방향 input → store 동기화, "이전 조건 불러오기" 시점 별도 sync).
   //   budget은 억 단위 input + 내부 만원 변환 (★ formatBudgetFilter "X-Y억" 표시 정합).
@@ -178,6 +191,8 @@ export default function DiagnosisPage() {
 
   const handleSubmit = async () => {
     if (!canSubmit || !coordinateA) return;
+    // ★ 상단 퍼널 — 가드 뒤 = "유효한 제출 시도"(성공률 분모). 아래 diagnosis_started(성공 後)와 쌍.
+    trackDiagnosisSubmitClicked(mode);
     setLoading(true);
     try {
       const data = await createDiagnosis.mutateAsync({
@@ -340,6 +355,8 @@ export default function DiagnosisPage() {
               }
               setAddressA(item.title, item.coordinate);
               setQueryA(item.title);
+              // ★ 상단 퍼널 — count(1=A)만. 주소 title·coordinate·역 이름 절대 미포함(재식별 차단).
+              trackAddressVerified(1);
             }}
           />
           {isCouple && (
@@ -359,6 +376,8 @@ export default function DiagnosisPage() {
                 }
                 setAddressB(item.title, item.coordinate);
                 setQueryB(item.title);
+                // ★ 상단 퍼널 — count(2=B)만. 주소 title·coordinate·역 이름 절대 미포함(재식별 차단).
+                trackAddressVerified(2);
               }}
             />
           )}
