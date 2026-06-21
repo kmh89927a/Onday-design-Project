@@ -8,9 +8,8 @@ import {
   rationaleSchema,
   sanitizeRationale,
 } from "@/lib/summary/rationale";
-import { createAppError } from "@/lib/helpers/app-error";
-import { reportErrorToSentry } from "@/lib/helpers/sentry-error";
-import { CommonErrorCode } from "@/lib/types/errors";
+import { getServerUser } from "@/lib/auth/session";
+import { logError, type LogUserType } from "@/lib/logging/log-error";
 
 // 30분 요약 — Gemini "이 동네 추천 이유" 한 줄 (UI-011/QRY-DL-002 Phase 1).
 //   /api/insight(하루 미리보기) 패턴 복제 — createGoogleGenerativeAI + generateObject + thinkingBudget=0.
@@ -81,10 +80,28 @@ export async function POST(request: Request) {
     const rationale = sanitizeRationale(object.rationale, facts);
     return NextResponse.json({ rationale, source: "ai" });
   } catch (error) {
-    // Gemini 실패/타임아웃/쿼터/스키마 불일치/미화 차단 → Sentry 기록 후 룰 fallback (빈 카드 0).
-    reportErrorToSentry(
-      createAppError(CommonErrorCode.INTERNAL_SERVER_ERROR, error),
-    );
+    // Gemini 실패/타임아웃/쿼터/스키마 불일치/미화 차단 → 룰 fallback (빈 카드 0).
+    // ★ 기존 reportErrorToSentry 를 logError 로 교체 — logError 가 콘솔+DB+Sentry 상위집합이라
+    //   Sentry 보고는 logError 내부 reportErrorToSentry 로 그대로 유지(중복 X, 단일화).
+    //   ★ statusCode=200 — 에러지만 사용자엔 fallback 200 응답(실제 응답값). errorType 으로 구분.
+    let userType: LogUserType | null = null;
+    try {
+      userType = (await getServerUser()) ? "kakao" : null;
+    } catch {
+      // best-effort
+    }
+    await logError({
+      level: "error",
+      message: error instanceof Error ? error.message : String(error),
+      statusCode: 200,
+      route: "POST /api/summary",
+      errorType: "ai_fallback",
+      userType,
+      visitorId: null,
+      device: null,
+      os: null,
+      originalError: error,
+    });
     return NextResponse.json({
       rationale: generateFallbackRationale(facts),
       source: "fallback",

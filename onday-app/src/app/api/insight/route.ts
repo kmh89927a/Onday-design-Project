@@ -8,6 +8,8 @@ import {
   sanitizeStory,
   storySchema,
 } from "@/lib/insight/story";
+import { getServerUser } from "@/lib/auth/session";
+import { logError, type LogUserType } from "@/lib/logging/log-error";
 
 // 동네 하루 미리보기 — Gemini 시간대별 스토리 (SRS CON-13/14: Vercel AI SDK + Gemini, env 모델 교체).
 // ★ Phase 3 = DayPreviewData(Phase 2 extractDayData 출력) 주입 → 구조화 JSON 스토리. UI 는 Phase 4.
@@ -77,6 +79,26 @@ export async function POST(request: Request) {
   } catch (error) {
     // Gemini 실패/타임아웃/쿼터/스키마 불일치 → graceful 502 (크래시 X).
     console.error("[API] POST /api/insight error:", error);
+    // ★ 3-sink 로깅 추가(기존 502 응답 유지). statusCode=502(실제 응답값 그대로).
+    //   서버 컨텍스트만 — visitorId/device/os=null(클라 정보).
+    let userType: LogUserType | null = null;
+    try {
+      userType = (await getServerUser()) ? "kakao" : null;
+    } catch {
+      // best-effort
+    }
+    await logError({
+      level: "error",
+      message: error instanceof Error ? error.message : String(error),
+      statusCode: 502,
+      route: "POST /api/insight",
+      errorType: "ai_error",
+      userType,
+      visitorId: null,
+      device: null,
+      os: null,
+      originalError: error,
+    });
     return NextResponse.json(
       { error: "인사이트 생성에 실패했습니다" },
       { status: 502 },
