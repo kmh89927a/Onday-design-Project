@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { shareLinkInputSchema } from "@/lib/validators/diagnosis";
 import { prisma } from "@/lib/db";
 import { randomUUID } from "crypto";
+import { getServerUser } from "@/lib/auth/session";
+import { logError, type LogUserType } from "@/lib/logging/log-error";
 
 // DUMMY_HASH for timing attack prevention (SRS architecture pattern)
 // Production: const DUMMY_HASH = "$2b$12$..."; bcrypt.compare() to prevent password existence inference
@@ -55,6 +57,25 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("[API] POST /api/share error:", error);
+    // ★ 3-sink 로깅 추가(기존 유지). 서버 컨텍스트만 — visitorId/device/os=null(클라 정보).
+    let userType: LogUserType | null = null;
+    try {
+      userType = (await getServerUser()) ? "kakao" : null;
+    } catch {
+      // best-effort
+    }
+    await logError({
+      level: "error",
+      message: error instanceof Error ? error.message : String(error),
+      statusCode: 500,
+      route: "POST /api/share",
+      errorType: "api_error",
+      userType,
+      visitorId: null,
+      device: null,
+      os: null,
+      originalError: error,
+    });
     return NextResponse.json({ error: "서버 오류가 발생했습니다" }, { status: 500 });
   }
 }

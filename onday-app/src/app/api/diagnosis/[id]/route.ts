@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import type { CandidateArea, DiagnosisFilters } from "@/lib/types";
+import { getServerUser } from "@/lib/auth/session";
+import { logError, type LogUserType } from "@/lib/logging/log-error";
 
 // GET /api/diagnosis/[id] — Fetch diagnosis result (API-02)
 export async function GET(
@@ -34,6 +36,25 @@ export async function GET(
     });
   } catch (error) {
     console.error("[API] GET /api/diagnosis/[id] error:", error);
+    // ★ 3-sink 로깅 추가(기존 유지). 서버 컨텍스트만 — visitorId/device/os=null(클라 정보).
+    let userType: LogUserType | null = null;
+    try {
+      userType = (await getServerUser()) ? "kakao" : null;
+    } catch {
+      // best-effort
+    }
+    await logError({
+      level: "error",
+      message: error instanceof Error ? error.message : String(error),
+      statusCode: 500,
+      route: "GET /api/diagnosis/[id]",
+      errorType: "api_error",
+      userType,
+      visitorId: null,
+      device: null,
+      os: null,
+      originalError: error,
+    });
     return NextResponse.json({ error: "서버 오류가 발생했습니다" }, { status: 500 });
   }
 }

@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { diagnosisInputSchema } from "@/lib/validators/diagnosis";
 import { runMockDiagnosis } from "@/features/diagnosis/mock-calculator";
 import { prisma } from "@/lib/db";
-import { getEffectiveUserId } from "@/lib/auth/session";
+import { getEffectiveUserId, getServerUser } from "@/lib/auth/session";
+import { logError, type LogUserType } from "@/lib/logging/log-error";
 
 const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
@@ -92,6 +93,27 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("[API] POST /api/diagnosis error:", error);
+    // ★ 3-sink 로깅 추가(기존 console.error·응답 유지). 서버가 아는 컨텍스트만 —
+    //   userType=kakao/null(게스트·심사관 구분 불가), visitorId/device/os=null(클라 정보).
+    //   logError 는 best-effort(내부 try/catch) — 실패해도 아래 응답에 영향 0.
+    let userType: LogUserType | null = null;
+    try {
+      userType = (await getServerUser()) ? "kakao" : null;
+    } catch {
+      // best-effort
+    }
+    await logError({
+      level: "error",
+      message: error instanceof Error ? error.message : String(error),
+      statusCode: 500,
+      route: "POST /api/diagnosis",
+      errorType: "api_error",
+      userType,
+      visitorId: null,
+      device: null,
+      os: null,
+      originalError: error,
+    });
     return NextResponse.json({ error: "서버 오류가 발생했습니다" }, { status: 500 });
   }
 }
