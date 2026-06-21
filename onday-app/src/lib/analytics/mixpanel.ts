@@ -75,3 +75,31 @@ export function trackDiagnosisSubmitClicked(mode: "couple" | "single"): void {
   if (!ensureInit()) return;
   mixpanel.track("diagnosis_submit_clicked", { mode, timestamp: Date.now() });
 }
+
+// ── Referral·Retention 4종 (11주차 수요 — AARRR_NSM_PROPOSAL.md 보완 10개의 나머지) ──
+//   ★ 기존 패턴 동일 + PII 0. ★★ 공유 토큰(shareUrl/uniqueUrl)·주소(addressA/B)·역 이름 절대 미포함.
+//   share_link_signup 은 제외 — share→login CTA 에 attribution 연결이 없어 측정 불가(억지 창작 금지, 후속 과제).
+
+// ★ diagnosis_id = 내부 uuid(기존 diagnosis_started 패턴). 공유 토큰(uniqueUrl)은 담지 않는다.
+export function trackShareLinkCreated(diagnosisId: string, mode: "couple" | "single"): void {
+  if (!ensureInit()) return;
+  mixpanel.track("share_link_created", { diagnosis_id: diagnosisId, mode, timestamp: Date.now() });
+}
+
+// ★ mode 만 — share 페이지 data 의 uniqueUrl·addressA/B 는 절대 담지 않는다(재식별 차단).
+export function trackShareLinkClicked(mode: "couple" | "single"): void {
+  if (!ensureInit()) return;
+  mixpanel.track("share_link_clicked", { mode, timestamp: Date.now() });
+}
+
+// ★ mode 만 — 불러온 config 의 주소는 절대 담지 않는다.
+export function trackSavedSearchLoaded(mode: "couple" | "single"): void {
+  if (!ensureInit()) return;
+  mixpanel.track("saved_search_loaded", { mode, timestamp: Date.now() });
+}
+
+// ★ days_left(숫자)만 — ISO 날짜 대신 D-day 로 환원(식별성 0).
+export function trackDeadlineModeActivated(daysLeft: number): void {
+  if (!ensureInit()) return;
+  mixpanel.track("deadline_mode_activated", { days_left: daysLeft, timestamp: Date.now() });
+}

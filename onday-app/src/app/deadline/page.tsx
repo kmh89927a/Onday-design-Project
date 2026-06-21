@@ -22,6 +22,7 @@ import {
   formatTargetDate,
 } from "@/features/deadline/timeline-builder";
 import { markerLabel } from "@/features/diagnosis/result-utils";
+import { trackDeadlineModeActivated } from "@/lib/analytics/mixpanel";
 import { latLngToPixel } from "@/lib/coordinate-transform";
 import {
   buildNaverMobileMapUrl,
@@ -145,6 +146,8 @@ export default function DeadlinePage() {
     const target = new Date(`${draft}T00:00:00`);
     setDeadlineDate(target.toISOString());
     setInlineError(null);
+    // ★ Retention 퍼널 — 데드라인 저장(활성화) 성공. days_left(숫자)만(ISO 날짜 미포함, PII 0).
+    trackDeadlineModeActivated(daysFromNow(target.toISOString()));
     pushToast({ variant: "ok", message: "데드라인을 저장했어요" });
   };
 

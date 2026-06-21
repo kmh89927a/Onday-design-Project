@@ -65,6 +65,7 @@ import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import { useFavoritesStore, toFavoriteSnapshot } from "@/stores/favorites";
 import { useUIStore } from "@/stores/ui";
 import { useGuestGate } from "@/features/auth/use-guest-gate";
+import { trackShareLinkCreated } from "@/lib/analytics/mixpanel";
 
 import { LayerToggle, type SingleLayer } from "./layer-toggle";
 
@@ -549,6 +550,8 @@ export function SingleResultView({ id }: SingleResultViewProps) {
         throw new Error(err.error ?? "공유 링크 생성에 실패했습니다");
       }
       const data: { shareUrl: string } = await res.json();
+      // ★ Referral 퍼널 — 생성 성공. 싱글뷰라 mode="single" 리터럴(공유 토큰 미포함, PII 0).
+      trackShareLinkCreated(id, "single");
       await copyToClipboard(`${window.location.origin}${data.shareUrl}`);
       pushToast({ variant: "ok", message: "공유 링크가 복사되었습니다" });
     } catch (err) {
