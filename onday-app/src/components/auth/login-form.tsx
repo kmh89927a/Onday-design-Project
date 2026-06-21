@@ -13,6 +13,7 @@ import { useSessionStore } from "@/stores/session";
 import { clearGuestPersisted } from "@/lib/auth/clear-guest-persisted";
 import { useUIStore } from "@/stores/ui";
 import { cn } from "@/lib/utils";
+import { trackLoginEntered } from "@/lib/analytics/mixpanel";
 
 // 패턴 A — controlled props 유지
 //   OAuthButton / Button은 props만 받고, store 연결은 본 LoginForm에서만
@@ -36,6 +37,8 @@ export function LoginForm() {
 
   const handleKakao = async () => {
     setInFlight("kakao");
+    // ★ 상단 퍼널 — 카카오 redirect(아래 signInWithOAuth) 前 발화해야 유실 안 됨.
+    trackLoginEntered("kakao");
     try {
       if (IS_MOCK_AUTH) {
         await new Promise((resolve) => setTimeout(resolve, MOCK_LATENCY_MS));
@@ -75,6 +78,7 @@ export function LoginForm() {
 
   const handleGuest = () => {
     setInFlight("guest");
+    trackLoginEntered("guest");
     enterGuestMode();
     // 게스트는 회원 정보 미저장 — 이전 로그인 사용자가 남긴 좌표·이전조건·찜 제거(물려받기 방지).
     clearGuestPersisted();
@@ -84,6 +88,7 @@ export function LoginForm() {
   // ★ #24 심사관(채용 담당자) 데모 모드 — 로그인 없이 풀 기능(저장/공유 차단 면제).
   //   세션 내(in-memory + favorites localStorage) 동작, 회원 정보에는 귀속되지 않음.
   const handleReviewer = () => {
+    trackLoginEntered("reviewer");
     enterReviewerMode();
     // 심사관도 회원 정보 미저장 — 이전 로그인 사용자가 남긴 좌표·이전조건·찜 제거.
     clearGuestPersisted();
