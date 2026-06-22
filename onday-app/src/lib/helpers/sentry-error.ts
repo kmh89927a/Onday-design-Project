@@ -12,7 +12,10 @@
 // ★ console.error fallback (dev 환경 안전성) — production 환경에서는 Sentry 만 전송, dev/test 에서는 콘솔도 출력.
 // ──────────────────────────────────────────────
 
-import * as Sentry from '@sentry/nextjs';
+// ★ default import — namespace(`import * as`)는 @sentry/nextjs ESM 빌드(edge/browser/prod)에서
+//   captureException/Message/withScope 를 노출 안 함(default 밑에만 존재) → "is not a function".
+//   default import 는 ESM(default)·node CJS(esModuleInterop) 양쪽에서 full API 동작(실측).
+import Sentry from '@sentry/nextjs';
 import type { AppErrorDTO } from '@/lib/types/errors';
 
 /**

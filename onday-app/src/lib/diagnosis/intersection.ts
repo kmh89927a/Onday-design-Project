@@ -8,7 +8,8 @@
 // ★ Coordinate ↔ KakaoCoord 변환은 toKakaoCoord 헬퍼로 transportClient 호출 직전만 (★ KakaoCoord ≠ Coordinate 분리 § 2번째 실전).
 // ──────────────────────────────────────────────
 
-import * as Sentry from "@sentry/nextjs";
+// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
+import Sentry from "@sentry/nextjs";
 import type { IKakaoTransportClient, KakaoCoord } from "@/lib/external/kakao-transport";
 import { mapKakaoResponseToCommuteInfo } from "@/lib/external/kakao-transport";
 import type { Coordinate, DiagnosisFilters, CommuteSchedule, DayOfWeek } from "@/lib/types";

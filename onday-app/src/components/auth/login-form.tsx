@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
+// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
+import Sentry from "@sentry/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { OAuthButton } from "@/components/ui/oauth-button";

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
+import Sentry from "@sentry/nextjs";
 
 // MON-001 v1.4 (Issue #73) — Sentry 캡처 검증용 라우트.
 // AC-3 "의도 에러 → Sentry Dashboard 캡처" 검증.
