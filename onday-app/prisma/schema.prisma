@@ -89,3 +89,107 @@ model ErrorLog {
   @@index([timestamp])
   @@map("error_logs")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3단 집계 파이프라인 (금요일 과제 — raw → 가집계 → 최종집계). docs/AGGREGATION_PIPELINE_DESIGN.md
+// ★ 전부 신규 CREATE — 기존 5개 테이블 무변경. USER FK 없음·PII 없음(ErrorLog 패턴 답습).
+// ★ 본 과제 범위 = 테이블 생성까지. 로그 적재·집계 크론·대시보드는 발표 후(빈 테이블로 생성).
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ① 상세로그(raw) — 이벤트 1건 = 1행. 11개 감지 완비 이벤트(AARRR §3-1)를 범용 1테이블로 수용.
+model EventLog {
+  id          String   @id @default(uuid())
+  eventName   String   @map("event_name") // diagnosis_completed 등 11종
+  timestamp   DateTime @default(now())
+  mode        String? // couple | single
+  method      String? // kakao | guest | reviewer (login_entered)
+  count       Int? // 1 | 2 (address_verified)
+  daysLeft    Int?     @map("days_left") // deadline_mode_activated
+  diagnosisId String?  @map("diagnosis_id") // 내부 uuid — FK 미설정(ErrorLog 답습)
+  visitorId   String?  @map("visitor_id") // 익명
+  props       String? // JSON 오버플로(향후 속성)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([eventName])
+  @@index([timestamp])
+  @@map("event_logs")
+}
+
+// ①-preview — 동일 구조 실험/격리용 사본.
+model PreviewEventLog {
+  id          String   @id @default(uuid())
+  eventName   String   @map("event_name")
+  timestamp   DateTime @default(now())
+  mode        String?
+  method      String?
+  count       Int?
+  daysLeft    Int?     @map("days_left")
+  diagnosisId String?  @map("diagnosis_id")
+  visitorId   String?  @map("visitor_id")
+  props       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([eventName])
+  @@index([timestamp])
+  @@map("preview_event_logs")
+}
+
+// ② 가집계(rollup) — 지표유형 × 짧은 주기(1m/10m/1h) 중간 합산. 성능 계층.
+model MetricRollup {
+  id          String   @id @default(uuid())
+  metricType  String   @map("metric_type") // landing_viewed, submit_per_input 등
+  bucket      String // 1m | 10m | 1h
+  bucketStart DateTime @map("bucket_start")
+  value       Float // 집계값
+  numerator   Int? // 비율 분자(선택)
+  denominator Int? // 비율 분모(선택)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([metricType, bucket, bucketStart])
+  @@map("metric_rollups")
+}
+
+// ②-preview
+model PreviewMetricRollup {
+  id          String   @id @default(uuid())
+  metricType  String   @map("metric_type")
+  bucket      String
+  bucketStart DateTime @map("bucket_start")
+  value       Float
+  numerator   Int?
+  denominator Int?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([metricType, bucket, bucketStart])
+  @@map("preview_metric_rollups")
+}
+
+// ③ 최종집계(aggregate) — H/D/W/M 시각화 단위. 대시보드 전용.
+model MetricAggregate {
+  id          String   @id @default(uuid())
+  metricType  String   @map("metric_type")
+  grain       String // H | D | W | M
+  periodStart DateTime @map("period_start")
+  value       Float
+  numerator   Int?
+  denominator Int?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([metricType, grain, periodStart])
+  @@map("metric_aggregates")
+}
+
+// ③-preview
+model PreviewMetricAggregate {
+  id          String   @id @default(uuid())
+  metricType  String   @map("metric_type")
+  grain       String
+  periodStart DateTime @map("period_start")
+  value       Float
+  numerator   Int?
+  denominator Int?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([metricType, grain, periodStart])
+  @@map("preview_metric_aggregates")
+}
