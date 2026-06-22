@@ -9,7 +9,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import * as Sentry from "@sentry/nextjs";
+// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
+import Sentry from "@sentry/nextjs";
 import type { IKakaoTransportClient } from "@/lib/external/kakao-transport";
 import type { Coordinate, DiagnosisFilters } from "@/lib/types";
 import { calculateIntersection, type IntersectionResult } from "./intersection";

@@ -10,7 +10,8 @@
 //   ★ CMD-DIAG-002~007 후행 ISSUE 시점 mapper.ts 분리 자연 도입 예상 (Wave 3 트랙 G 점진 진화 정신, ★ adaptive § Command 차원 첫 적용 정직 기록)
 // ──────────────────────────────────────────────
 
-import * as Sentry from "@sentry/nextjs";
+// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
+import Sentry from "@sentry/nextjs";
 import type { Coordinate } from "@/lib/types";
 import type { GeocodeResult, GeocodedAddress } from "./geocoding-types";
 
