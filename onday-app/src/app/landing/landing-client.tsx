@@ -12,6 +12,7 @@ import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { trackLandingViewed } from "@/lib/analytics/mixpanel";
+import { captureUtm } from "@/lib/logging/utm-session";
 import { motion, MotionConfig, useScroll, useTransform, useReducedMotion, useMotionValue, animate } from "framer-motion";
 import CountUp from "react-countup";
 
@@ -805,6 +806,9 @@ export function LandingClient() {
   React.useEffect(() => {
     if (trackedRef.current) return;
     trackedRef.current = true;
+    // ★ first-touch utm 보존(쿠키 0) — 첫 이벤트부터 채널 따라가도록 trackLandingViewed 前.
+    //   useSearchParams 대신 location.search 사용: Suspense 경계 요구·CSR bailout 회피(렌더 동작 무변경).
+    captureUtm(window.location.search);
     trackLandingViewed();
   }, []);
 
