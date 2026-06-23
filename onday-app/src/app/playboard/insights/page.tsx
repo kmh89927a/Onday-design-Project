@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getDeploymentEnv } from "@/lib/health";
-import { getInsights, FUNNEL_STEPS, OTHER_EVENTS, type InsightsData } from "@/lib/playboard/insights";
+import { getInsights, FUNNEL_STEPS, OTHER_EVENTS, type InsightsData, type InsightsSource } from "@/lib/playboard/insights";
 
 // Insights 대시보드 — event_logs raw 직접 집계(크론 0). 운영자 도구.
 // ★ production 차단(logging-test 패턴): 운영자만 보는 도구라 prod 에선 notFound().
@@ -85,10 +85,17 @@ function RateCard({
   );
 }
 
-export default async function InsightsPage() {
+export default async function InsightsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ source?: string }>;
+}) {
   if (getDeploymentEnv() === "production") notFound();
 
-  const d: InsightsData = await getInsights();
+  // ★ 소스 토글 — ?source=preview 면 더미(preview_event_logs), 기본 prod(event_logs).
+  const sp = await searchParams;
+  const source: InsightsSource = sp.source === "preview" ? "preview" : "prod";
+  const d: InsightsData = await getInsights(source);
   const funnelCounts = FUNNEL_STEPS.map((s) => d.counts[s.key] ?? 0);
   const otherCounts = OTHER_EVENTS.map((s) => d.counts[s.key] ?? 0);
   const max = Math.max(1, ...funnelCounts, ...otherCounts);
@@ -112,6 +119,13 @@ export default async function InsightsPage() {
           <strong>production 에서 차단</strong>(404)되며 <strong>읽기 전용</strong>입니다.
         </p>
         <div className="mt-s-3 flex flex-wrap gap-s-2 text-caption-xs">
+          <span
+            className={`rounded-sm px-s-3 py-s-1 font-bold ${
+              source === "preview" ? "bg-warning-soft text-warning" : "bg-bg text-ink-3"
+            }`}
+          >
+            소스: {source === "preview" ? "preview(더미)" : "prod(실데이터)"}
+          </span>
           <span className="rounded-sm bg-success-soft px-s-3 py-s-1 font-bold text-success">총 {d.total} 이벤트</span>
           <span className="rounded-sm bg-info-soft px-s-3 py-s-1 font-bold text-info">UTM 부착 {d.utmRows}</span>
           {d.span.first ? (

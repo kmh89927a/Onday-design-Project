@@ -48,8 +48,15 @@ export interface InsightsData {
 const pct = (num: number, den: number): number | null =>
   den > 0 ? Math.round((num / den) * 1000) / 10 : null;
 
-export async function getInsights(): Promise<InsightsData> {
-  const grouped = await prisma.eventLog.groupBy({ by: ["eventName"], _count: { _all: true } });
+// 데이터 소스 — prod=event_logs(실), preview=preview_event_logs(더미 데모).
+// ★ 읽는 테이블만 교체(write 0). preview 는 dev/preview 에서만 의미(페이지가 prod 차단).
+export type InsightsSource = "prod" | "preview";
+
+export async function getInsights(source: InsightsSource = "prod"): Promise<InsightsData> {
+  // 두 모델은 스키마 동일(필드·인덱스) — preview 델리게이트를 eventLog 타입으로 캐스팅해 읽기만 분기.
+  const model = (source === "preview" ? prisma.previewEventLog : prisma.eventLog) as typeof prisma.eventLog;
+
+  const grouped = await model.groupBy({ by: ["eventName"], _count: { _all: true } });
   const counts: Record<string, number> = {};
   let total = 0;
   for (const g of grouped) {
@@ -57,7 +64,7 @@ export async function getInsights(): Promise<InsightsData> {
     total += g._count._all;
   }
 
-  const addressVerified2 = await prisma.eventLog.count({
+  const addressVerified2 = await model.count({
     where: { eventName: "address_verified", count: 2 },
   });
 
@@ -68,7 +75,7 @@ export async function getInsights(): Promise<InsightsData> {
   };
 
   // UTM 채널 — props(JSON)에서 utm_source 추출 후 채널별 집계.
-  const utmRowsRaw = await prisma.eventLog.findMany({
+  const utmRowsRaw = await model.findMany({
     where: { NOT: { props: null } },
     select: { eventName: true, props: true },
   });
@@ -91,7 +98,7 @@ export async function getInsights(): Promise<InsightsData> {
     .map((c) => ({ ...c, rate: pct(c.completed, c.landed) }))
     .sort((a, b) => b.total - a.total);
 
-  const agg = await prisma.eventLog.aggregate({
+  const agg = await model.aggregate({
     _min: { timestamp: true },
     _max: { timestamp: true },
   });
