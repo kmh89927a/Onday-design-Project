@@ -5,9 +5,12 @@
 
 | 초안 | 우선순위 | 발표 전/후 | 상태 |
 |------|----------|-----------|------|
-| [dashboard-insights.md](dashboard-insights.md) | 🟢 높음 | **발표 전** | Draft PR 구현됨(`/playboard/insights`) |
+| [dashboard-insights.md](dashboard-insights.md) | 🟢 높음 | **발표 전** | Draft PR #251(`/playboard/insights`) |
+| [dashboard-conversion-extension.md](dashboard-conversion-extension.md) | 🟢 높음 | 발표 전/직후 | 계획 완료(CONVERSION_DASHBOARD_PLAN.md), 구현 대기 |
+| [preview-dummy-seeding.md](preview-dummy-seeding.md) | 🟢 높음 | 발표 전 | 구현됨(seed-preview-events.ts), Draft PR 연결 |
 | [cron-aggregation.md](cron-aggregation.md) | 🟡 중 | 발표 후 | 미구현(설계만) |
+| [preview-access-block.md](preview-access-block.md) | ⚪ 낮음 | 선택 | 미구현(결정 대기) |
 | [share-link-signup.md](share-link-signup.md) | ⚪ 낮음 | 발표 후 | 미배선(attribution 갭) |
 | [distinct-normalization.md](distinct-normalization.md) | ⚪ 낮음 | 발표 후 | 미구현 |
 
-**발행 순서 제안:** dashboard(구현 완료→PR 연결) → cron → distinct → share_signup.
+**발행 순서 제안:** dashboard-insights(#251) → preview-dummy-seeding → dashboard-conversion-extension → cron → distinct → preview-access-block → share_signup.
