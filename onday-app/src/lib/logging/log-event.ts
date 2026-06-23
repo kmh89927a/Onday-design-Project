@@ -5,6 +5,7 @@
 // ★ visitorId = 익명(visitor-id.ts 재사용). UTM 부착은 3단계(본 1단계 범위 밖).
 
 import { getVisitorId } from "@/lib/logging/visitor-id";
+import { getUtm } from "@/lib/logging/utm-session";
 
 export interface EventAttrs {
   mode?: "couple" | "single";
@@ -27,6 +28,10 @@ export function logEvent(eventName: string, attrs: EventAttrs = {}): void {
 
     const visitorId = getVisitorId();
     if (visitorId) payload.visitorId = visitorId;
+
+    // ★ first-touch utm 부착(2단계). 없으면(직접 유입) 생략 — 에러 0.
+    const utm = getUtm();
+    if (utm) payload.props = JSON.stringify(utm);
 
     const body = JSON.stringify(payload);
 

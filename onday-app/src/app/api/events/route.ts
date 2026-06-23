@@ -30,15 +30,32 @@ const eventSchema = z
     daysLeft: z.number().int().optional(),
     diagnosisId: z.string().max(64).optional(),
     visitorId: z.string().max(64).optional(),
+    props: z.string().max(500).optional(), // utm JSON (2단계) — 아래 sanitize 로 utm 5종만 통과
   })
   .strip();
+
+// ★ PII 0 강제 — props 에서 utm 표준 5종만 남김(클라 무관하게 외부 POST 도 차단).
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const;
+function sanitizeProps(props?: string): string | null {
+  if (!props) return null;
+  try {
+    const obj = JSON.parse(props) as Record<string, unknown>;
+    const clean: Record<string, string> = {};
+    for (const k of UTM_KEYS) {
+      if (typeof obj[k] === "string") clean[k] = (obj[k] as string).slice(0, 200);
+    }
+    return Object.keys(clean).length ? JSON.stringify(clean) : null;
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsed = eventSchema.safeParse(body);
     if (parsed.success) {
-      await logEvent(parsed.data);
+      await logEvent({ ...parsed.data, props: sanitizeProps(parsed.data.props) });
     }
   } catch {
     // best-effort — 파싱·검증·insert 실패 무관. 항상 204.
