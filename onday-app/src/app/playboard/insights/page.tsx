@@ -13,6 +13,7 @@ import {
   type ActivityData,
   type NsmTrend,
   type InsightsSource,
+  type ModeFilter,
 } from "@/lib/playboard/insights";
 
 // Insights 대시보드 — event_logs raw 직접 집계(크론 0). 운영자 도구.
@@ -95,20 +96,37 @@ function RateCard({
   );
 }
 
+// UTC ISO → KST(UTC+9) "MM-DD HH:mm".
+function toKST(iso: string): string {
+  const k = new Date(new Date(iso).getTime() + 9 * 3600_000).toISOString();
+  return `${k.slice(5, 10)} ${k.slice(11, 16)}`;
+}
+
 export default async function InsightsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ source?: string }>;
+  searchParams: Promise<{ source?: string; mode?: string }>;
 }) {
   if (getDeploymentEnv() === "production") notFound();
 
   // ★ 소스 토글 — ?source=preview 면 더미(preview_event_logs), 기본 prod(event_logs).
   const sp = await searchParams;
   const source: InsightsSource = sp.source === "preview" ? "preview" : "prod";
-  const d: InsightsData = await getInsights(source);
-  const act: ActivityData = await getActivity(source);
+  // ★ 모드 필터(부부/싱글) — 없으면 전체(기존 동작). visitorId→mode 추론 기반.
+  const mode: ModeFilter | undefined = sp.mode === "couple" || sp.mode === "single" ? sp.mode : undefined;
+  // 토글 링크 — source 보존하며 mode 만 교체.
+  const modeHref = (m?: ModeFilter) => {
+    const q = new URLSearchParams();
+    if (source === "preview") q.set("source", "preview");
+    if (m) q.set("mode", m);
+    const s = q.toString();
+    return s ? `?${s}` : "/playboard/insights";
+  };
+
+  const d: InsightsData = await getInsights(source, mode);
+  const act: ActivityData = await getActivity(source, mode);
   const dauMax = Math.max(1, ...act.dau.map((x) => x.visitors));
-  const nsm: NsmTrend = await getNsmTrend(source);
+  const nsm: NsmTrend = await getNsmTrend(source, mode);
   const nsmMax = Math.max(1, nsm.target3mo, ...nsm.weeks.map((w) => w.completed));
   const funnelCounts = FUNNEL_STEPS.map((s) => d.counts[s.key] ?? 0);
   const otherCounts = OTHER_EVENTS.map((s) => d.counts[s.key] ?? 0);
@@ -144,7 +162,38 @@ export default async function InsightsPage({
           <span className="rounded-sm bg-info-soft px-s-3 py-s-1 font-bold text-info">UTM 부착 {d.utmRows}</span>
           {d.span.first ? (
             <span className="rounded-sm bg-bg px-s-3 py-s-1 text-ink-3">
-              {d.span.first.slice(0, 16).replace("T", " ")} ~ {d.span.last?.slice(11, 16)} UTC
+              {source === "preview" ? "더미 기간 " : "기간 "}
+              {toKST(d.span.first)} ~ {d.span.last ? toKST(d.span.last) : ""} KST
+            </span>
+          ) : null}
+        </div>
+
+        {/* ★ 모드 토글(부부/싱글) — 전체 = 기존 통합 뷰 */}
+        <div className="mt-s-3 flex items-center gap-s-2 text-caption-xs">
+          <span className="text-ink-3">모드:</span>
+          {(
+            [
+              { m: undefined, label: "전체" },
+              { m: "couple" as const, label: "부부" },
+              { m: "single" as const, label: "싱글" },
+            ] satisfies { m: ModeFilter | undefined; label: string }[]
+          ).map(({ m, label }) => {
+            const active = mode === m;
+            return (
+              <Link
+                key={label}
+                href={modeHref(m)}
+                className={`rounded-sm px-s-3 py-s-1 font-bold ${
+                  active ? "bg-primary text-white" : "bg-bg text-ink-2 hover:text-ink"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+          {mode ? (
+            <span className="text-ink-3">
+              · {mode === "couple" ? "부부" : "싱글"} 방문자만(mode 이벤트로 추론). landing-only 이탈자는 제외.
             </span>
           ) : null}
         </div>
@@ -188,14 +237,16 @@ export default async function InsightsPage({
         {act.dau.length > 0 ? (
           <div className="mt-s-4">
             <p className="text-caption-xs font-bold text-ink-3">일별 DAU (최근 {act.dau.length}일 · 데이터 있는 날)</p>
-            <div className="mt-s-2 flex h-24 items-end gap-0.5" aria-hidden>
+            <div className="mt-s-2 flex h-28 items-end gap-0.5">
               {act.dau.map((x) => (
-                <div
-                  key={x.date}
-                  className="flex-1 rounded-t-xs bg-info"
-                  style={{ height: `${Math.max((x.visitors / dauMax) * 100, 6)}%` }}
-                  title={`${x.date}: ${x.visitors}`}
-                />
+                <div key={x.date} className="flex flex-1 flex-col items-center justify-end" title={`${x.date}: ${x.visitors}명`}>
+                  <span className="mb-px text-[9px] font-bold leading-none text-ink-2">{x.visitors}</span>
+                  <div
+                    className="w-full rounded-t-xs bg-info"
+                    style={{ height: `${Math.max((x.visitors / dauMax) * 100, 6)}%` }}
+                    aria-hidden
+                  />
+                </div>
               ))}
             </div>
             <div className="mt-s-1 flex justify-between text-caption-xs text-ink-3">
@@ -222,21 +273,42 @@ export default async function InsightsPage({
 
         {nsm.weeks.length > 0 ? (
           <div className="mt-s-4">
-            <div className="flex items-end gap-s-2" style={{ height: "120px" }} aria-hidden>
-              {nsm.weeks.map((w) => (
-                <div key={w.weekStart} className="flex flex-1 flex-col items-center justify-end">
-                  <span className="mb-s-1 text-caption-xs font-bold text-ink">{w.completed}</span>
+            <div className="relative" style={{ height: "120px" }}>
+              {/* ★ 3개월 목표선(50/주) — 추세 대비 갭 가시화 */}
+              <div
+                className="pointer-events-none absolute inset-x-0 z-10 border-t border-dashed border-danger"
+                style={{ bottom: `${Math.min((nsm.target3mo / nsmMax) * 100, 100)}%` }}
+              >
+                <span className="absolute -top-2.5 right-0 bg-bg px-1 text-[10px] font-bold text-danger">
+                  목표 {nsm.target3mo}/주
+                </span>
+              </div>
+              <div className="flex h-full items-end gap-s-2">
+                {nsm.weeks.map((w) => (
                   <div
-                    className="w-full rounded-t-xs bg-warning"
-                    style={{ height: `${Math.max((w.completed / nsmMax) * 100, 4)}%` }}
+                    key={w.weekStart}
+                    className="flex flex-1 flex-col items-center justify-end"
                     title={`${w.weekStart} 주: ${w.completed}건`}
-                  />
-                  <span className="mt-s-1 text-caption-xs text-ink-3">{w.weekStart.slice(5)}</span>
-                </div>
+                  >
+                    <span className="mb-px text-caption-xs font-bold text-ink">{w.completed}</span>
+                    <div
+                      className="w-full rounded-t-xs bg-warning"
+                      style={{ height: `${Math.max((w.completed / nsmMax) * 100, 4)}%` }}
+                      aria-hidden
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-s-1 flex gap-s-2">
+              {nsm.weeks.map((w) => (
+                <span key={w.weekStart} className="flex-1 text-center text-caption-xs text-ink-3">
+                  {w.weekStart.slice(5)}
+                </span>
               ))}
             </div>
             <p className="mt-s-2 text-caption-xs text-ink-3">
-              막대 스케일 기준 = 최대 {nsmMax} (3개월 목표선 {nsm.target3mo} 포함). 최근 주 NSM:{" "}
+              주별 추세 · 빨간 점선 = 3개월 목표({nsm.target3mo}/주), 6개월 {nsm.target6mo}/주. 최근 주 NSM:{" "}
               <strong className="text-ink">{nsm.latest?.completed ?? 0}</strong> / 목표 {nsm.target3mo}.
             </p>
           </div>
