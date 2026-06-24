@@ -6,10 +6,12 @@ import { getDeploymentEnv } from "@/lib/health";
 import {
   getInsights,
   getActivity,
+  getNsmTrend,
   FUNNEL_STEPS,
   OTHER_EVENTS,
   type InsightsData,
   type ActivityData,
+  type NsmTrend,
   type InsightsSource,
 } from "@/lib/playboard/insights";
 
@@ -106,6 +108,8 @@ export default async function InsightsPage({
   const d: InsightsData = await getInsights(source);
   const act: ActivityData = await getActivity(source);
   const dauMax = Math.max(1, ...act.dau.map((x) => x.visitors));
+  const nsm: NsmTrend = await getNsmTrend(source);
+  const nsmMax = Math.max(1, nsm.target3mo, ...nsm.weeks.map((w) => w.completed));
   const funnelCounts = FUNNEL_STEPS.map((s) => d.counts[s.key] ?? 0);
   const otherCounts = OTHER_EVENTS.map((s) => d.counts[s.key] ?? 0);
   const max = Math.max(1, ...funnelCounts, ...otherCounts);
@@ -205,6 +209,61 @@ export default async function InsightsPage({
         {act.nullVisitorRows > 0 ? (
           <p className="mt-s-2 text-caption-xs text-warning">
             ※ visitorId 없는 {act.nullVisitorRows}행(시크릿/차단)은 distinct 제외 — 과소 집계 가능.
+          </p>
+        ) : null}
+      </section>
+
+      {/* NSM (E3) — 주간 진단 완료 추세 + 선행 지표 */}
+      <section aria-label="NSM" className="mt-s-8 border-t border-card-border pt-s-6">
+        <h2 className="text-h3 font-extrabold text-ink">🌟 NSM — 주간 진단 완료 수</h2>
+        <p className="mt-s-1 text-caption-xs text-ink-3">
+          주(월~일) 단위 <code>diagnosis_completed</code>. 목표 {nsm.target3mo}건/주(3개월) → {nsm.target6mo}건/주(6개월), REQ-NF-026.
+        </p>
+
+        {nsm.weeks.length > 0 ? (
+          <div className="mt-s-4">
+            <div className="flex items-end gap-s-2" style={{ height: "120px" }} aria-hidden>
+              {nsm.weeks.map((w) => (
+                <div key={w.weekStart} className="flex flex-1 flex-col items-center justify-end">
+                  <span className="mb-s-1 text-caption-xs font-bold text-ink">{w.completed}</span>
+                  <div
+                    className="w-full rounded-t-xs bg-warning"
+                    style={{ height: `${Math.max((w.completed / nsmMax) * 100, 4)}%` }}
+                    title={`${w.weekStart} 주: ${w.completed}건`}
+                  />
+                  <span className="mt-s-1 text-caption-xs text-ink-3">{w.weekStart.slice(5)}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-s-2 text-caption-xs text-ink-3">
+              막대 스케일 기준 = 최대 {nsmMax} (3개월 목표선 {nsm.target3mo} 포함). 최근 주 NSM:{" "}
+              <strong className="text-ink">{nsm.latest?.completed ?? 0}</strong> / 목표 {nsm.target3mo}.
+            </p>
+          </div>
+        ) : (
+          <p className="mt-s-3 text-caption text-ink-2">아직 완료 이벤트가 없습니다.</p>
+        )}
+
+        {/* 선행 지표 3종 (getInsights.rates 재노출 — 상세는 핵심 전환율 섹션) */}
+        <p className="mt-s-5 text-caption-xs font-bold text-ink-3">선행 지표 (NSM 인과)</p>
+        <div className="mt-s-2 grid gap-s-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-card-border bg-surface p-s-3">
+            <p className="text-caption-xs text-ink-3">주소 2건 입력 완료율</p>
+            <p className="mt-s-1 text-h3 font-extrabold text-ink">{fmtRate(d.rates.inputCompletion)}</p>
+          </div>
+          <div className="rounded-lg border border-card-border bg-surface p-s-3">
+            <p className="text-caption-xs text-ink-3">진단 제출 성공률</p>
+            <p className="mt-s-1 text-h3 font-extrabold text-ink">{fmtRate(d.rates.submitSuccess)}</p>
+          </div>
+          <div className="rounded-lg border border-card-border bg-surface p-s-3">
+            <p className="text-caption-xs text-ink-3">공유 링크 생성률</p>
+            <p className="mt-s-1 text-h3 font-extrabold text-ink">{fmtRate(d.rates.shareCreation)}</p>
+          </div>
+        </div>
+
+        {nsm.dedup.nullRows > 0 ? (
+          <p className="mt-s-2 text-caption-xs text-warning">
+            ※ diagnosisId 없는 {nsm.dedup.nullRows}건은 중복제거 불가 → 행 카운트 폴백(과다 집계 가능). distinct ID {nsm.dedup.distinctIds}건.
           </p>
         ) : null}
       </section>

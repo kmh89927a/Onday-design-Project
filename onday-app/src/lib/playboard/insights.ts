@@ -174,3 +174,67 @@ export async function getActivity(source: InsightsSource = "prod"): Promise<Acti
     nullVisitorRows,
   };
 }
+
+// ── NSM (E3) — 주간 진단 완료 수 추세 + 목표선. diagnosisId 중복제거(null=행 카운트 폴백). ──
+const NSM_WEEKS = 8;
+const NSM_TARGET_3MO = 50; // REQ-NF-026: 3개월 50건/주
+const NSM_TARGET_6MO = 200; // REQ-NF-026: 6개월 200건/주
+
+export interface NsmTrend {
+  weeks: { weekStart: string; completed: number }[]; // 최근 NSM_WEEKS 주(데이터 있는 주)
+  latest: { weekStart: string; completed: number } | null;
+  dedup: { distinctIds: number; nullRows: number }; // 정직 표기 — null 은 행 카운트 폴백
+  target3mo: number;
+  target6mo: number;
+}
+
+// 주(월요일) 시작일(UTC) — YYYY-MM-DD.
+function weekStartUTC(d: Date): string {
+  const dt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const day = dt.getUTCDay(); // 0=일..6=토
+  dt.setUTCDate(dt.getUTCDate() + (day === 0 ? -6 : 1 - day)); // 월요일로
+  return dt.toISOString().slice(0, 10);
+}
+
+export async function getNsmTrend(source: InsightsSource = "prod"): Promise<NsmTrend> {
+  const model = (source === "preview" ? prisma.previewEventLog : prisma.eventLog) as typeof prisma.eventLog;
+  const rows = await model.findMany({
+    where: { eventName: "diagnosis_completed" },
+    select: { diagnosisId: true, timestamp: true },
+  });
+
+  const now = Date.now();
+  const perWeek = new Map<string, { ids: Set<string>; nulls: number }>();
+  const distinctIds = new Set<string>();
+  let nullRows = 0;
+
+  for (const r of rows) {
+    if (r.timestamp.getTime() > now) continue; // 미래 일자 방어(E1 패턴 계승)
+    const ws = weekStartUTC(r.timestamp);
+    let w = perWeek.get(ws);
+    if (!w) {
+      w = { ids: new Set(), nulls: 0 };
+      perWeek.set(ws, w);
+    }
+    if (r.diagnosisId) {
+      w.ids.add(r.diagnosisId); // 중복제거(같은 진단 재진입 1회로)
+      distinctIds.add(r.diagnosisId);
+    } else {
+      w.nulls += 1; // ★ diagnosisId null → dedup 불가 → 행 카운트 폴백(누수 가능, 정직 표기)
+      nullRows += 1;
+    }
+  }
+
+  const weeks = [...perWeek.entries()]
+    .map(([weekStart, w]) => ({ weekStart, completed: w.ids.size + w.nulls }))
+    .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+    .slice(-NSM_WEEKS);
+
+  return {
+    weeks,
+    latest: weeks.length ? weeks[weeks.length - 1] : null,
+    dedup: { distinctIds: distinctIds.size, nullRows },
+    target3mo: NSM_TARGET_3MO,
+    target6mo: NSM_TARGET_6MO,
+  };
+}
