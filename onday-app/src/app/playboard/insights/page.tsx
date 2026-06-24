@@ -239,7 +239,7 @@ export default async function InsightsPage({
             <p className="text-caption-xs font-bold text-ink-3">일별 DAU (최근 {act.dau.length}일 · 데이터 있는 날)</p>
             <div className="mt-s-2 flex h-28 items-end gap-0.5">
               {act.dau.map((x) => (
-                <div key={x.date} className="flex flex-1 flex-col items-center justify-end" title={`${x.date}: ${x.visitors}명`}>
+                <div key={x.date} className="flex h-full flex-1 flex-col items-center justify-end" title={`${x.date}: ${x.visitors}명`}>
                   <span className="mb-px text-[9px] font-bold leading-none text-ink-2">{x.visitors}</span>
                   <div
                     className="w-full rounded-t-xs bg-info"
@@ -287,7 +287,7 @@ export default async function InsightsPage({
                 {nsm.weeks.map((w) => (
                   <div
                     key={w.weekStart}
-                    className="flex flex-1 flex-col items-center justify-end"
+                    className="flex h-full flex-1 flex-col items-center justify-end"
                     title={`${w.weekStart} 주: ${w.completed}건`}
                   >
                     <span className="mb-px text-caption-xs font-bold text-ink">{w.completed}</span>
