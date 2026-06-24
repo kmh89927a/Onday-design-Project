@@ -10,8 +10,8 @@
 //   ★ CMD-DIAG-002~007 후행 ISSUE 시점 mapper.ts 분리 자연 도입 예상 (Wave 3 트랙 G 점진 진화 정신, ★ adaptive § Command 차원 첫 적용 정직 기록)
 // ──────────────────────────────────────────────
 
-// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
-import Sentry from "@sentry/nextjs";
+// ★ named import — 브라우저 번들엔 default export 없음(#259 login 크래시 동일 패턴). client·server 양쪽 안전.
+import { captureException } from "@sentry/nextjs";
 import type { Coordinate } from "@/lib/types";
 import type { GeocodeResult, GeocodedAddress } from "./geocoding-types";
 
@@ -42,7 +42,7 @@ export async function geocodeAddress(query: string, apiKey: string): Promise<Geo
 
     return documents.map(mapToGeocodedAddress);
   } catch (error) {
-    Sentry.captureException(error, { tags: { domain: "diagnosis", task: "CMD-DIAG-001" } });
+    captureException(error, { tags: { domain: "diagnosis", task: "CMD-DIAG-001" } });
     return [];
   }
 }
