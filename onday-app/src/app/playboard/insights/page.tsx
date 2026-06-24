@@ -237,7 +237,7 @@ export default async function InsightsPage({
         {act.dau.length > 0 ? (
           <div className="mt-s-4">
             <p className="text-caption-xs font-bold text-ink-3">일별 DAU (최근 {act.dau.length}일 · 데이터 있는 날)</p>
-            <div className="mt-s-2 flex h-28 items-end gap-0.5">
+            <div className="mt-s-2 flex items-end gap-0.5" style={{ height: "112px" }}>
               {act.dau.map((x) => (
                 <div key={x.date} className="flex h-full flex-1 flex-col items-center justify-end" title={`${x.date}: ${x.visitors}명`}>
                   <span className="mb-px text-[9px] font-bold leading-none text-ink-2">{x.visitors}</span>
