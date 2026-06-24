@@ -6,6 +6,7 @@ import { RotateCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { extractDayData } from "@/lib/insight/extract-day-data";
+import { buildFallbackStory } from "@/lib/insight/fallback-story";
 import type { DayStory, StorySlot } from "@/lib/insight/story";
 import { useDiagnosisStore } from "@/stores/diagnosis-store";
 import type { CandidateArea, DiagnosisMode } from "@/lib/types";
@@ -83,12 +84,17 @@ interface DayPreviewProps {
 
 export function DayPreview({ candidate, mode }: DayPreviewProps) {
   const [status, setStatus] = React.useState<Status>("idle");
+  // ★ AI 실패 시 로컬 템플릿 폴백(외부 호출 0) — store 캐시 미오염, 이 카드 내에서만 표시.
+  const [fallback, setFallback] = React.useState<DayStory | null>(null);
   // ★ 세션 캐시 — 캐시된 story 가 있으면 재호출 없이 바로 렌더(시트 close/reopen 비용 0).
   const story = useDiagnosisStore((s) => s.stories[candidate.id]) ?? null;
   const setStory = useDiagnosisStore((s) => s.setStory);
+  // 표시 우선순위: AI story(캐시) > 폴백.
+  const shown = story ?? fallback;
 
   const generate = React.useCallback(async () => {
     setStatus("loading");
+    setFallback(null);
     try {
       const data = extractDayData(candidate, mode);
       const res = await fetch("/api/insight", {
@@ -102,7 +108,13 @@ export function DayPreview({ candidate, mode }: DayPreviewProps) {
       setStory(candidate.id, json.story); // store 보관 → 캐시 hit 시 idle 스킵.
       setStatus("idle"); // story 존재가 done 표시를 주도(아래 렌더 우선순위).
     } catch {
-      setStatus("error"); // 503/502/400/네트워크 모두 graceful (크래시·빈 화면 금지).
+      // ★ AI 실패(503/502/429/네트워크) → 로컬 템플릿 폴백으로 "언제 봐도 작동". 에러 카드 X.
+      try {
+        setFallback(buildFallbackStory(extractDayData(candidate, mode)));
+        setStatus("idle");
+      } catch {
+        setStatus("error"); // 폴백 생성마저 실패 시에만 에러 카드(극히 드묾).
+      }
     }
   }, [candidate, mode, setStory]);
 
@@ -113,7 +125,7 @@ export function DayPreview({ candidate, mode }: DayPreviewProps) {
         <p className="text-caption font-bold text-ink-2">동네 하루 미리보기</p>
       </div>
 
-      {!story && status === "idle" && (
+      {!shown && status === "idle" && (
         <Button variant="outline" fullWidth onClick={generate}>
           AI로 이 동네 하루 미리보기 ✨
         </Button>
@@ -121,7 +133,7 @@ export function DayPreview({ candidate, mode }: DayPreviewProps) {
 
       {status === "loading" && <DayPreviewSkeleton />}
 
-      {!story && status === "error" && (
+      {!shown && status === "error" && (
         <div className="space-y-s-2 rounded-lg border border-card-border bg-surface px-s-4 py-s-3 text-center">
           <p className="text-body-sm text-ink-3">
             지금은 미리보기를 불러올 수 없어요
@@ -133,10 +145,10 @@ export function DayPreview({ candidate, mode }: DayPreviewProps) {
         </div>
       )}
 
-      {story && (
+      {shown && (
         <ol className="space-y-s-3">
           {SLOTS.map(({ key, emoji, label }) => {
-            const slot = story[key] as StorySlot | null;
+            const slot = shown[key] as StorySlot | null;
             if (!slot) return null; // evening null(부부·여가 없음) → 저녁 카드 생략.
             return (
               <li
