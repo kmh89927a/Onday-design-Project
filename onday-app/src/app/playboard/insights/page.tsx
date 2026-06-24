@@ -3,7 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getDeploymentEnv } from "@/lib/health";
-import { getInsights, FUNNEL_STEPS, OTHER_EVENTS, type InsightsData, type InsightsSource } from "@/lib/playboard/insights";
+import {
+  getInsights,
+  getActivity,
+  FUNNEL_STEPS,
+  OTHER_EVENTS,
+  type InsightsData,
+  type ActivityData,
+  type InsightsSource,
+} from "@/lib/playboard/insights";
 
 // Insights 대시보드 — event_logs raw 직접 집계(크론 0). 운영자 도구.
 // ★ production 차단(logging-test 패턴): 운영자만 보는 도구라 prod 에선 notFound().
@@ -96,6 +104,8 @@ export default async function InsightsPage({
   const sp = await searchParams;
   const source: InsightsSource = sp.source === "preview" ? "preview" : "prod";
   const d: InsightsData = await getInsights(source);
+  const act: ActivityData = await getActivity(source);
+  const dauMax = Math.max(1, ...act.dau.map((x) => x.visitors));
   const funnelCounts = FUNNEL_STEPS.map((s) => d.counts[s.key] ?? 0);
   const otherCounts = OTHER_EVENTS.map((s) => d.counts[s.key] ?? 0);
   const max = Math.max(1, ...funnelCounts, ...otherCounts);
@@ -145,8 +155,62 @@ export default async function InsightsPage({
         </section>
       ) : null}
 
+      {/* 활성 지표 (E1) — DAU/WAU/MAU */}
+      <section aria-label="활성 지표" className="mt-s-6">
+        <h2 className="text-h3 font-extrabold text-ink">서비스 활성 (DAU/WAU/MAU)</h2>
+        <p className="mt-s-1 text-caption-xs text-ink-3">
+          익명 <code>visitorId</code> distinct 기준. WAU=최근 7일·MAU=최근 30일 trailing.
+        </p>
+        <div className="mt-s-4 grid gap-s-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
+            <p className="text-caption-xs font-bold text-ink-3">
+              DAU{act.latestDau ? ` · ${act.latestDau.date}` : " (최근 활동일)"}
+            </p>
+            <p className="mt-s-1 text-h2 font-extrabold text-ink">{act.latestDau?.visitors ?? 0}</p>
+            <p className="mt-s-1 text-caption-xs text-ink-3">최근 활동일 distinct 방문자</p>
+          </div>
+          <div className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
+            <p className="text-caption-xs font-bold text-ink-3">WAU (7일)</p>
+            <p className="mt-s-1 text-h2 font-extrabold text-ink">{act.wau}</p>
+            <p className="mt-s-1 text-caption-xs text-ink-3">최근 7일 distinct 방문자</p>
+          </div>
+          <div className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
+            <p className="text-caption-xs font-bold text-ink-3">MAU (30일)</p>
+            <p className="mt-s-1 text-h2 font-extrabold text-ink">{act.mau}</p>
+            <p className="mt-s-1 text-caption-xs text-ink-3">최근 30일 distinct 방문자</p>
+          </div>
+        </div>
+
+        {act.dau.length > 0 ? (
+          <div className="mt-s-4">
+            <p className="text-caption-xs font-bold text-ink-3">일별 DAU (최근 {act.dau.length}일 · 데이터 있는 날)</p>
+            <div className="mt-s-2 flex h-24 items-end gap-0.5" aria-hidden>
+              {act.dau.map((x) => (
+                <div
+                  key={x.date}
+                  className="flex-1 rounded-t-xs bg-info"
+                  style={{ height: `${Math.max((x.visitors / dauMax) * 100, 6)}%` }}
+                  title={`${x.date}: ${x.visitors}`}
+                />
+              ))}
+            </div>
+            <div className="mt-s-1 flex justify-between text-caption-xs text-ink-3">
+              <span>{act.dau[0].date}</span>
+              <span>최대 {dauMax}명/일</span>
+              <span>{act.dau[act.dau.length - 1].date}</span>
+            </div>
+          </div>
+        ) : null}
+
+        {act.nullVisitorRows > 0 ? (
+          <p className="mt-s-2 text-caption-xs text-warning">
+            ※ visitorId 없는 {act.nullVisitorRows}행(시크릿/차단)은 distinct 제외 — 과소 집계 가능.
+          </p>
+        ) : null}
+      </section>
+
       {/* 11종 퍼널 */}
-      <section aria-label="퍼널" className="mt-s-6">
+      <section aria-label="퍼널" className="mt-s-8 border-t border-card-border pt-s-6">
         <h2 className="text-h3 font-extrabold text-ink">전환 퍼널 (11종)</h2>
         <p className="mt-s-1 text-caption-xs text-ink-3">% = 랜딩 노출 대비. 막대 색 = AARRR 단계.</p>
         <div className="mt-s-4 space-y-s-2">

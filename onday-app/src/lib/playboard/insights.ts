@@ -116,3 +116,61 @@ export async function getInsights(source: InsightsSource = "prod"): Promise<Insi
     },
   };
 }
+
+// ── 활성 지표 (E1) — DAU/WAU/MAU. 익명 visitorId distinct 기준(PII 0), raw 직접(크론 0). ──
+const DAU_WINDOW_DAYS = 30;
+const DAY_MS = 86_400_000;
+
+export interface ActivityData {
+  dau: { date: string; visitors: number }[]; // 최근 DAU_WINDOW_DAYS 일(데이터 있는 날)
+  latestDau: { date: string; visitors: number } | null; // 최근 활동일 DAU
+  wau: number; // 최근 7일 trailing distinct
+  mau: number; // 최근 30일 trailing distinct
+  totalVisitors: number; // 전체 distinct(참고)
+  nullVisitorRows: number; // visitorId null(distinct 제외) — 과소집계 주석용
+}
+
+export async function getActivity(source: InsightsSource = "prod"): Promise<ActivityData> {
+  const model = (source === "preview" ? prisma.previewEventLog : prisma.eventLog) as typeof prisma.eventLog;
+  const rows = await model.findMany({ select: { visitorId: true, timestamp: true } });
+
+  const now = Date.now();
+  const perDay = new Map<string, Set<string>>();
+  const wauSet = new Set<string>();
+  const mauSet = new Set<string>();
+  const allSet = new Set<string>();
+  let nullVisitorRows = 0;
+
+  for (const r of rows) {
+    if (!r.visitorId) {
+      nullVisitorRows += 1; // distinct 불가 → 제외(과소집계 가능)
+      continue;
+    }
+    const t = r.timestamp.getTime();
+    if (t > now) continue; // 미래 타임스탬프(더미 아티팩트 등) 방어 — 활성 집계서 제외
+    const day = r.timestamp.toISOString().slice(0, 10);
+    let set = perDay.get(day);
+    if (!set) {
+      set = new Set();
+      perDay.set(day, set);
+    }
+    set.add(r.visitorId);
+    allSet.add(r.visitorId);
+    if (now - t <= 7 * DAY_MS) wauSet.add(r.visitorId);
+    if (now - t <= 30 * DAY_MS) mauSet.add(r.visitorId);
+  }
+
+  const dau = [...perDay.entries()]
+    .map(([date, set]) => ({ date, visitors: set.size }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-DAU_WINDOW_DAYS);
+
+  return {
+    dau,
+    latestDau: dau.length ? dau[dau.length - 1] : null,
+    wau: wauSet.size,
+    mau: mauSet.size,
+    totalVisitors: allSet.size,
+    nullVisitorRows,
+  };
+}
