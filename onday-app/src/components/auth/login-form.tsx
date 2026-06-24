@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
-import Sentry from "@sentry/nextjs";
+// ★ named import — "use client" 브라우저 번들엔 default export 가 없어(import Sentry → undefined),
+//   #247 의 default import 가 클라에서 captureMessage 크래시 유발. named import 는 client·server 양쪽 안전.
+import { captureMessage } from "@sentry/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { OAuthButton } from "@/components/ui/oauth-button";
@@ -94,7 +95,7 @@ export function LoginForm() {
     // 심사관도 회원 정보 미저장 — 이전 로그인 사용자가 남긴 좌표·이전조건·찜 제거.
     clearGuestPersisted();
     // CMD-AUTH-004 — 진입 이벤트 기록(Sentry 미초기화 시 silent no-op).
-    Sentry.captureMessage("reviewer_mode_entered", "info");
+    captureMessage("reviewer_mode_entered", "info");
     pushToast({
       variant: "default",
       message:
