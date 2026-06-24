@@ -52,11 +52,31 @@ const pct = (num: number, den: number): number | null =>
 // ★ 읽는 테이블만 교체(write 0). preview 는 dev/preview 에서만 의미(페이지가 prod 차단).
 export type InsightsSource = "prod" | "preview";
 
-export async function getInsights(source: InsightsSource = "prod"): Promise<InsightsData> {
-  // 두 모델은 스키마 동일(필드·인덱스) — preview 델리게이트를 eventLog 타입으로 캐스팅해 읽기만 분기.
-  const model = (source === "preview" ? prisma.previewEventLog : prisma.eventLog) as typeof prisma.eventLog;
+// 모드 필터(부부/싱글) — mode 컬럼은 5개 이벤트(input_viewed·submit_clicked·share_*·saved_search)만 보유.
+// ★ 그래서 방문자의 mode 를 그 이벤트로 추론(visitorId→mode)한 뒤, 그 방문자의 전 이벤트를 필터한다.
+//   → mode 이벤트가 없는 방문자(랜딩만 이탈 등)는 모드뷰에서 제외(전체뷰엔 포함). 정직 표기.
+export type ModeFilter = "couple" | "single";
 
-  const grouped = await model.groupBy({ by: ["eventName"], _count: { _all: true } });
+function delegate(source: InsightsSource) {
+  return (source === "preview" ? prisma.previewEventLog : prisma.eventLog) as typeof prisma.eventLog;
+}
+
+// 해당 모드 방문자 visitorId 목록(mode 보유 이벤트 기준 distinct).
+async function modeVisitorIds(model: typeof prisma.eventLog, mode: ModeFilter): Promise<string[]> {
+  const rows = await model.findMany({
+    where: { mode },
+    select: { visitorId: true },
+    distinct: ["visitorId"],
+  });
+  return rows.map((r) => r.visitorId).filter((v): v is string => v != null);
+}
+
+export async function getInsights(source: InsightsSource = "prod", mode?: ModeFilter): Promise<InsightsData> {
+  const model = delegate(source);
+  // mode 미지정 → modeWhere undefined → 쿼리 동일(기존 무변경). 지정 시 visitorId IN 필터.
+  const modeWhere = mode ? { visitorId: { in: await modeVisitorIds(model, mode) } } : undefined;
+
+  const grouped = await model.groupBy({ by: ["eventName"], _count: { _all: true }, where: modeWhere });
   const counts: Record<string, number> = {};
   let total = 0;
   for (const g of grouped) {
@@ -65,7 +85,7 @@ export async function getInsights(source: InsightsSource = "prod"): Promise<Insi
   }
 
   const addressVerified2 = await model.count({
-    where: { eventName: "address_verified", count: 2 },
+    where: { eventName: "address_verified", count: 2, ...(modeWhere ?? {}) },
   });
 
   const rates = {
@@ -76,7 +96,7 @@ export async function getInsights(source: InsightsSource = "prod"): Promise<Insi
 
   // UTM 채널 — props(JSON)에서 utm_source 추출 후 채널별 집계.
   const utmRowsRaw = await model.findMany({
-    where: { NOT: { props: null } },
+    where: { NOT: { props: null }, ...(modeWhere ?? {}) },
     select: { eventName: true, props: true },
   });
   const bySource = new Map<string, UtmChannel>();
@@ -101,6 +121,7 @@ export async function getInsights(source: InsightsSource = "prod"): Promise<Insi
   const agg = await model.aggregate({
     _min: { timestamp: true },
     _max: { timestamp: true },
+    where: modeWhere,
   });
 
   return {
@@ -130,9 +151,10 @@ export interface ActivityData {
   nullVisitorRows: number; // visitorId null(distinct 제외) — 과소집계 주석용
 }
 
-export async function getActivity(source: InsightsSource = "prod"): Promise<ActivityData> {
-  const model = (source === "preview" ? prisma.previewEventLog : prisma.eventLog) as typeof prisma.eventLog;
-  const rows = await model.findMany({ select: { visitorId: true, timestamp: true } });
+export async function getActivity(source: InsightsSource = "prod", mode?: ModeFilter): Promise<ActivityData> {
+  const model = delegate(source);
+  const modeWhere = mode ? { visitorId: { in: await modeVisitorIds(model, mode) } } : undefined;
+  const rows = await model.findMany({ where: modeWhere, select: { visitorId: true, timestamp: true } });
 
   const now = Date.now();
   const perDay = new Map<string, Set<string>>();
@@ -196,10 +218,11 @@ function weekStartUTC(d: Date): string {
   return dt.toISOString().slice(0, 10);
 }
 
-export async function getNsmTrend(source: InsightsSource = "prod"): Promise<NsmTrend> {
-  const model = (source === "preview" ? prisma.previewEventLog : prisma.eventLog) as typeof prisma.eventLog;
+export async function getNsmTrend(source: InsightsSource = "prod", mode?: ModeFilter): Promise<NsmTrend> {
+  const model = delegate(source);
+  const modeWhere = mode ? { visitorId: { in: await modeVisitorIds(model, mode) } } : undefined;
   const rows = await model.findMany({
-    where: { eventName: "diagnosis_completed" },
+    where: { eventName: "diagnosis_completed", ...(modeWhere ?? {}) },
     select: { diagnosisId: true, timestamp: true },
   });
 
