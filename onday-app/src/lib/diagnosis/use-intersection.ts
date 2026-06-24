@@ -9,8 +9,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
-import Sentry from "@sentry/nextjs";
+// ★ named import — 브라우저 번들엔 default export 없음(#259 login 크래시 동일 패턴). client·server 양쪽 안전.
+import { captureException, captureMessage } from "@sentry/nextjs";
 import type { IKakaoTransportClient } from "@/lib/external/kakao-transport";
 import type { Coordinate, DiagnosisFilters } from "@/lib/types";
 import { calculateIntersection, type IntersectionResult } from "./intersection";
@@ -31,12 +31,12 @@ export function useIntersection(transportClient: IKakaoTransportClient) {
         const res = await calculateIntersection(coordA, coordB, filters, transportClient);
         setResult(res);
       } catch (e) {
-        Sentry.captureException(e, { tags: { domain: "diagnosis", task: "CMD-DIAG-002" } });
+        captureException(e, { tags: { domain: "diagnosis", task: "CMD-DIAG-002" } });
         setError("진단 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
       } finally {
         const elapsed = performance.now() - startTime;
         if (elapsed > RESPONSE_TIME_THRESHOLD_MS) {
-          Sentry.captureMessage(`Intersection calculation exceeded ${RESPONSE_TIME_THRESHOLD_MS}ms: ${elapsed.toFixed(0)}ms`, {
+          captureMessage(`Intersection calculation exceeded ${RESPONSE_TIME_THRESHOLD_MS}ms: ${elapsed.toFixed(0)}ms`, {
             level: "warning",
             tags: { domain: "diagnosis", task: "CMD-DIAG-002" },
           });

@@ -8,8 +8,8 @@
 // ★ Coordinate ↔ KakaoCoord 변환은 toKakaoCoord 헬퍼로 transportClient 호출 직전만 (★ KakaoCoord ≠ Coordinate 분리 § 2번째 실전).
 // ──────────────────────────────────────────────
 
-// ★ default import — namespace 는 ESM 빌드에서 capture* 미노출(sentry-error.ts 참조).
-import Sentry from "@sentry/nextjs";
+// ★ named import — 브라우저 번들엔 default export 없음(#259 login 크래시 동일 패턴). client·server 양쪽 안전.
+import { captureMessage } from "@sentry/nextjs";
 import type { IKakaoTransportClient, KakaoCoord } from "@/lib/external/kakao-transport";
 import { mapKakaoResponseToCommuteInfo } from "@/lib/external/kakao-transport";
 import type { Coordinate, DiagnosisFilters, CommuteSchedule, DayOfWeek } from "@/lib/types";
@@ -88,7 +88,7 @@ export async function calculateIntersection(
   const failureRate = pool.length === 0 ? 0 : (results.length - succeeded.length) / results.length;
 
   if (failureRate > FAILURE_THRESHOLD) {
-    Sentry.captureMessage(`Kakao API failure rate ${(failureRate * 100).toFixed(1)}%`, {
+    captureMessage(`Kakao API failure rate ${(failureRate * 100).toFixed(1)}%`, {
       level: "warning",
       tags: { domain: "diagnosis", task: "CMD-DIAG-002" },
     });
