@@ -53,12 +53,23 @@ export function AddressInput({
   const listId = `${id ?? inputId}-list`;
   const [highlightedId, setHighlightedId] = React.useState<string>();
   const [isFocus, setIsFocus] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const composingRef = React.useRef(false); // 한글 IME 조합 중 여부
   const showList = isFocus && suggestions.length > 0;
   // derived: 사용자가 highlight한 항목이 현재 suggestions에 없으면 첫 번째로 폴백
   const effectiveHighlightedId =
     highlightedId && suggestions.some((s) => s.id === highlightedId)
       ? highlightedId
       : suggestions[0]?.id;
+
+  // ★ 선택 확정 — 한글 IME 조합 중이면 blur 로 조합을 옛 값에 먼저 커밋(compositionend) 후 교체.
+  //   조합 미커밋 시 마지막 글자가 교체값 뒤에 잔류("강남 2호선역남")하는 버그 방지. Enter·클릭 공통.
+  const commitSelection = (item: AddressSuggestion) => {
+    onSelect?.(item);
+    if (composingRef.current) inputRef.current?.blur();
+    onChange(item.title); // 완전 교체(replace) — 잔류 0.
+    setIsFocus(false);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showList) return;
@@ -75,11 +86,7 @@ export function AddressInput({
     } else if (e.key === "Enter") {
       e.preventDefault();
       const sel = suggestions[idx];
-      if (sel) {
-        onSelect?.(sel);
-        onChange(sel.title);
-        setIsFocus(false);
-      }
+      if (sel) commitSelection(sel);
     } else if (e.key === "Escape") {
       setIsFocus(false);
     }
@@ -109,6 +116,7 @@ export function AddressInput({
             {tag}
           </span>
           <input
+            ref={inputRef}
             id={inputId}
             role="combobox"
             aria-expanded={showList}
@@ -120,6 +128,12 @@ export function AddressInput({
             value={value}
             placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
+            onCompositionStart={() => {
+              composingRef.current = true;
+            }}
+            onCompositionEnd={() => {
+              composingRef.current = false;
+            }}
             onFocus={() => setIsFocus(true)}
             onBlur={() => setTimeout(() => setIsFocus(false), 150)}
             onKeyDown={handleKeyDown}
@@ -141,11 +155,7 @@ export function AddressInput({
           items={suggestions}
           highlightedId={effectiveHighlightedId}
           onHighlight={setHighlightedId}
-          onSelect={(item) => {
-            onSelect?.(item);
-            onChange(item.title);
-            setIsFocus(false);
-          }}
+          onSelect={commitSelection}
         />
       )}
     </div>

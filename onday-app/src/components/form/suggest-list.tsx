@@ -54,7 +54,12 @@ export function SuggestList({
               type="button"
               role="option"
               aria-selected={isActive}
-              onClick={() => onSelect(item)}
+              // ★ onMouseDown + preventDefault — 입력 blur 차단(포커스 유지)으로
+              //   한글 IME compositionend 경합 제거(끝글자 잔류 방지). 선택은 mousedown 에서 확정.
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(item);
+              }}
               onMouseEnter={() => onHighlight?.(item.id)}
               className={cn(
                 "flex w-full items-center gap-s-3 px-s-4 py-s-3 text-left transition-colors",
