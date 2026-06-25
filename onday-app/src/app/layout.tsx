@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { Toaster } from "@/components/layout/toaster";
 import { QueryProvider } from "@/providers/query-provider";
 import { SessionBridge } from "@/providers/session-bridge";
@@ -31,6 +32,7 @@ export default function RootLayout({
         <QueryProvider>{children}</QueryProvider>
         <Toaster />
         <SpeedInsights />
+        <GoogleAnalytics />
       </body>
     </html>
   );
