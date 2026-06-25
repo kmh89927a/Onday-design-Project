@@ -8,12 +8,16 @@ import {
   getActivity,
   getNsmTrend,
   getLoginMethods,
+  getSegmentAnalytics,
   FUNNEL_STEPS,
   OTHER_EVENTS,
   type InsightsData,
   type ActivityData,
   type NsmTrend,
   type LoginMethods,
+  type SegmentAnalytics,
+  type SegLineSeries,
+  type SegFunnelSeries,
   type InsightsSource,
   type ModeFilter,
 } from "@/lib/playboard/insights";
@@ -49,6 +53,102 @@ const LOGIN_METHODS = [
   { key: "guest", label: "게스트", color: "bg-info" },
   { key: "reviewer", label: "채용담당자", color: "bg-primary" },
 ] as const;
+
+// ── 세그먼트 차트 — 색/좌표/높이 전부 인라인(JIT 클래스 의존 0). ──
+// 범례(선·막대 공용) — color swatch 는 인라인 backgroundColor.
+function SegLegend({ series, unit }: { series: { key: string; label: string; color: string; total: number }[]; unit: string }) {
+  return (
+    <div className="mt-s-2 flex flex-wrap gap-s-3 text-caption-xs">
+      {series.map((s) => (
+        <span key={s.key} className="inline-flex items-center gap-s-1">
+          <span className="inline-block h-2.5 w-2.5 rounded-xs" style={{ backgroundColor: s.color }} aria-hidden />
+          <span className="text-ink-2">{s.label}</span>
+          <span className="text-ink-3">
+            ({s.total} {unit})
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// NSM 선차트 — viewBox 0~100 stretch + non-scaling-stroke(선폭 일정). 좌표 인라인(points).
+// ★ 단일 주차(weeks<2)면 선이 안 그려짐 → 부모가 범례+안내로 대체(스파게티·빈선 방지).
+function SegLineChart({ weeks, series }: { weeks: string[]; series: SegLineSeries[] }) {
+  const max = Math.max(1, ...series.flatMap((s) => s.values));
+  const n = weeks.length;
+  const x = (i: number) => (n <= 1 ? 50 : (i / (n - 1)) * 100);
+  const y = (v: number) => 96 - (v / max) * 92; // 4(상단)~96(하단) 패딩
+  return (
+    <div>
+      <div className="border-b border-card-border">
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="w-full"
+          style={{ height: "150px" }}
+          role="img"
+          aria-label="세그먼트별 주간 진단 완료 추세"
+        >
+          {series.map((s) => (
+            <polyline
+              key={s.key}
+              points={s.values.map((v, i) => `${x(i)},${y(v)}`).join(" ")}
+              fill="none"
+              stroke={s.color}
+              strokeWidth="2"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
+      </div>
+      <div className="mt-s-1 flex justify-between text-caption-xs text-ink-3">
+        {weeks.map((w) => (
+          <span key={w}>{w.slice(5)}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 퍼널 비교 막대 — 단계 그룹 × 세그먼트 막대. 높이 인라인 %, 색 인라인 backgroundColor.
+function SegBarCompare({ steps, series }: { steps: { key: string; label: string }[]; series: SegFunnelSeries[] }) {
+  const max = Math.max(1, ...series.flatMap((s) => s.counts));
+  return (
+    <div>
+      <div className="flex items-end gap-s-3" style={{ height: "150px" }}>
+        {steps.map((st, si) => (
+          <div key={st.key} className="flex h-full flex-1 flex-col justify-end">
+            <div className="flex h-full items-end justify-center gap-1">
+              {series.map((s) => {
+                const v = s.counts[si];
+                const h = max > 0 ? Math.max((v / max) * 100, v > 0 ? 3 : 0) : 0;
+                return (
+                  <div
+                    key={s.key}
+                    className="w-3 rounded-t-xs"
+                    style={{ height: `${h}%`, backgroundColor: s.color }}
+                    title={`${s.label} · ${st.label}: ${v}`}
+                    aria-hidden
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-s-1 flex gap-s-3">
+        {steps.map((st) => (
+          <span key={st.key} className="flex-1 text-center text-caption-xs text-ink-3">
+            {st.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Bar({ count, max, stage }: { count: number; max: number; stage: string }) {
   const width = max > 0 ? Math.max((count / max) * 100, count > 0 ? 4 : 0) : 0;
@@ -138,6 +238,8 @@ export default async function InsightsPage({
   const dauMax = Math.max(1, ...act.dau.map((x) => x.visitors));
   const nsm: NsmTrend = await getNsmTrend(source, mode);
   const login: LoginMethods = await getLoginMethods(source, mode);
+  // ★ 세그먼트 차트 — 소스만 연동(모드 필터 미적용: 차트 자체가 모드/방식으로 분해하므로).
+  const seg: SegmentAnalytics = await getSegmentAnalytics(source);
   const nsmMax = Math.max(1, nsm.target3mo, ...nsm.weeks.map((w) => w.completed));
   const funnelCounts = FUNNEL_STEPS.map((s) => d.counts[s.key] ?? 0);
   const otherCounts = OTHER_EVENTS.map((s) => d.counts[s.key] ?? 0);
@@ -400,6 +502,73 @@ export default async function InsightsPage({
             ※ method 없는/기타 {login.unknown}건(과거 데이터·누락)은 분류에서 제외.
           </p>
         ) : null}
+      </section>
+
+      {/* 세그먼트 분석 — NSM 추세(선) 2 + 퍼널 비교(막대) 2. 목적별 분리(스파게티 방지). */}
+      <section aria-label="세그먼트 분석" className="mt-s-8 border-t border-card-border pt-s-6">
+        <h2 className="text-h3 font-extrabold text-ink">세그먼트 분석 — 로그인 방식 · 모드</h2>
+        <p className="mt-s-1 text-caption-xs leading-relaxed text-ink-3">
+          완료·단계 이벤트를 방문자의 로그인 방식·모드로 귀속(<code>diagnosis_completed</code> 엔 세그먼트 컬럼이 없어{" "}
+          <code>visitorId</code> 로 추론). 소스 토글만 연동(모드 필터 미적용 — 차트가 직접 분해). 추세는 27일치 데이터(preview)에서 의미.
+        </p>
+
+        <div className="mt-s-4 grid gap-s-4 lg:grid-cols-2">
+          {/* ① NSM 추세 — 로그인 방식별(선) */}
+          <div className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
+            <p className="text-caption-xs font-bold text-ink-3">① NSM 추세 — 로그인 방식별 (주간 완료)</p>
+            {seg.weeks.length >= 2 ? (
+              <div className="mt-s-3">
+                <SegLineChart weeks={seg.weeks} series={seg.nsmByMethod} />
+              </div>
+            ) : (
+              <p className="mt-s-2 text-caption-xs text-ink-2">추세선은 2주 이상 데이터 필요(현재 {seg.weeks.length}주) — 누적 합계만 표시.</p>
+            )}
+            <SegLegend series={seg.nsmByMethod} unit="건" />
+            {seg.excluded.methodUnknown > 0 ? (
+              <p className="mt-s-2 text-caption-xs text-warning">※ 로그인 방식 미상 방문자 {seg.excluded.methodUnknown}명 제외.</p>
+            ) : null}
+          </div>
+
+          {/* ② NSM 추세 — 모드별(선) */}
+          <div className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
+            <p className="text-caption-xs font-bold text-ink-3">② NSM 추세 — 모드별 (주간 완료)</p>
+            {seg.weeks.length >= 2 ? (
+              <div className="mt-s-3">
+                <SegLineChart weeks={seg.weeks} series={seg.nsmByMode} />
+              </div>
+            ) : (
+              <p className="mt-s-2 text-caption-xs text-ink-2">추세선은 2주 이상 데이터 필요(현재 {seg.weeks.length}주) — 누적 합계만 표시.</p>
+            )}
+            <SegLegend series={seg.nsmByMode} unit="건" />
+            {seg.excluded.modeUnknown > 0 ? (
+              <p className="mt-s-2 text-caption-xs text-warning">※ 모드 미상 방문자 {seg.excluded.modeUnknown}명 제외(모드 선택 전 이탈 등).</p>
+            ) : null}
+          </div>
+
+          {/* ③ 퍼널 비교 — 로그인 방식별(막대) */}
+          <div className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
+            <p className="text-caption-xs font-bold text-ink-3">③ 퍼널 비교 — 로그인 방식별 (핵심 5단계)</p>
+            <div className="mt-s-3">
+              <SegBarCompare steps={seg.funnelSteps} series={seg.funnelByMethod} />
+            </div>
+            <SegLegend series={seg.funnelByMethod} unit="이벤트" />
+            {seg.excluded.methodUnknown > 0 ? (
+              <p className="mt-s-2 text-caption-xs text-warning">※ 로그인 방식 미상 방문자 {seg.excluded.methodUnknown}명 제외.</p>
+            ) : null}
+          </div>
+
+          {/* ④ 퍼널 비교 — 모드별(막대) */}
+          <div className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
+            <p className="text-caption-xs font-bold text-ink-3">④ 퍼널 비교 — 모드별 (핵심 5단계)</p>
+            <div className="mt-s-3">
+              <SegBarCompare steps={seg.funnelSteps} series={seg.funnelByMode} />
+            </div>
+            <SegLegend series={seg.funnelByMode} unit="이벤트" />
+            {seg.excluded.modeUnknown > 0 ? (
+              <p className="mt-s-2 text-caption-xs text-warning">※ 모드 미상 방문자 {seg.excluded.modeUnknown}명 제외(모드 선택 전 이탈 등).</p>
+            ) : null}
+          </div>
+        </div>
       </section>
 
       {/* 핵심 전환율 3종 */}

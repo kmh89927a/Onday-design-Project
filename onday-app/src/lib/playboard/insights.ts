@@ -292,3 +292,166 @@ export async function getNsmTrend(source: InsightsSource = "prod", mode?: ModeFi
     target6mo: NSM_TARGET_6MO,
   };
 }
+
+// ── 세그먼트 분석 — 로그인방식/모드별 NSM 추세(선) + 퍼널 비교(막대). 읽기 전용 SELECT. ──
+// ★ diagnosis_completed 엔 method/mode 컬럼이 없음(login_entered=method, 5개 이벤트=mode).
+//   → visitorId → 세그먼트(최초값) 매핑으로 귀속. 매핑 없는 방문자 이벤트는 unknown=차트 제외.
+// ★ 색은 hsl(토큰 var) 문자열 — 페이지에서 선 stroke·막대 backgroundColor 인라인 사용(클래스 0).
+// ★ 좌표/높이는 페이지가 인라인 style 로 렌더(JIT 클래스 의존 0). 데이터 0/단일주차 안전.
+
+export interface SegLineSeries {
+  key: string;
+  label: string;
+  color: string;
+  values: number[]; // weeks 인덱스별 주간 완료수
+  total: number;
+}
+export interface SegFunnelSeries {
+  key: string;
+  label: string;
+  color: string;
+  counts: number[]; // funnelSteps 인덱스별 이벤트수
+  total: number;
+}
+export interface SegmentAnalytics {
+  weeks: string[]; // 양 NSM 선차트 공용 X축(월요일 시작, 최근 NSM_WEEKS)
+  nsmByMethod: SegLineSeries[];
+  nsmByMode: SegLineSeries[];
+  funnelSteps: { key: string; label: string }[];
+  funnelByMethod: SegFunnelSeries[];
+  funnelByMode: SegFunnelSeries[];
+  excluded: { methodUnknown: number; modeUnknown: number }; // 세그 미매핑 방문자수(정직 표기)
+  completions: number; // diagnosis_completed 총건(귀속 전, 참고)
+}
+
+// 퍼널 비교 핵심 단계(login→완료→공유) — 11종 전부는 막대 비교서 스파게티 → 핵심 5단계.
+const SEG_FUNNEL_STEPS = [
+  { key: "login_entered", label: "로그인" },
+  { key: "diagnosis_input_viewed", label: "입력" },
+  { key: "diagnosis_submit_clicked", label: "제출" },
+  { key: "diagnosis_completed", label: "완료" },
+  { key: "share_link_created", label: "공유" },
+] as const;
+
+// 세그먼트 색(hsl 토큰 var) — 선/막대/범례 공용. 톤 구분 우선(카카오 amber·게스트 blue·채용 red).
+const METHOD_COLORS: Record<string, string> = {
+  kakao: "hsl(var(--warning))",
+  guest: "hsl(var(--info))",
+  reviewer: "hsl(var(--danger))",
+};
+const MODE_COLORS: Record<string, string> = {
+  couple: "hsl(var(--primary))",
+  single: "hsl(var(--warning))",
+};
+const METHOD_LABEL: Record<string, string> = { kakao: "카카오", guest: "게스트", reviewer: "채용담당자" };
+const MODE_LABEL: Record<string, string> = { couple: "부부", single: "싱글" };
+const METHOD_SEGS = ["kakao", "guest", "reviewer"] as const;
+const MODE_SEGS = ["couple", "single"] as const;
+
+export async function getSegmentAnalytics(source: InsightsSource = "prod"): Promise<SegmentAnalytics> {
+  const model = delegate(source);
+  // 단일 SELECT — 필요한 컬럼만(preview 수백 행 수준, 충분). write 0.
+  const rows = await model.findMany({
+    select: { eventName: true, visitorId: true, method: true, mode: true, diagnosisId: true, timestamp: true },
+  });
+
+  // 방문자 → 세그먼트(최초 등장값). method=login_entered.method, mode=mode 보유 이벤트.
+  const vMethod = new Map<string, string>();
+  const vMode = new Map<string, string>();
+  for (const r of rows) {
+    if (!r.visitorId) continue;
+    if (r.eventName === "login_entered" && r.method && !vMethod.has(r.visitorId)) vMethod.set(r.visitorId, r.method);
+    if (r.mode && !vMode.has(r.visitorId)) vMode.set(r.visitorId, r.mode);
+  }
+
+  const now = Date.now();
+  // 공용 주차축 — 완료 이벤트 전체 기준(양 NSM 차트 동일 X축).
+  const completionWeeks = new Set<string>();
+  let completions = 0;
+  for (const r of rows) {
+    if (r.eventName === "diagnosis_completed" && r.visitorId && r.timestamp.getTime() <= now) {
+      completionWeeks.add(weekStartUTC(r.timestamp));
+      completions += 1;
+    }
+  }
+  const weeks = [...completionWeeks].sort((a, b) => a.localeCompare(b)).slice(-NSM_WEEKS);
+  const weekIdx = new Map(weeks.map((w, i) => [w, i]));
+
+  // NSM 선 — 세그먼트별 주간 완료(diagnosisId dedup, null=행 폴백).
+  const buildLines = (
+    vMap: Map<string, string>,
+    segs: readonly string[],
+    colors: Record<string, string>,
+    labels: Record<string, string>,
+  ): { series: SegLineSeries[]; unknown: number } => {
+    const buckets = segs.map((s) => ({ key: s, ids: weeks.map(() => new Set<string>()), nulls: weeks.map(() => 0) }));
+    const bySeg = new Map(buckets.map((b) => [b.key, b]));
+    const unknown = new Set<string>();
+    for (const r of rows) {
+      if (r.eventName !== "diagnosis_completed" || !r.visitorId || r.timestamp.getTime() > now) continue;
+      const wi = weekIdx.get(weekStartUTC(r.timestamp));
+      if (wi === undefined) continue;
+      const seg = vMap.get(r.visitorId);
+      const b = seg ? bySeg.get(seg) : undefined;
+      if (!b) {
+        unknown.add(r.visitorId);
+        continue;
+      }
+      if (r.diagnosisId) b.ids[wi].add(r.diagnosisId);
+      else b.nulls[wi] += 1;
+    }
+    const series = buckets.map((b) => {
+      const values = weeks.map((_, i) => b.ids[i].size + b.nulls[i]);
+      return { key: b.key, label: labels[b.key], color: colors[b.key], values, total: values.reduce((a, c) => a + c, 0) };
+    });
+    return { series, unknown: unknown.size };
+  };
+
+  // 퍼널 막대 — 세그먼트별 단계 이벤트수.
+  const buildFunnel = (
+    vMap: Map<string, string>,
+    segs: readonly string[],
+    colors: Record<string, string>,
+    labels: Record<string, string>,
+  ): { series: SegFunnelSeries[]; unknown: number } => {
+    const stepKeys = SEG_FUNNEL_STEPS.map((s) => s.key as string);
+    const buckets = segs.map((s) => ({ key: s, counts: stepKeys.map(() => 0) }));
+    const bySeg = new Map(buckets.map((b) => [b.key, b]));
+    const unknown = new Set<string>();
+    for (const r of rows) {
+      const si = stepKeys.indexOf(r.eventName);
+      if (si === -1 || !r.visitorId) continue;
+      const seg = vMap.get(r.visitorId);
+      const b = seg ? bySeg.get(seg) : undefined;
+      if (!b) {
+        unknown.add(r.visitorId);
+        continue;
+      }
+      b.counts[si] += 1;
+    }
+    const series = buckets.map((b) => ({
+      key: b.key,
+      label: labels[b.key],
+      color: colors[b.key],
+      counts: b.counts,
+      total: b.counts.reduce((a, c) => a + c, 0),
+    }));
+    return { series, unknown: unknown.size };
+  };
+
+  const nsmM = buildLines(vMethod, METHOD_SEGS, METHOD_COLORS, METHOD_LABEL);
+  const nsmMode = buildLines(vMode, MODE_SEGS, MODE_COLORS, MODE_LABEL);
+  const funM = buildFunnel(vMethod, METHOD_SEGS, METHOD_COLORS, METHOD_LABEL);
+  const funMode = buildFunnel(vMode, MODE_SEGS, MODE_COLORS, MODE_LABEL);
+
+  return {
+    weeks,
+    nsmByMethod: nsmM.series,
+    nsmByMode: nsmMode.series,
+    funnelSteps: SEG_FUNNEL_STEPS.map((s) => ({ key: s.key, label: s.label })),
+    funnelByMethod: funM.series,
+    funnelByMode: funMode.series,
+    excluded: { methodUnknown: funM.unknown, modeUnknown: funMode.unknown },
+    completions,
+  };
+}
