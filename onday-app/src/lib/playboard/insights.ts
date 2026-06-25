@@ -138,6 +138,37 @@ export async function getInsights(source: InsightsSource = "prod", mode?: ModeFi
   };
 }
 
+// ── 로그인 방식 분류 (login_entered.method) — kakao/guest/reviewer 분포. 읽기 전용 SELECT. ──
+// ★ method 컬럼은 login_entered 에만 채워짐. null·과거데이터·예상밖 값은 unknown 으로 안전 처리.
+export interface LoginMethods {
+  total: number; // login_entered 총건(method 유무 무관)
+  kakao: number;
+  guest: number;
+  reviewer: number;
+  unknown: number; // method null·예상밖 값(과거/누락)
+}
+
+export async function getLoginMethods(source: InsightsSource = "prod", mode?: ModeFilter): Promise<LoginMethods> {
+  const model = delegate(source);
+  const modeWhere = mode ? { visitorId: { in: await modeVisitorIds(model, mode) } } : undefined;
+  const grouped = await model.groupBy({
+    by: ["method"],
+    where: { eventName: "login_entered", ...(modeWhere ?? {}) },
+    _count: { _all: true },
+  });
+
+  const result: LoginMethods = { total: 0, kakao: 0, guest: 0, reviewer: 0, unknown: 0 };
+  for (const g of grouped) {
+    const n = g._count._all;
+    result.total += n;
+    if (g.method === "kakao") result.kakao += n;
+    else if (g.method === "guest") result.guest += n;
+    else if (g.method === "reviewer") result.reviewer += n;
+    else result.unknown += n; // null·예상밖 값
+  }
+  return result;
+}
+
 // ── 활성 지표 (E1) — DAU/WAU/MAU. 익명 visitorId distinct 기준(PII 0), raw 직접(크론 0). ──
 const DAU_WINDOW_DAYS = 30;
 const DAY_MS = 86_400_000;
