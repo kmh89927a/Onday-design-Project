@@ -7,11 +7,13 @@ import {
   getInsights,
   getActivity,
   getNsmTrend,
+  getLoginMethods,
   FUNNEL_STEPS,
   OTHER_EVENTS,
   type InsightsData,
   type ActivityData,
   type NsmTrend,
+  type LoginMethods,
   type InsightsSource,
   type ModeFilter,
 } from "@/lib/playboard/insights";
@@ -39,6 +41,14 @@ const STAGE_BAR: Record<string, string> = {
 function fmtRate(r: number | null): string {
   return r === null ? "—" : `${r}%`;
 }
+
+// 로그인 방식 라벨·색 — reviewer 는 "채용담당자"로 한글 표기(이해 쉽게).
+// ★ 색은 STAGE_BAR 와 동일한 정적 토큰 클래스 → JIT 누락 없음.
+const LOGIN_METHODS = [
+  { key: "kakao", label: "카카오", color: "bg-warning" },
+  { key: "guest", label: "게스트", color: "bg-info" },
+  { key: "reviewer", label: "채용담당자", color: "bg-primary" },
+] as const;
 
 function Bar({ count, max, stage }: { count: number; max: number; stage: string }) {
   const width = max > 0 ? Math.max((count / max) * 100, count > 0 ? 4 : 0) : 0;
@@ -127,6 +137,7 @@ export default async function InsightsPage({
   const act: ActivityData = await getActivity(source, mode);
   const dauMax = Math.max(1, ...act.dau.map((x) => x.visitors));
   const nsm: NsmTrend = await getNsmTrend(source, mode);
+  const login: LoginMethods = await getLoginMethods(source, mode);
   const nsmMax = Math.max(1, nsm.target3mo, ...nsm.weeks.map((w) => w.completed));
   const funnelCounts = FUNNEL_STEPS.map((s) => d.counts[s.key] ?? 0);
   const otherCounts = OTHER_EVENTS.map((s) => d.counts[s.key] ?? 0);
@@ -355,6 +366,40 @@ export default async function InsightsPage({
             <FunnelRow key={s.key} label={s.label} stage={s.stage} count={otherCounts[i]} max={max} topCount={topCount} />
           ))}
         </div>
+      </section>
+
+      {/* 로그인 방식 분류 (login_entered.method) */}
+      <section aria-label="로그인 방식" className="mt-s-8 border-t border-card-border pt-s-6">
+        <h2 className="text-h3 font-extrabold text-ink">로그인 방식 분류</h2>
+        <p className="mt-s-1 text-caption-xs text-ink-3">
+          <code>login_entered</code> 의 <code>method</code> 기준 분포. 총 {login.total}건의 로그인 진입.
+        </p>
+        {login.total === 0 ? (
+          <p className="mt-s-3 text-caption text-ink-2">아직 로그인 진입 이벤트가 없습니다.</p>
+        ) : (
+          <div className="mt-s-4 grid gap-s-3 sm:grid-cols-3">
+            {LOGIN_METHODS.map(({ key, label, color }) => {
+              const count = login[key];
+              const ratio = login.total > 0 ? Math.round((count / login.total) * 1000) / 10 : 0;
+              return (
+                <div key={key} className="rounded-lg border border-card-border bg-surface p-s-4 shadow-card">
+                  <p className="text-caption-xs font-bold text-ink-3">{label}</p>
+                  <p className="mt-s-1 text-h2 font-extrabold text-ink">{count}</p>
+                  {/* ★ 막대 너비 = 인라인 style(JIT 누락 방지). 색만 정적 토큰 클래스 */}
+                  <div className="mt-s-2 h-2 w-full overflow-hidden rounded-sm bg-bg" aria-hidden>
+                    <div className={`h-full rounded-sm ${color}`} style={{ width: `${ratio}%` }} />
+                  </div>
+                  <p className="mt-s-1 text-caption-xs text-ink-3">{ratio}% (전체 로그인 대비)</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {login.unknown > 0 ? (
+          <p className="mt-s-2 text-caption-xs text-warning">
+            ※ method 없는/기타 {login.unknown}건(과거 데이터·누락)은 분류에서 제외.
+          </p>
+        ) : null}
       </section>
 
       {/* 핵심 전환율 3종 */}
