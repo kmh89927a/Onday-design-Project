@@ -2,6 +2,9 @@ import mixpanel from "mixpanel-browser";
 // ★ DB raw 로거 fan-out (로거 1단계, additive). Mixpanel 전송과 독립 — ensureInit 가드 前 호출.
 //   best-effort no-op 이라 기존 track·퍼널 동작 회귀 0. 역할 분담: EVENT_LOGGER_UTM_PLAN.md §0.
 import { logEvent } from "@/lib/logging/log-event";
+// ★ GA4 3번째 sink (S2, additive). logEvent 와 동일하게 ensureInit 가드 前 호출 → Mixpanel 토큰 유무와 독립.
+//   키 미설정 시 gtag 미로딩 → gaEvent no-op(회귀 0). 역할 분담: ga4-decision-log.md §0.
+import { gaEvent } from "@/lib/analytics/ga-event";
 
 // MON-003 v1.4 부활 (Issue #127) — REQ-NF-008 평균 탐색 완료 시간 p50 ≤ 10분 측정.
 //   diagnosis_started → diagnosis_completed funnel = Mixpanel Dashboard p50 자동 계산.
@@ -33,6 +36,7 @@ function ensureInit(): boolean {
 
 export function trackDiagnosisStarted(diagnosisId: string): void {
   logEvent("diagnosis_started", { diagnosisId });
+  gaEvent("diagnosis_started", { diagnosis_id: diagnosisId });
   if (!ensureInit()) return;
   mixpanel.track("diagnosis_started", {
     diagnosis_id: diagnosisId,
@@ -42,6 +46,7 @@ export function trackDiagnosisStarted(diagnosisId: string): void {
 
 export function trackDiagnosisCompleted(diagnosisId: string): void {
   logEvent("diagnosis_completed", { diagnosisId });
+  gaEvent("diagnosis_completed", { diagnosis_id: diagnosisId });
   if (!ensureInit()) return;
   mixpanel.track("diagnosis_completed", {
     diagnosis_id: diagnosisId,
@@ -55,18 +60,21 @@ export function trackDiagnosisCompleted(diagnosisId: string): void {
 
 export function trackLandingViewed(): void {
   logEvent("landing_viewed");
+  gaEvent("landing_viewed");
   if (!ensureInit()) return;
   mixpanel.track("landing_viewed", { timestamp: Date.now() });
 }
 
 export function trackLoginEntered(method: "kakao" | "guest" | "reviewer"): void {
   logEvent("login_entered", { method });
+  gaEvent("login_entered", { method });
   if (!ensureInit()) return;
   mixpanel.track("login_entered", { method, timestamp: Date.now() });
 }
 
 export function trackDiagnosisInputViewed(mode: "couple" | "single"): void {
   logEvent("diagnosis_input_viewed", { mode });
+  gaEvent("diagnosis_input_viewed", { mode });
   if (!ensureInit()) return;
   mixpanel.track("diagnosis_input_viewed", { mode, timestamp: Date.now() });
 }
@@ -74,6 +82,7 @@ export function trackDiagnosisInputViewed(mode: "couple" | "single"): void {
 // ★ count = 확정된 주소 순번(1=A, 2=B). 주소 title·coordinate·역 이름은 절대 담지 않는다(재식별 차단).
 export function trackAddressVerified(count: 1 | 2): void {
   logEvent("address_verified", { count });
+  gaEvent("address_verified", { count });
   if (!ensureInit()) return;
   mixpanel.track("address_verified", { count, timestamp: Date.now() });
 }
@@ -82,6 +91,7 @@ export function trackAddressVerified(count: 1 | 2): void {
 //   설계의 has_deadline 은 deadline 발 제출 지점이 생기면 그때 추가(없는 값 만들지 않음).
 export function trackDiagnosisSubmitClicked(mode: "couple" | "single"): void {
   logEvent("diagnosis_submit_clicked", { mode });
+  gaEvent("diagnosis_submit_clicked", { mode });
   if (!ensureInit()) return;
   mixpanel.track("diagnosis_submit_clicked", { mode, timestamp: Date.now() });
 }
@@ -93,6 +103,7 @@ export function trackDiagnosisSubmitClicked(mode: "couple" | "single"): void {
 // ★ diagnosis_id = 내부 uuid(기존 diagnosis_started 패턴). 공유 토큰(uniqueUrl)은 담지 않는다.
 export function trackShareLinkCreated(diagnosisId: string, mode: "couple" | "single"): void {
   logEvent("share_link_created", { diagnosisId, mode });
+  gaEvent("share_link_created", { diagnosis_id: diagnosisId, mode });
   if (!ensureInit()) return;
   mixpanel.track("share_link_created", { diagnosis_id: diagnosisId, mode, timestamp: Date.now() });
 }
@@ -100,6 +111,7 @@ export function trackShareLinkCreated(diagnosisId: string, mode: "couple" | "sin
 // ★ mode 만 — share 페이지 data 의 uniqueUrl·addressA/B 는 절대 담지 않는다(재식별 차단).
 export function trackShareLinkClicked(mode: "couple" | "single"): void {
   logEvent("share_link_clicked", { mode });
+  gaEvent("share_link_clicked", { mode });
   if (!ensureInit()) return;
   mixpanel.track("share_link_clicked", { mode, timestamp: Date.now() });
 }
@@ -107,6 +119,7 @@ export function trackShareLinkClicked(mode: "couple" | "single"): void {
 // ★ mode 만 — 불러온 config 의 주소는 절대 담지 않는다.
 export function trackSavedSearchLoaded(mode: "couple" | "single"): void {
   logEvent("saved_search_loaded", { mode });
+  gaEvent("saved_search_loaded", { mode });
   if (!ensureInit()) return;
   mixpanel.track("saved_search_loaded", { mode, timestamp: Date.now() });
 }
@@ -114,6 +127,7 @@ export function trackSavedSearchLoaded(mode: "couple" | "single"): void {
 // ★ days_left(숫자)만 — ISO 날짜 대신 D-day 로 환원(식별성 0).
 export function trackDeadlineModeActivated(daysLeft: number): void {
   logEvent("deadline_mode_activated", { daysLeft });
+  gaEvent("deadline_mode_activated", { days_left: daysLeft });
   if (!ensureInit()) return;
   mixpanel.track("deadline_mode_activated", { days_left: daysLeft, timestamp: Date.now() });
 }
