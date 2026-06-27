@@ -133,6 +133,8 @@ lsof -ti:3000 | xargs kill -9 2>/dev/null; rm -rf .next && npm run dev
 
 OnDay는 화면·기능·기술기획의 **운영 현황을 Playboard**로 단일 관리한다.
 
+> **제1원칙 (불가침):** **표시되는 모든 것은 레지스트리에서 파생한다 — 두 곳을 손으로 맞추지 않는다.** 사실(fact)은 `registry.ts` 한 곳에만 적고, 모든 상황판 화면(`/playboard*`)은 그것을 계산해 보여준다. 화면에 하드코딩된 목록을 두지 않는다. 이 원칙이 깨지는 순간(보드와 실제가 따로 노는 순간) Playboard의 효용이 동시에 무너진다.
+
 - **SoT**: `src/lib/playboard/registry.ts` (화면 9 · 사용자 flow 5 · 기술기획 항목 · mission-critical 6영역 · `SCREEN_SPECS`[화면별 5종: 요구사항·게이트·데이터계약·예외·NFR] · `AREA_SPECS`[영역별 제어 스펙] · `CONVERGENCE`[갭 후속]).
 - **상황판**: `/playboard`(인덱스·커버리지 매트릭스·흐름) → `/playboard/[id]`(화면 상세) → `/playboard/flow/[type]`(흐름). 정적 렌더, registry만 참조(진단·DB import 0).
 
@@ -151,3 +153,16 @@ OnDay는 화면·기능·기술기획의 **운영 현황을 Playboard**로 단�
 - **unplanned** — SRS/PRD에도 없음(순수 미기획, 예: DB 자동 롤백). 현재 1건.
 
 > 모든 항목은 `evidence`(SRS/PRD/CON ID 또는 코드 `file:line`)를 둔다 — 추측·창작 금지. 근거 없으면 `unplanned`로 정직 표기.
+
+### ★ 양방향 싱크 (위성 기준 문서 ↔ 레지스트리)
+상세 기준 문서(`docs/05_SRS_*.md`·`docs/00_PRD_*.md`·`DB_SPEC_DEFINITION.md`·`docs/perf/*` 등)는 레지스트리의 **위성 문서**다.
+- 어느 쪽이 바뀌든 **같은 PR에서 양쪽을 함께 갱신**한다(문서만 고치고 registry 방치 금지, 반대도 금지).
+- 원천 기획서(PRD/SRS)는 **근거로 동결**하고, 충돌 시 Playboard registry가 우선임을 전제한다. 요구사항 변경은 원천이 아니라 **registry의 해당 `SCREEN_SPECS`/`AREA_SPECS`에 반영**하고 evidence로 원천을 가리킨다.
+
+### ★ 갭 승격 규칙 (갭은 줄어드는 방향이 정상)
+- `AREA_SPECS`의 `unimplemented`/`unplanned` 제어나 `CONVERGENCE`의 갭이 **해소되면**, 그 자리를 `implemented`(+ `evidence` `file:line`)로 **승격**하고 갭 목록(`CONVERGENCE`)에서 제거한다.
+- 빈 갭 ≠ 갭 없음. 미정은 정직하게 `gapNote`/`CONVERGENCE`에 남긴다(숨기고 "완료" 선언 금지).
+
+### ★ 무결성 테스트 green 게이트 (강제 메커니즘)
+- 위 규칙의 정합성은 `src/lib/playboard/registry.test.ts`(vitest)가 자동 강제한다 — 고아 참조 0·영역 키 집합 정합·`implemented`→`evidence` 필수·evidence 경로 실재·커버리지 매트릭스 이중정의 금지.
+- **이 테스트가 빨간 채로 머지하지 않는다.** 빨간 테스트 = 보드가 코드와 따로 놀고 있다는 직접 신호. registry 변경 PR은 `npm test`가 green이어야 머지.
