@@ -7,7 +7,14 @@ import { ArrowRight, Lock } from "lucide-react";
 import { LockedCard } from "@/components/share/locked-card";
 import { ReportCard } from "@/components/share/report-card";
 import { ShareHero } from "@/components/share/share-hero";
+import { DetailSheet } from "@/components/sheet/detail-sheet";
 import { Button } from "@/components/ui/button";
+import {
+  buildCommuteRows,
+  buildLines,
+  buildMetrics,
+  buildPills,
+} from "@/features/diagnosis/detail-mapper";
 import { buildReportStats } from "@/features/share/preview-stats";
 import { trackShareLinkClicked } from "@/lib/analytics/mixpanel";
 import type { CandidateArea } from "@/lib/types";
@@ -16,13 +23,21 @@ import type { CandidateArea } from "@/lib/types";
 //   개인(result-content) ↔ 공유(본 뷰) 출처 배지 일관성 사수.
 //   ★ ODsay="추정"(시간표 평균) / 카카오 자차="실시간"(도로 교통 반영) — result-content 와 정합.
 const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
+// ★ 시세 = 국토부 실거래 median(개인 result-content 와 동일 배지) — mock/real 공통 부착.
+const PRICE_BADGE = {
+  kind: "official" as const,
+  source: "국토교통부 실거래가 · 60~85㎡",
+  updatedAt: "2025.12~2026.06",
+};
 const SOURCE_BADGES = IS_MOCK
   ? [
       { kind: "official" as const, source: "공공데이터포털", updatedAt: "2026.04" },
+      PRICE_BADGE,
       { kind: "estimate" as const, source: "통근 추정 (Haversine)", updatedAt: "—" },
     ]
   : [
       { kind: "official" as const, source: "공공데이터포털", updatedAt: "2026.04" },
+      PRICE_BADGE,
       { kind: "aggregated" as const, source: "ODsay 대중교통", updatedAt: "추정" },
       { kind: "aggregated" as const, source: "카카오 모빌리티 (자차)", updatedAt: "실시간" },
     ];
@@ -60,6 +75,10 @@ function expiryChipText(expiresAt: string): string {
 export function ShareReportView({ data }: ShareReportViewProps) {
   const { preview, locked, total } = data;
   const lockedCount = locked.length;
+
+  // ★ 미리보기(1위) 카드 탭 → 경량 상세 시트. 개인 결과뷰의 순수 빌더 재사용.
+  //   잠긴 후보는 서버에서 데이터 제거됨 → 미리보기 1곳만 상세 가능.
+  const [detailOpen, setDetailOpen] = React.useState(false);
 
   // ★ Referral 퍼널 — 수신자 진입 1회(클라뷰). trackedRef = Strict Mode 2회·재마운트 중복 방지(landing 선례).
   //   ★★ mode 만 — uniqueUrl·addressA/B 절대 미포함(share data 에 섞여있음, 재식별 차단).
@@ -109,12 +128,22 @@ export function ShareReportView({ data }: ShareReportViewProps) {
 
       <section className="mt-s-5 space-y-s-3 px-s-5" aria-label="공유 후보">
         {preview && (
-          <ReportCard
-            name={`${preview.gu} ${preview.dong}`}
-            score={preview.score}
-            stats={buildReportStats(preview)}
-            preview
-          />
+          <button
+            type="button"
+            onClick={() => setDetailOpen(true)}
+            aria-label={`${preview.gu} ${preview.dong} 상세 보기`}
+            className="block w-full rounded-lg text-left focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          >
+            <ReportCard
+              name={`${preview.gu} ${preview.dong}`}
+              score={preview.score}
+              stats={buildReportStats(preview)}
+              preview
+            />
+            <p className="mt-s-2 text-center text-caption text-ink-3">
+              탭하여 상세 보기
+            </p>
+          </button>
         )}
         {locked.map((c) => (
           <LockedCard key={c.id}>
@@ -140,6 +169,29 @@ export function ShareReportView({ data }: ShareReportViewProps) {
             </Button>
           </Link>
         </footer>
+      )}
+
+      {preview && (
+        <DetailSheet
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+          candidate={{
+            name: `${preview.gu} ${preview.dong}`,
+            score: preview.score,
+            pills: buildPills(preview, true),
+            lines: buildLines(preview),
+            commutes: buildCommuteRows(
+              preview,
+              data.addressA,
+              data.addressB ?? undefined,
+            ),
+            metrics: buildMetrics(preview),
+          }}
+          primaryCta={{
+            label: "회원가입하고 전체 후보 보기",
+            href: "/login",
+          }}
+        />
       )}
     </main>
   );
