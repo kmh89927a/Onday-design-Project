@@ -41,6 +41,9 @@ export async function POST(request: Request) {
           userId,
           addressA: input.addressA,
           addressB: input.addressB ?? null,
+          // 입력 직장 좌표 보존 — 새로고침 시 경로선 서버 복원(게스트 localStorage 미저장).
+          coordinateA: JSON.stringify(input.coordinateA),
+          coordinateB: input.coordinateB ? JSON.stringify(input.coordinateB) : null,
           filters: JSON.stringify(input.filters),
           candidates: JSON.stringify(candidates),
           mode: input.mode,
@@ -75,6 +78,9 @@ export async function POST(request: Request) {
         userId,
         addressA: input.addressA,
         addressB: input.addressB ?? null,
+        // 입력 직장 좌표 보존 — 새로고침 시 경로선 서버 복원(게스트 localStorage 미저장).
+        coordinateA: JSON.stringify(input.coordinateA),
+        coordinateB: input.coordinateB ? JSON.stringify(input.coordinateB) : null,
         filters: JSON.stringify(input.filters),
         candidates: JSON.stringify(candidates),
         mode: input.mode,

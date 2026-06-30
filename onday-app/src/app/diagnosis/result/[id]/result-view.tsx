@@ -43,6 +43,9 @@ export function ResultView({ id }: ResultViewProps) {
   const setResult = useDiagnosisStore((s) => s.setResult);
   // Issue #108 ㊙ — 시나리오 B (페이지 reload / 직접 URL 접속) filters store 박힘 (★ "사용자 입력 → 결과" 자연 흐름 양방향 정합).
   const setFilters = useDiagnosisStore((s) => s.setFilters);
+  // 새로고침 시 입력 좌표 서버 복원용 — 경로선 재생성(게스트/심사관 localStorage 미저장 유지).
+  const setAddressA = useDiagnosisStore((s) => s.setAddressA);
+  const setAddressB = useDiagnosisStore((s) => s.setAddressB);
   // Issue #125 — EmptyState SuggestionButton 클릭 시 runMockDiagnosis 재계산 (★ what-if 답습 #5).
   const coordinateA = useDiagnosisStore((s) => s.coordinateA);
   const coordinateB = useDiagnosisStore((s) => s.coordinateB);
@@ -61,8 +64,14 @@ export function ResultView({ id }: ResultViewProps) {
     if (!inSync && query.data) {
       setResult(query.data.id, query.data.candidates);
       setFilters(liftLegacyDealType(query.data.filters));
+      // 게스트/심사관 새로고침 — 입력 좌표를 서버에서 복원해 경로선 재생성. 좌표 없는 이전 진단은
+      //   skip(기존 동작). 비로그인은 persist 게이팅으로 localStorage 미기록(프라이버시 유지).
+      if (query.data.coordinateA)
+        setAddressA(query.data.addressA, query.data.coordinateA);
+      if (query.data.coordinateB)
+        setAddressB(query.data.addressB ?? "", query.data.coordinateB);
     }
-  }, [inSync, query.data, setResult, setFilters]);
+  }, [inSync, query.data, setResult, setFilters, setAddressA, setAddressB]);
 
   // MON-003 v1.4 부활 (Issue #127) — REQ-NF-008 funnel 완료점.
   //   ref 가드 = React Strict Mode 2회 실행 + 같은 id 재마운트 중복 방지.

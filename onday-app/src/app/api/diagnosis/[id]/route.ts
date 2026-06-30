@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import type { CandidateArea, DiagnosisFilters } from "@/lib/types";
+import type { CandidateArea, Coordinate, DiagnosisFilters } from "@/lib/types";
 import { getServerUser } from "@/lib/auth/session";
 import { logError, type LogUserType } from "@/lib/logging/log-error";
 
@@ -20,12 +20,22 @@ export async function GET(
 
     const candidates: CandidateArea[] = JSON.parse(diagnosis.candidates);
     const filters: DiagnosisFilters = JSON.parse(diagnosis.filters);
+    // 입력 직장 좌표 — 새로고침 시 경로선 복원용(게스트/심사관은 localStorage 미저장이라 서버만이 복원 경로).
+    //   본 컬럼 이전 진단 row 는 null → 클라가 복원 skip(기존 동작 유지).
+    const coordinateA = diagnosis.coordinateA
+      ? (JSON.parse(diagnosis.coordinateA) as Coordinate)
+      : null;
+    const coordinateB = diagnosis.coordinateB
+      ? (JSON.parse(diagnosis.coordinateB) as Coordinate)
+      : null;
 
     return NextResponse.json({
       id: diagnosis.id,
       userId: diagnosis.userId,
       addressA: diagnosis.addressA,
       addressB: diagnosis.addressB,
+      coordinateA,
+      coordinateB,
       candidates,
       filters,
       mode: diagnosis.mode,
