@@ -26,6 +26,10 @@ model Diagnosis {
   userId       String   @map("user_id")
   addressA     String   @map("address_a")
   addressB     String?  @map("address_b") // nullable for single mode
+  // 입력 직장 좌표(JSON {lat,lng}). 새로고침 시 경로선 복원용 — 게스트/심사관은 localStorage 미저장이라
+  //   서버 GET 만이 복원 경로(프라이버시 유지). nullable — 본 컬럼 이전 진단 row 는 null(기존 동작 유지).
+  coordinateA  String?  @map("coordinate_a")
+  coordinateB  String?  @map("coordinate_b")
   filters      String   @default("{}") // JSON string — app-layer parse, JSONB는 차후 ISSUE
   candidates   String   @default("[]") // JSON string array of CandidateArea — app-layer parse, JSONB는 차후 ISSUE
   mode         String   @default("couple") // couple | single

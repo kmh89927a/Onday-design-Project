@@ -232,6 +232,8 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   const storeAddressA = useDiagnosisStore((s) => s.addressA);
   const setResult = useDiagnosisStore((s) => s.setResult);
   const setFilters = useDiagnosisStore((s) => s.setFilters);
+  // 새로고침 시 입력 직장 좌표 서버 복원용 — 경로선 재생성(게스트/심사관 localStorage 미저장 유지).
+  const setAddressA = useDiagnosisStore((s) => s.setAddressA);
   // 지도 마커용 좌표 — 부부 모드와 동일하게 store 직접 참조(같은 세션에서만 표시).
   const coordinateA = useDiagnosisStore((s) => s.coordinateA);
   const leisureCoordA = useDiagnosisStore((s) => s.leisureCoordA);
@@ -256,8 +258,12 @@ export function SingleResultView({ id }: SingleResultViewProps) {
       setResult(query.data.id, query.data.candidates);
       // 재오픈 시 거래유형 복원(레거시 budget.dealType 승격 포함) — 시세 표시 dealType 보존.
       setFilters(liftLegacyDealType(query.data.filters));
+      // 게스트/심사관 새로고침 — 입력 직장 좌표를 서버에서 복원해 경로선 재생성. 좌표 없는 이전
+      //   진단은 skip(기존 동작). 비로그인은 persist 게이팅으로 localStorage 미기록(프라이버시 유지).
+      if (query.data.coordinateA)
+        setAddressA(query.data.addressA, query.data.coordinateA);
     }
-  }, [inSync, query.data, setResult, setFilters]);
+  }, [inSync, query.data, setResult, setFilters, setAddressA]);
 
   const candidates = React.useMemo<CandidateArea[]>(
     () => (inSync ? storeCandidates : query.data?.candidates ?? []),

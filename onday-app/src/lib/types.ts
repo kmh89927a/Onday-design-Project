@@ -117,6 +117,9 @@ export interface DiagnosisResult {
   userId: string;
   addressA: string;
   addressB?: string;
+  // 입력 직장 좌표 — 새로고침 시 경로선 복원용. 본 필드 이전 진단은 null(복원 skip → 기존 동작).
+  coordinateA?: Coordinate | null;
+  coordinateB?: Coordinate | null;
   candidates: CandidateArea[];
   filters: DiagnosisFilters;
   mode: DiagnosisMode;
