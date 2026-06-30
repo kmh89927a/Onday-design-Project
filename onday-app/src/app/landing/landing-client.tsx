@@ -341,12 +341,12 @@ function BeforeAfterSection() {
           <motion.div variants={baItem} className="flex items-center justify-center gap-s-4 rounded-2xl bg-primary-soft/60 p-s-5">
             <div className="text-center">
               <p className="text-display-2 font-extrabold text-primary tabular">12~18배</p>
-              <p className="text-caption text-ink-3">시간 단축</p>
+              <p className="text-caption text-ink-3">시간 단축 (목표)</p>
             </div>
             <div aria-hidden className="h-10 w-px bg-line" />
             <p className="text-body-sm md:text-base leading-relaxed text-ink-2">
               수작업 비교 <strong className="text-ink">2~3시간</strong> →{" "}
-              <strong className="text-primary">10분 탐색 완료</strong>
+              <strong className="text-primary">10분 탐색 완료 (목표)</strong>
               <br />진단 응답은 단 몇 초
             </p>
           </motion.div>
@@ -500,7 +500,7 @@ function MarketSection() {
         </div>
         <div className="grid grid-cols-2 gap-s-3">
           {[
-            { end: 4.2, prefix: "", suffix: "개월", duration: 0, label: "평균 동네 탐색 기간", sub: "인터뷰 14건 실측" },
+            { end: 4.2, prefix: "", suffix: "개월", duration: 0, label: "평균 동네 탐색 기간", sub: "인터뷰 14건 기반" },
             { end: 470, prefix: "$", suffix: "억", duration: 2, label: "글로벌 프롭테크", sub: "CAGR 16%" },
             { end: 0, prefix: "", suffix: "개", duration: 0, label: "두 동선 동시 계산 도구", sub: "블루오션" },
             { end: 10, prefix: "", suffix: "분", duration: 1.5, label: "탐색 완료 목표", sub: "기존 2~3시간" },
@@ -659,7 +659,7 @@ function PricingSection() {
         >
           <div className="space-y-s-2 text-center">
             <span className="inline-block rounded-chip bg-primary/10 px-s-3 py-1 text-caption-xs font-bold text-primary">
-              비용 ROI
+              대안 비용 참고
             </span>
             <h3 className="text-title font-bold text-ink">
               1주 살아보기 vs 10분 진단
@@ -673,18 +673,21 @@ function PricingSection() {
               </p>
             </div>
             <div className="rounded-xl bg-bg p-s-4 text-center">
-              <p className="text-caption-xs text-primary">온데이 1회</p>
+              <p className="text-caption-xs text-primary">온데이 1회 (예상)</p>
               <p className="mt-s-1 text-h3 font-extrabold text-primary tabular">
                 3~5<span className="ml-0.5 text-body-sm font-bold text-ink-3">만원</span>
               </p>
             </div>
           </div>
           <p className="text-center text-body-sm font-bold text-primary">
-            93~96% 절감
+            예상 절감 93~96%
           </p>
           <div className="space-y-s-2 text-center text-caption-xs text-ink-2 leading-relaxed">
             <p>
-              ※ 비용 출처: 단기체류 플랫폼 1주 요금 기준
+              ※ 비용 출처: 단기체류 플랫폼 1주 요금 기준 — 성격이 다른 대안, 비용 참고용 비교
+            </p>
+            <p>
+              ※ 온데이 가격은 베타 WTP 설문으로 확정 예정 — 위 3~5만원·절감률은 WTP 가정 기준 예상치
             </p>
             <p>
               목표: 임장 12회→3회 (75%↓) · 부부 합의 4.2개월→2주
