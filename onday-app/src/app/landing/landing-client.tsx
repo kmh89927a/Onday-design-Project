@@ -613,7 +613,7 @@ function PricingSection() {
             className="rounded-2xl border border-card-border bg-surface p-s-5 shadow-card opacity-85"
           >
             <span className="inline-block rounded-chip bg-ink-3/10 px-s-3 py-1 text-caption-xs font-bold text-ink-3">
-              Open Beta 2026.09 예정
+              Open Beta 2026.10 예정
             </span>
             <h3 className="mt-s-3 text-h3 font-extrabold text-ink">1회 진단</h3>
             <p className="mt-s-1 text-caption text-ink-3">베타 기간 WTP 설문 결과로 확정해요</p>
@@ -635,7 +635,7 @@ function PricingSection() {
             className="rounded-2xl border border-card-border bg-surface p-s-5 shadow-card opacity-85"
           >
             <span className="inline-block rounded-chip bg-ink-3/10 px-s-3 py-1 text-caption-xs font-bold text-ink-3">
-              정식 출시 2026.11 예정
+              정식 출시 2026.12 예정
             </span>
             <h3 className="mt-s-3 text-h3 font-extrabold text-ink">월정액 구독</h3>
             <p className="mt-s-1 text-caption text-ink-3">베타 기간 WTP 설문 결과로 확정해요</p>
