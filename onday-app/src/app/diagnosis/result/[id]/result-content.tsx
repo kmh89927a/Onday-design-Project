@@ -280,8 +280,11 @@ export function ResultContent({
   const hasTransitRoute = sorted.some(
     (c) => (c.commuteA.routePath?.length ?? 0) >= 2,
   );
+  // 부부 = A·B 어느 한쪽이라도 실 도로선이 있으면 🚗 (A 만 보면 A 자동차 실패 시 전환 자체가 막힘).
   const hasCarRoute = sorted.some(
-    (c) => (c.commuteACar?.routePath?.length ?? 0) >= 2,
+    (c) =>
+      (c.commuteACar?.routePath?.length ?? 0) >= 2 ||
+      (c.commuteBCar?.routePath?.length ?? 0) >= 2,
   );
   const mapMode: "transit" | "car" =
     mapModeChoice ?? (!hasTransitRoute && hasCarRoute ? "car" : "transit");
