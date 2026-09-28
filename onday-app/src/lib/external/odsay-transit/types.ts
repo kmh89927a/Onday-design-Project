@@ -81,6 +81,13 @@ export interface IOdsayTransitClient {
   ): Promise<CommuteInfo>;
 }
 
+/**
+ * ODsay 일일 할당량 소진 — 본문 {code:"429", message:"Daily quota exceeded"}.
+ * 순간 동시성 429 와 달리 재시도해도 당일엔 회복되지 않으므로 client 는 재시도하지 않고,
+ * runRealDiagnosis 는 이후 ODsay 호출을 건너뛴다(추정 fallback).
+ */
+export const ODSAY_QUOTA_EXCEEDED_CODE = "quota_exceeded";
+
 /** ODsay 호출/매핑 실패 표준 에러. */
 export class OdsayTransitError extends Error {
   readonly code?: string;

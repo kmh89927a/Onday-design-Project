@@ -18,7 +18,11 @@ import { wolseMedian, priceRangeFor } from "@/lib/diagnosis/price-index";
 import { passesFilters } from "@/lib/diagnosis/refilter";
 import { MOCK_NEIGHBORHOODS } from "@/mocks/neighborhoods";
 import { KakaoCarClient } from "@/lib/external/kakao-car";
-import { OdsayTransitClient } from "@/lib/external/odsay-transit";
+import {
+  ODSAY_QUOTA_EXCEEDED_CODE,
+  OdsayTransitClient,
+  OdsayTransitError,
+} from "@/lib/external/odsay-transit";
 
 // ★ W2B 자차 — 카카오 모빌리티 브라우저 직접 (NEXT_PUBLIC, 도메인 제한). ODsay 와 병렬.
 const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY ?? "";
@@ -31,6 +35,13 @@ const ODSAY_KEY = process.env.NEXT_PUBLIC_ODSAY_API_KEY ?? "";
 const odsayTransit = ODSAY_KEY
   ? new OdsayTransitClient({ apiKey: ODSAY_KEY })
   : null;
+
+// ★ ODsay 일일 할당량 소진("Daily quota exceeded") 감지 시 이 시각까지 ODsay 호출을 건너뛴다.
+//   실측: 할당량 소진 상태에서 24회(12동네×A·B) 전부 재시도 backoff 를 타면 진단 시작→결과가
+//   50초+ 걸리고 결국 전부 추정(점선)이었음. 첫 감지 후 나머지는 즉시 추정 fallback 으로.
+//   module 변수 = 같은 페이지 세션 동안 유지(새로고침 시 초기화 → 다시 1회 확인).
+const ODSAY_QUOTA_COOLDOWN_MS = 60 * 60 * 1000;
+let odsayQuotaExhaustedUntil = 0;
 
 // ODsay(대중교통) 실패 시 haversine 추정 fallback — 후보 drop 대신 추정값 유지.
 //   ★ Vercel 무료(ODsay 공인 IP 화이트리스트 불가) 환경에서도 결과가 비지 않게.
@@ -102,13 +113,19 @@ async function fetchCommute(
   origin: Coordinate,
   destination: Coordinate,
 ): Promise<CommuteInfo | null> {
-  if (!odsayTransit) return null;
+  if (!odsayTransit || Date.now() < odsayQuotaExhaustedUntil) return null;
   try {
     return await odsayTransit.getTransitCommute(
       { lat: origin.lat, lng: origin.lng },
       { lat: destination.lat, lng: destination.lng },
     );
-  } catch {
+  } catch (err) {
+    if (
+      err instanceof OdsayTransitError &&
+      err.code === ODSAY_QUOTA_EXCEEDED_CODE
+    ) {
+      odsayQuotaExhaustedUntil = Date.now() + ODSAY_QUOTA_COOLDOWN_MS;
+    }
     return null;
   }
 }
@@ -143,6 +160,15 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
     ODSAY_CONCURRENCY,
     async ({ n }): Promise<CandidateArea> => {
       const depTime = filters.commuteSchedule?.departureTime;
+
+      // ★ W2B 자차(카카오) — ODsay 와 독립된 API 라 대중교통 조회와 동시에 시작(대기시간 겹침).
+      //   (가) 12개 전부 계산(토글 캐시 완비). best-effort: 실패/키없음 → undefined(차량 행만 생략).
+      const carPromise = Promise.all([
+        fetchCarCommute(n.coordinate, coordinateA),
+        coordinateB
+          ? fetchCarCommute(n.coordinate, coordinateB)
+          : Promise.resolve(null),
+      ]);
       // ODsay 실패 → 후보 drop 대신 haversine 추정(빈 결과 방지, Vercel 무료 대응).
       const commuteA =
         (await fetchCommute(n.coordinate, coordinateA)) ??
@@ -167,14 +193,7 @@ export async function runRealDiagnosis(input: DiagnosisInput) {
           (await fetchCommute(n.coordinate, leisureCoordB)) ??
           estimateTransit(n.coordinate, leisureCoordB, depTime);
 
-      // ★ W2B 자차(카카오) — (가) 12개 전부 계산(토글 캐시 완비, 예산 통과분만→전부로 확장).
-      //   best-effort: 실패/키없음 → undefined(차량 행만 생략, 후보·점수 무영향).
-      const [commuteACar, commuteBCar] = await Promise.all([
-        fetchCarCommute(n.coordinate, coordinateA),
-        coordinateB
-          ? fetchCarCommute(n.coordinate, coordinateB)
-          : Promise.resolve(null),
-      ]);
+      const [commuteACar, commuteBCar] = await carPromise;
 
       const score = scoreCandidate({
         neighborhood: n,
