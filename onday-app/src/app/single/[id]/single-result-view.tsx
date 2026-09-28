@@ -406,7 +406,20 @@ export function SingleResultView({ id }: SingleResultViewProps) {
   );
 
   // 지도 경로 표시 모드 — 🚇 대중교통(ODsay 정거장) / 🚗 자동차(Kakao 도로 vertexes). 부부와 일관.
-  const [mapMode, setMapMode] = React.useState<"transit" | "car">("transit");
+  // 기본 표시 모드 = 실 경로가 있는 쪽. 대중교통(ODsay) 경로가 후보 전부에 없으면(할당량 초과·
+  //   실패 → 추정) 자동차 실 도로선이 있을 때 🚗 로 시작해 점선 대신 실선을 먼저 보여준다.
+  //   사용자가 토글을 누르면 그 선택이 우선(null = 자동). 파생값이라 effect/set-state 불필요.
+  const [mapModeChoice, setMapModeChoice] = React.useState<
+    "transit" | "car" | null
+  >(null);
+  const hasTransitRoute = sorted.some(
+    (c) => (c.commuteA.routePath?.length ?? 0) >= 2,
+  );
+  const hasCarRoute = sorted.some(
+    (c) => (c.commuteACar?.routePath?.length ?? 0) >= 2,
+  );
+  const mapMode: "transit" | "car" =
+    mapModeChoice ?? (!hasTransitRoute && hasCarRoute ? "car" : "transit");
 
   // 후보 → 직장 A 연결선 1줄 (여가거점은 마커로 위치만). 메인 맵(focus)·시트(selected) 공용.
   //   · transit = commuteA.routePath(정거장) — 출발(후보)·도착(직장) 보강
@@ -504,7 +517,7 @@ export function SingleResultView({ id }: SingleResultViewProps) {
         <button
           key={m}
           type="button"
-          onClick={() => setMapMode(m)}
+          onClick={() => setMapModeChoice(m)}
           aria-pressed={mapMode === m}
           className={cn(
             "rounded-full px-s-2 py-s-1 text-caption-xs font-bold transition-colors",

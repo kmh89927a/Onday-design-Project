@@ -5,16 +5,28 @@ import type {
   OdsayTransitClientConfig,
   OdsayTransitResponse,
 } from "./types";
-import { DEFAULT_ODSAY_CONFIG, OdsayTransitError } from "./types";
+import {
+  DEFAULT_ODSAY_CONFIG,
+  ODSAY_QUOTA_EXCEEDED_CODE,
+  OdsayTransitError,
+} from "./types";
 import { mapOdsayResponseToCommuteInfo } from "./mapper";
 
-// ODsay 429(Too Many Requests)는 HTTP 200 + 본문 error 로 온다. error 형태가
-// 객체({code,message}) 또는 배열([{code}]) 둘 다 관측됨 → 런타임에서 양쪽 방어.
-function isRateLimited(res: OdsayTransitResponse): boolean {
+// ODsay 에러는 HTTP 200 + 본문 error 로 온다. error 형태가 객체({code,message}) 또는
+// 배열([{code,message}]) 둘 다 관측됨 → 런타임에서 양쪽 방어해 첫 에러만 꺼낸다.
+function firstError(
+  res: OdsayTransitResponse,
+): { code?: string; message?: string } | null {
   const err = res.error as unknown;
-  if (!err) return false;
-  const first = Array.isArray(err) ? err[0] : err;
-  return String((first as { code?: unknown } | undefined)?.code) === "429";
+  if (!err) return null;
+  const first = (Array.isArray(err) ? err[0] : err) as
+    | { code?: unknown; message?: unknown }
+    | undefined;
+  if (!first) return null;
+  return {
+    code: first.code === undefined ? undefined : String(first.code),
+    message: typeof first.message === "string" ? first.message : undefined,
+  };
 }
 
 /**
@@ -54,6 +66,13 @@ export class OdsayTransitClient implements IOdsayTransitClient {
         return await this.fetchOnce(origin, destination);
       } catch (err) {
         lastError = err;
+        // 일일 할당량 소진은 재시도해도 회복 안 됨 → 즉시 포기(호출부가 추정 fallback + 이후 호출 skip).
+        if (
+          err instanceof OdsayTransitError &&
+          err.code === ODSAY_QUOTA_EXCEEDED_CODE
+        ) {
+          throw err;
+        }
         if (attempt < this.config.maxRetries) {
           // ★ 429(rate limit)는 지수 backoff(혼잡 완화) — 600→1200→2400ms.
           //   그 외 에러(타임아웃·네트워크·HTTP)는 기존 고정 지연 유지.
@@ -93,7 +112,15 @@ export class OdsayTransitClient implements IOdsayTransitClient {
       const data = (await res.json()) as OdsayTransitResponse;
       // ★ ODsay 429 는 HTTP 200 본문으로 옴({"error":{"code":"429"}}) → 여기서 throw 해야
       //   fetchWithRetry 의 backoff 재시도에 진입한다. (error 형태: 객체 또는 배열 둘 다 방어.)
-      if (isRateLimited(data)) {
+      //   단 "Daily quota exceeded"(일일 할당량 소진)는 같은 429 코드지만 재시도 무의미 → 별도 코드.
+      const err = firstError(data);
+      if (err?.code === "429") {
+        if (/quota/i.test(err.message ?? "")) {
+          throw new OdsayTransitError(
+            "ODsay 일일 할당량 초과",
+            ODSAY_QUOTA_EXCEEDED_CODE,
+          );
+        }
         throw new OdsayTransitError("ODsay 429 Too Many Requests", "429");
       }
       return data;
