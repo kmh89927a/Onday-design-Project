@@ -12,5 +12,6 @@
 | [preview-access-block.md](preview-access-block.md) | ⚪ 낮음 | 선택 | 미구현(결정 대기) |
 | [share-link-signup.md](share-link-signup.md) | ⚪ 낮음 | 발표 후 | 미배선(attribution 갭) |
 | [distinct-normalization.md](distinct-normalization.md) | ⚪ 낮음 | 발표 후 | 미구현 |
+| [supabase-default-privileges-rls-recurrence.md](supabase-default-privileges-rls-recurrence.md) | 🟡 중 | 발표 후 | 미구현(설계만) — RLS 경고 재발 근본 원인(기본 ACL), PR fix/rls-prisma-migrations 후속 |
 
 **발행 순서 제안:** dashboard-insights(#251) → preview-dummy-seeding → dashboard-conversion-extension → cron → distinct → preview-access-block → share_signup.
