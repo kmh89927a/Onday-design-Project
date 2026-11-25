@@ -77,8 +77,6 @@ const baItem = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
 };
 
-const noopSubscribe = () => () => {};
-
 function CountUpStat({ end, prefix = "", suffix = "", duration = 2 }: {
   end: number;
   prefix?: string;
@@ -86,13 +84,8 @@ function CountUpStat({ end, prefix = "", suffix = "", duration = 2 }: {
   duration?: number;
 }) {
   const reduceMotion = useReducedMotion();
-  // react-countup 은 서버에서 빈 span 을 출력해 hydration #418 을 유발 → 마운트 전엔 서버·클라 동일한 정적 텍스트
-  const mounted = React.useSyncExternalStore(noopSubscribe, () => true, () => false);
-  if (duration === 0) {
+  if (reduceMotion || duration === 0) {
     return <>{prefix}{end}{suffix}</>;
-  }
-  if (!mounted || reduceMotion) {
-    return <span>{prefix}{mounted ? end : 0}{suffix}</span>;
   }
   return (
     <CountUp
