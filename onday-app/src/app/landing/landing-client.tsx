@@ -77,6 +77,8 @@ const baItem = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
 };
 
+const noopSubscribe = () => () => {};
+
 function CountUpStat({ end, prefix = "", suffix = "", duration = 2 }: {
   end: number;
   prefix?: string;
@@ -84,8 +86,13 @@ function CountUpStat({ end, prefix = "", suffix = "", duration = 2 }: {
   duration?: number;
 }) {
   const reduceMotion = useReducedMotion();
-  if (reduceMotion || duration === 0) {
+  // react-countup 은 서버에서 빈 span 을 출력해 hydration #418 을 유발 → 마운트 전엔 서버·클라 동일한 정적 텍스트
+  const mounted = React.useSyncExternalStore(noopSubscribe, () => true, () => false);
+  if (duration === 0) {
     return <>{prefix}{end}{suffix}</>;
+  }
+  if (!mounted || reduceMotion) {
+    return <span>{prefix}{mounted ? end : 0}{suffix}</span>;
   }
   return (
     <CountUp
@@ -108,17 +115,25 @@ function HeroSection() {
   const mountOpacity = useMotionValue(0);
   const mountY = useMotionValue(24);
   const scrollOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-  const opacity = useTransform([mountOpacity, scrollOpacity], (latest: number[]) => latest[0] * latest[1]);
+  // 1=스크롤 페이드 켬, 0=끔(동작 줄이기). 첫 렌더 동일성을 위해 style 분기 대신 마운트 후 값으로 끈다
+  const scrollFade = useMotionValue(1);
+  const opacity = useTransform([mountOpacity, scrollOpacity, scrollFade], (latest: number[]) => latest[0] * (latest[2] ? latest[1] : 1));
 
+  // 서버에선 reduceMotion 이 null 이라 style 을 분기하면 SSR 의 opacity:0 이 hydration 후에도 남음 → style 은 항상 동일, 값만 effect 에서 조정
   React.useEffect(() => {
-    if (reduceMotion) return;
+    if (reduceMotion) {
+      mountOpacity.set(1);
+      mountY.set(0);
+      scrollFade.set(0);
+      return;
+    }
     const c1 = animate(mountOpacity, 1, { duration: 1.2, ease: "easeOut" });
     const c2 = animate(mountY, 0, { duration: 1.2, ease: "easeOut" });
     return () => { c1.stop(); c2.stop(); };
-  }, [reduceMotion, mountOpacity, mountY]);
+  }, [reduceMotion, mountOpacity, mountY, scrollFade]);
 
   return (
-    <motion.section ref={ref} style={reduceMotion ? undefined : { opacity, y: mountY }} id="hero" className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-s-5 text-center">
+    <motion.section ref={ref} style={{ opacity, y: mountY }} id="hero" className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-s-5 text-center">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 40%, hsl(221 83% 53% / 0.15) 0%, transparent 70%), linear-gradient(180deg, hsl(var(--bg)) 0%, hsl(var(--primary-soft)) 50%, hsl(var(--bg)) 100%)" }} />
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         {[...Array(6)].map((_, i) => (
